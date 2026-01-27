@@ -2,31 +2,33 @@ from fastapi import FastAPI, APIRouter
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
 
-# Import routes
-from routes import files, dispense, simulazioni
-
+# Import routes (per ora SOLO files, così Render parte anche senza Mongo)
+from routes import files
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / ".env")
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# MongoDB DISATTIVATO (per far partire Render senza DB)
+client = None
+db = None
 
 # Create the main app
 app = FastAPI()
 
-# Create uploads directory
-UPLOAD_DIR = Path("/app/uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
-(UPLOAD_DIR / "pdf").mkdir(exist_ok=True)
-(UPLOAD_DIR / "images").mkdir(exist_ok=True)
+# Health check (per test veloce)
+@app.get("/api/health")
+async def health():
+    return {"ok": True}
+
+# Create uploads directory (DENTRO backend/, non /app)
+UPLOAD_DIR = ROOT_DIR / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+(UPLOAD_DIR / "pdf").mkdir(parents=True, exist_ok=True)
+(UPLOAD_DIR / "images").mkdir(parents=True, exist_ok=True)
 
 # Serve static files
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
@@ -40,10 +42,9 @@ async def root():
 
 # Include routers
 app.include_router(files.router)
-app.include_router(dispense.router)
-app.include_router(simulazioni.router)
 app.include_router(api_router)
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -55,13 +56,15 @@ app.add_middleware(
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
-# Make db available globally
+# Make db available globally (None per ora)
 app.state.db = db
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    client.close()
+    # se in futuro riattivi Mongo, qui chiudi la connessione
+    if client:
+        client.close()
