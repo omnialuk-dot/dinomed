@@ -1,0 +1,20 @@
+# ===== ENV =====
+.env
+backend/.env
+
+# ===== PYTHON =====
+__pycache__/
+*.pyc
+*.pyo
+
+# ===== NODE =====
+node_modules/
+frontend/node_modules/
+
+# ===== BUILD =====
+frontend/build/
+dist/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
