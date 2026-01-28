@@ -1,9 +1,9 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 
-import Home from "./pages/Home.jsx";
-import Dispense from "./pages/Dispense.jsx";
-import Simulazioni from "./pages/Simulazioni.jsx";
+import Home from "./pages/Home";
+import Dispense from "./pages/Dispense";
+import Simulazioni from "./pages/Simulazioni";
 
 export default function App() {
   return (
