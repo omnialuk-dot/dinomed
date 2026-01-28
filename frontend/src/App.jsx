@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react";
 import { healthCheck } from "./api";
 
-function App() {
-const [status, setStatus] = useState("loading...");
-const [error, setError] = useState(null);
+export default function App() {
+const [result, setResult] = useState("Caricamento...");
+const [error, setError] = useState("");
 
 useEffect(() => {
 healthCheck()
-.then((res) => setStatus(JSON.stringify(res)))
+.then((data) => setResult(JSON.stringify(data)))
 .catch((err) => setError(err.message));
 }, []);
 
 return (
-<div style={{ padding: 20 }}>
-<h1>DinoMed Frontend</h1>
-{error ? <p style={{ color: "red" }}>{error}</p> : <p>{status}</p>}
+<div style={{ padding: 20, fontFamily: "sans-serif" }}>
+<h1>DinoMed</h1>
+
+{error && <p style={{ color: "red" }}>Errore: {error}</p>}
+{!error && <p>{result}</p>}
 </div>
 );
 }
-
-export default App;
