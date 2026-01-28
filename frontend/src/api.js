@@ -1,25 +1,9 @@
 // frontend/src/api.js
+const API_BASE_URL =
+import.meta.env.VITE_API_URL || "https://dinomed-api.onrender.com";
 
-// Se hai un .env, Vite legge variabili che iniziano con VITE_
-// Esempio: VITE_API_BASE_URL=https://dinomed-api.onrender.com
-const ENV_BASE = import.meta?.env?.VITE_API_BASE_URL;
-
-// fallback se .env non c’è
-export const API_BASE_URL = (ENV_BASE || "https://dinomed-api.onrender.com").replace(/\/$/, "");
-
-// helper fetch JSON con errori chiari
-async function getJson(path) {
-const url = `${API_BASE_URL}${path}`;
-const res = await fetch(url, { method: "GET" });
-
-if (!res.ok) {
-const text = await res.text().catch(() => "");
-throw new Error(`HTTP ${res.status} su ${url} ${text ? `- ${text}` : ""}`.trim());
-}
+export async function apiHealth() {
+const res = await fetch(`${API_BASE_URL}/api/health`);
+if (!res.ok) throw new Error("API non raggiungibile");
 return res.json();
-}
-
-// chiamata health
-export function apiHealth() {
-return getJson("/api/health");
 }
