@@ -1,21 +1,39 @@
-// frontend/src/api.js
-
+// FILE: src/api.js
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ||
-  "https://dinomed-api.onrender.com"; // fallback sicuro
+import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ||
+"https://dinomed-api.onrender.com";
 
 export async function apiHealth() {
-  const url = `${API_BASE_URL}/api/health`;
+const url = `${API_BASE_URL}/api/health`;
 
-  const res = await fetch(url, {
-    method: "GET",
-    headers: { "Accept": "application/json" },
-  });
+const res = await fetch(url, {
+method: "GET",
+headers: { Accept: "application/json" },
+});
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Health failed (${res.status}) ${text}`);
-  }
+if (!res.ok) {
+const text = await res.text().catch(() => "");
+throw new Error(`Health failed (${res.status}) ${text}`);
+}
 
-  return res.json();
+return res.json();
+}
+
+export async function getFilesList(type = "pdf") {
+const url = `${API_BASE_URL}/api/files/list?file_type=${encodeURIComponent(type)}`;
+const res = await fetch(url, { headers: { Accept: "application/json" } });
+
+if (!res.ok) {
+const text = await res.text().catch(() => "");
+throw new Error(`Files list failed (${res.status}) ${text}`);
+}
+
+// ✅ il backend ritorna: { files: [...] }
+return res.json();
+}
+
+// URL pubblico per aprire/scaricare file da /uploads
+export function filePublicUrl(filename, type = "pdf") {
+const folder = type === "image" ? "images" : "pdf";
+return `${API_BASE_URL}/uploads/${folder}/${encodeURIComponent(filename)}`;
 }
