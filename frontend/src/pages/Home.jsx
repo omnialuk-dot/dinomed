@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { getFilesList } from "../api";
 import logo from "../assets/logo.png";
 import logoFull from "../assets/logo-full.png";
+import heroIllo from "../assets/hero-illustration.svg";
 
 export default function Home() {
 const [files, setFiles] = useState([]);
@@ -61,44 +62,132 @@ Accedi
 </header>
 
 <div className="home-container">
-{/* 2. Hero Section */}
-<section className="hero-section">
-<img src={logoFull} alt="DinoMed Logo" className="hero-logo-full" />
-<h1 className="hero-title">
-Da zero confusione a <span className="blue">più chiarezza</span>.
-</h1>
-<p className="hero-subtitle">
-La piattaforma dedicata agli studenti di medicina per preparare il semestre filtro. Niente ansia, solo
-metodo.
-</p>
-<div className="hero-buttons">
-<Link to="/simulazioni" className="btn btn-primary">
-Inizia una simulazione
-</Link>
-<Link to="/dispense" className="btn btn-secondary">
-Vai alle dispense
-</Link>
-</div>
+{/* 2. Hero Section (Premium, senza immagini per ora) */}
+<section className="hero-premium">
+  <div className="hero-premium__left">
+    <img src={logoFull} alt="DinoMed Logo" className="hero-logo-full" />
+
+    <h1 className="hero-premium__title">
+      Da zero confusione a <span className="blue">più chiarezza</span>.
+    </h1>
+
+    <p className="hero-premium__subtitle">
+      Simulazioni, dispense e metodo: tutto in un posto. Interfaccia pulita, zero fronzoli, massimo risultato.
+    </p>
+
+    <div className="hero-premium__actions">
+      <Link to="/simulazioni" className="btn btn-primary">Inizia una simulazione</Link>
+      <Link to="/dispense" className="btn btn-secondary">Vai alle dispense</Link>
+    </div>
+
+    <div className="hero-premium__trust">
+      <div className="trust-pill">⚡ Rapido</div>
+      <div className="trust-pill">🎯 Mirato</div>
+      <div className="trust-pill">🧠 Chiaro</div>
+      <div className="trust-pill">🔒 Affidabile</div>
+    </div>
+  </div>
+
+  {/* Placeholder premium: quando vorrai, qui ci mettiamo l’immagine */}
+  <div className="hero-premium__right">
+    <div className="hero-glass">
+      <div className="hero-glass__top">
+        <div className="dot dot-red" />
+        <div className="dot dot-yellow" />
+        <div className="dot dot-green" />
+        <div className="hero-glass__label">DinoMed • Dashboard</div>
+      </div>
+
+      <div className="hero-glass__body">
+        <div className="mini-card">
+          <div className="mini-icon">📝</div>
+          <div>
+            <div className="mini-title">Simulazioni</div>
+            <div className="mini-sub">Modalità esame, feedback immediato</div>
+          </div>
+        </div>
+
+        <div className="mini-card">
+          <div className="mini-icon">📚</div>
+          <div>
+            <div className="mini-title">Dispense</div>
+            <div className="mini-sub">Sintetiche, pulite, efficaci</div>
+          </div>
+        </div>
+
+        <div className="mini-card">
+          <div className="mini-icon">🧭</div>
+          <div>
+            <div className="mini-title">Metodo</div>
+            <div className="mini-sub">Percorso guidato (in arrivo)</div>
+          </div>
+        </div>
+
+        <div className="progress-wrap">
+          <div className="progress-row">
+            <span>Prontezza</span>
+            <span className="muted">+12%</span>
+          </div>
+          <div className="progress-bar"><div className="progress-fill" /></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
-{/* 3. Cards Section */}
-<section className="cards-section">
-<div className="cards-grid">
-<div className="card">
-<h3>Simulazioni d'esame</h3>
-<p>Mettiti alla prova con domande a crocette e completamento, nello stesso stile dell'esame reale.</p>
-</div>
-<div className="card">
-<h3>Dispense curate</h3>
-<p>Materiale di studio chiaro, sintetico e mirato per superare gli scogli più difficili.</p>
-</div>
-<div className="card">
-<h3>
-Percorso guidato <span className="badge-coming-soon">In arrivo</span>
-</h3>
-<p>Un piano di studio passo-passo per non perdersi tra i libri.</p>
-</div>
-</div>
+{/* 3. Bento Grid (Premium Features) */}
+<section className="bento">
+  <h2 className="section-title">Tutto quello che serve. Fatto bene.</h2>
+
+  <div className="bento-grid">
+    <div className="bento-item bento-item--big">
+      <div className="bento-kicker">🔥 Focus totale</div>
+      <h3>Una home che ti porta subito dove serve</h3>
+      <p>
+        Simulazioni e dispense in primo piano, demo rapida, ultime aggiunte visibili. Niente caos, niente perdite di tempo.
+      </p>
+      <div className="bento-tags">
+        <span className="tag">UX pulita</span>
+        <span className="tag">Mobile friendly</span>
+        <span className="tag">Veloce</span>
+      </div>
+    </div>
+
+    <div className="bento-item">
+      <div className="bento-icon">🎯</div>
+      <h3>Stile esame</h3>
+      <p>Domande realistiche, feedback immediato e ritmo da “giorno della prova”.</p>
+    </div>
+
+    <div className="bento-item">
+      <div className="bento-icon">📌</div>
+      <h3>Materiale mirato</h3>
+      <p>Dispense curate, leggibili e fatte per ricordare davvero.</p>
+    </div>
+
+    <div className="bento-item">
+      <div className="bento-icon">⚡</div>
+      <h3>Zero attrito</h3>
+      <p>Navigazione veloce, layout pulito, niente roba “cheap”.</p>
+    </div>
+
+    <div className="bento-item">
+      <div className="bento-icon">🔒</div>
+      <h3>Affidabile</h3>
+      <p>Struttura chiara e solida. Prima utilità, poi estetica top.</p>
+    </div>
+  </div>
+
+  <div className="cta-strip">
+    <div>
+      <div className="cta-title">Pronto a fare sul serio?</div>
+      <div className="cta-sub">Inizia con una simulazione veloce o apri le ultime dispense.</div>
+    </div>
+    <div className="cta-actions">
+      <Link to="/simulazioni" className="btn btn-primary">Vai alle simulazioni</Link>
+      <Link to="/dispense" className="btn btn-secondary">Vai alle dispense</Link>
+    </div>
+  </div>
 </section>
 
 {/* 4. Mini Demo Simulazione */}
