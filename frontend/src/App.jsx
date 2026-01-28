@@ -1,40 +1,26 @@
-import { useEffect, useState } from "react";
-import { apiHealth, API_BASE_URL } from "./api";
+import "./index.css";
+import logo from "./assets/logo.png";
 
 export default function App() {
-  const [data, setData] = useState(null);
-  const [err, setErr] = useState("");
-
-  useEffect(() => {
-    apiHealth()
-      .then(setData)
-      .catch((e) => setErr(String(e)));
-  }, []);
-
   return (
-    <div style={{ padding: 24, fontFamily: "system-ui" }}>
-      <h1>DinoMed Frontend</h1>
+    <div className="home">
+      <header className="header">
+        <img src={logo} alt="DinoMed logo" className="logo" />
+        <h1 className="title">
+          <span className="green">Dino</span>
+          <span className="blue">Med</span>
+        </h1>
+        <p className="subtitle">
+          Da zero confusione a più chiarezza.
+        </p>
+      </header>
 
-      <p>
-        <b>API_BASE_URL:</b> {API_BASE_URL}
-      </p>
-
-      {err && <p style={{ color: "red" }}>Errore: {err}</p>}
-      {!err && !data && <p>Caricamento...</p>}
-      {data && (
-        <pre
-          style={{
-            background: "#111",
-            color: "#0f0",
-            padding: 12,
-            borderRadius: 8,
-            maxWidth: 520,
-          }}
-        >
-          {JSON.stringify(data, null, 2)}
-        </pre>
-      )}
+      <div className="buttons">
+        <button className="btn primary">Inizia le simulazioni</button>
+        <button className="btn secondary">Vai alle dispense</button>
+      </div>
     </div>
   );
 }
+
 
