@@ -14,9 +14,7 @@ healthCheck()
 return (
 <div style={{ padding: 20, fontFamily: "sans-serif" }}>
 <h1>DinoMed</h1>
-
-{error && <p style={{ color: "red" }}>Errore: {error}</p>}
-{!error && <p>{result}</p>}
+{error ? <p style={{ color: "red" }}>Errore: {error}</p> : <p>{result}</p>}
 </div>
 );
 }
