@@ -1,188 +1,163 @@
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
+from pathlib import Path
+import json
 import uuid
+import os
 
 router = APIRouter(prefix="/api/simulazioni", tags=["simulazioni"])
 
-# Models
-class Domanda(BaseModel):
-    id: str
-    testo: str
-    tipo: str  # "crocetta" o "completamento"
-    opzioni: Optional[List[str]] = None
-    rispostaCorretta: str
-    risposteAccettate: Optional[List[str]] = None
-    spiegazione: str
-    materia: str
+DATA_FILE = (Path(__file__).resolve().parent.parent / "data" / "simulazioni.json")
 
-class DomandaCreate(BaseModel):
-    testo: str
-    tipo: str
-    opzioni: Optional[List[str]] = None
-    rispostaCorretta: str
-    risposteAccettate: Optional[List[str]] = None
-    spiegazione: str
-    materia: str
+
+# ---------- helpers (file-based storage) ----------
+
+def _ensure_file():
+    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if not DATA_FILE.exists():
+        DATA_FILE.write_text("[]", encoding="utf-8")
+
+def _read_all() -> List[dict]:
+    _ensure_file()
+    raw = DATA_FILE.read_text(encoding="utf-8").strip()
+    if not raw:
+        return []
+    try:
+        data = json.loads(raw)
+        return data if isinstance(data, list) else []
+    except json.JSONDecodeError:
+        # se il file si è corrotto, non crashare il server
+        return []
+
+def _write_all(items: List[dict]) -> None:
+    _ensure_file()
+    DATA_FILE.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _require_admin(req: Request):
+    """
+    Sicurezza semplice:
+    - se in .env metti ADMIN_TOKEN=qualcosa
+      allora serve header: Authorization: Bearer <token>
+    - se ADMIN_TOKEN non è settato, in locale permette (comodo per dev)
+    """
+    token = os.getenv("ADMIN_TOKEN", "").strip()
+    if not token:
+        return
+    auth = req.headers.get("authorization", "")
+    if auth != f"Bearer {token}":
+        raise HTTPException(status_code=401, detail="Not authorized")
+
+
+# ---------- models ----------
 
 class Simulazione(BaseModel):
     id: str
     titolo: str
-    materia: str
-    tipo: str
-    domande: int
-    durata: str
-    livello: str
-    descrizione: str
-    attiva: bool
+    descrizione: str = ""
+    materia: str = "Altro"
+    livello: str = "Base"
+    tag: List[str] = Field(default_factory=list)
+    durataMin: Optional[int] = None
+    link: Optional[str] = None
+    published: bool = False
     created_at: str
+    updated_at: str
+
 
 class SimulazioneCreate(BaseModel):
     titolo: str
-    materia: str
-    tipo: str
-    domande: int
-    durata: str
-    livello: str
-    descrizione: str
+    descrizione: str = ""
+    materia: str = "Altro"
+    livello: str = "Base"
+    tag: List[str] = Field(default_factory=list)
+    durataMin: Optional[int] = None
+    link: Optional[str] = None
+    published: bool = False
 
-class SimulazioneCompleta(BaseModel):
-    simulazione: Simulazione
-    domande_list: List[Domanda]
 
-# CRUD Simulazioni
+class SimulazioneUpdate(BaseModel):
+    titolo: Optional[str] = None
+    descrizione: Optional[str] = None
+    materia: Optional[str] = None
+    livello: Optional[str] = None
+    tag: Optional[List[str]] = None
+    durataMin: Optional[int] = None
+    link: Optional[str] = None
+    published: Optional[bool] = None
+
+
+# ---------- endpoints ----------
+
+@router.get("", response_model=List[Simulazione])
 @router.get("/", response_model=List[Simulazione])
-async def get_simulazioni(request: Request, attiva: Optional[bool] = None):
-    """Recupera tutte le simulazioni"""
-    db = request.app.state.db
-    query = {}
-    if attiva is not None:
-        query["attiva"] = attiva
-    
-    simulazioni = await db.simulazioni.find(query, {"_id": 0}).to_list(1000)
-    return simulazioni
+async def list_pubbliche():
+    """Lista pubblica: ritorna solo simulazioni pubblicate."""
+    items = _read_all()
+    return [x for x in items if x.get("published", False) is True]
 
-@router.get("/attive", response_model=List[Simulazione])
-async def get_simulazioni_attive(request: Request):
-    """Recupera solo simulazioni attive (per il sito pubblico)"""
-    db = request.app.state.db
-    simulazioni = await db.simulazioni.find({"attiva": True}, {"_id": 0}).to_list(1000)
-    return simulazioni
 
+@router.get("/all", response_model=List[Simulazione])
+async def list_all(request: Request):
+    """Lista completa (admin)."""
+    _require_admin(request)
+    return _read_all()
+
+
+@router.get("/{sim_id}", response_model=Simulazione)
+async def get_one(sim_id: str):
+    items = _read_all()
+    for x in items:
+        if x.get("id") == sim_id:
+            # se non è pubblicata, la vedrà solo chi usa /all (admin). Qui lasciamo semplice.
+            return x
+    raise HTTPException(status_code=404, detail="Simulazione non trovata")
+
+
+@router.post("", response_model=Simulazione)
 @router.post("/", response_model=Simulazione)
-async def create_simulazione(request: Request, simulazione: SimulazioneCreate):
-    """Crea una nuova simulazione"""
-    db = request.app.state.db
-    
-    new_simulazione = {
+async def create_one(request: Request, body: SimulazioneCreate):
+    _require_admin(request)
+
+    now = datetime.utcnow().isoformat() + "Z"
+    new_item = {
         "id": str(uuid.uuid4()),
-        **simulazione.model_dump(),
-        "attiva": False,
-        "created_at": datetime.utcnow().isoformat()
-    }
-    
-    await db.simulazioni.insert_one(new_simulazione)
-    # Return without _id
-    del_result = new_simulazione.pop("_id", None)
-    return new_simulazione
-
-@router.get("/{simulazione_id}", response_model=SimulazioneCompleta)
-async def get_simulazione_completa(request: Request, simulazione_id: str):
-    """Recupera simulazione con tutte le sue domande"""
-    db = request.app.state.db
-    
-    simulazione = await db.simulazioni.find_one({"id": simulazione_id}, {"_id": 0})
-    if not simulazione:
-        raise HTTPException(status_code=404, detail="Simulazione non trovata")
-    
-    domande = await db.domande.find({"simulazione_id": simulazione_id}, {"_id": 0}).to_list(1000)
-    
-    return {
-        "simulazione": simulazione,
-        "domande_list": domande
+        **body.model_dump(),
+        "created_at": now,
+        "updated_at": now,
     }
 
-@router.patch("/{simulazione_id}/toggle")
-async def toggle_simulazione(request: Request, simulazione_id: str):
-    """Attiva/disattiva simulazione"""
-    db = request.app.state.db
-    
-    existing = await db.simulazioni.find_one({"id": simulazione_id}, {"_id": 0})
-    if not existing:
+    items = _read_all()
+    items.insert(0, new_item)
+    _write_all(items)
+    return new_item
+
+
+@router.put("/{sim_id}", response_model=Simulazione)
+async def update_one(request: Request, sim_id: str, body: SimulazioneUpdate):
+    _require_admin(request)
+
+    items = _read_all()
+    for i, x in enumerate(items):
+        if x.get("id") == sim_id:
+            patch = {k: v for k, v in body.model_dump().items() if v is not None}
+            x.update(patch)
+            x["updated_at"] = datetime.utcnow().isoformat() + "Z"
+            items[i] = x
+            _write_all(items)
+            return x
+    raise HTTPException(status_code=404, detail="Simulazione non trovata")
+
+
+@router.delete("/{sim_id}")
+async def delete_one(request: Request, sim_id: str):
+    _require_admin(request)
+
+    items = _read_all()
+    new_items = [x for x in items if x.get("id") != sim_id]
+    if len(new_items) == len(items):
         raise HTTPException(status_code=404, detail="Simulazione non trovata")
-    
-    new_status = not existing["attiva"]
-    await db.simulazioni.update_one({"id": simulazione_id}, {"$set": {"attiva": new_status}})
-    
-    return {"success": True, "attiva": new_status}
-
-@router.delete("/{simulazione_id}")
-async def delete_simulazione(request: Request, simulazione_id: str):
-    """Elimina simulazione e tutte le sue domande"""
-    db = request.app.state.db
-    
-    result = await db.simulazioni.delete_one({"id": simulazione_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Simulazione non trovata")
-    
-    await db.domande.delete_many({"simulazione_id": simulazione_id})
-    
-    return {"success": True, "message": "Simulazione e domande eliminate"}
-
-# CRUD Domande
-@router.post("/{simulazione_id}/domande", response_model=Domanda)
-async def add_domanda(request: Request, simulazione_id: str, domanda: DomandaCreate):
-    """Aggiungi una domanda a una simulazione"""
-    db = request.app.state.db
-    
-    simulazione = await db.simulazioni.find_one({"id": simulazione_id}, {"_id": 0})
-    if not simulazione:
-        raise HTTPException(status_code=404, detail="Simulazione non trovata")
-    
-    new_domanda = {
-        "id": str(uuid.uuid4()),
-        "simulazione_id": simulazione_id,
-        **domanda.model_dump()
-    }
-    
-    await db.domande.insert_one(new_domanda)
-    new_domanda.pop("_id", None)
-    return new_domanda
-
-@router.get("/{simulazione_id}/domande", response_model=List[Domanda])
-async def get_domande(request: Request, simulazione_id: str):
-    """Recupera tutte le domande di una simulazione"""
-    db = request.app.state.db
-    
-    domande = await db.domande.find({"simulazione_id": simulazione_id}, {"_id": 0}).to_list(1000)
-    return domande
-
-@router.put("/{simulazione_id}/domande/{domanda_id}", response_model=Domanda)
-async def update_domanda(request: Request, simulazione_id: str, domanda_id: str, domanda: DomandaCreate):
-    """Aggiorna una domanda"""
-    db = request.app.state.db
-    
-    existing = await db.domande.find_one({"id": domanda_id, "simulazione_id": simulazione_id}, {"_id": 0})
-    if not existing:
-        raise HTTPException(status_code=404, detail="Domanda non trovata")
-    
-    updated_domanda = {
-        **domanda.model_dump()
-    }
-    
-    await db.domande.update_one({"id": domanda_id}, {"$set": updated_domanda})
-    updated_domanda["id"] = domanda_id
-    updated_domanda["simulazione_id"] = simulazione_id
-    return updated_domanda
-
-@router.delete("/{simulazione_id}/domande/{domanda_id}")
-async def delete_domanda(request: Request, simulazione_id: str, domanda_id: str):
-    """Elimina una domanda"""
-    db = request.app.state.db
-    
-    result = await db.domande.delete_one({"id": domanda_id, "simulazione_id": simulazione_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Domanda non trovata")
-    
-    return {"success": True, "message": "Domanda eliminata"}
+    _write_all(new_items)
+    return {"ok": True}
