@@ -54,13 +54,13 @@ export default function Dispense() {
       {/* GRID */}
       <section className="dsp-grid">
         {filtrate.map((d) => (
-          <a
-            key={d.id}
-            href={d.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="dsp-card"
-          >
+         <a
+  key={d.id}
+  href={`${import.meta.env.VITE_API_BASE}${d.path}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="dsp-card"
+>
             <div className="dsp-cardTop">
               <div className="dsp-icon">PDF</div>
               <div className="dsp-meta">
