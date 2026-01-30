@@ -2,14 +2,18 @@
 // DinoMed API helper (pulito)
 // ===============================
 
-// URL backend
-// In locale: frontend/.env -> VITE_API_BASE=http://127.0.0.1:8000
-// In prod (Vercel): setti la stessa variabile nelle env di Vercel
-const API_BASE =
-  import.meta.env.VITE_API_BASE?.trim() || "http://127.0.0.1:8000";
+// Base URL (dev usa localhost; prod richiede VITE_API_BASE)
+const RAW_BASE = import.meta.env.VITE_API_BASE?.trim();
+export const API_BASE = (RAW_BASE ? RAW_BASE : (import.meta.env.DEV ? "http://127.0.0.1:8000" : ""))
+  .replace(/\/$/, "");
 
-// Debug: serve ORA per capire se l'env viene letto
-console.log("[DinoMed] API_BASE =", API_BASE);
+// Helper per link assoluti (es. /uploads/...)
+export function absUrl(path) {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  if (!API_BASE) return path; // fallback (evita crash in build); meglio settare VITE_API_BASE in prod
+  return path.startsWith("/") ? `${API_BASE}${path}` : `${API_BASE}/${path}`;
+}
 
 // ===============================
 // Token helpers
@@ -32,41 +36,31 @@ export function clearToken() {
 // Core request
 // ===============================
 async function request(path, options = {}) {
-  const {
-    method = "GET",
-    body = null,
-    auth = false,
-  } = options;
+  const { method = "GET", body = null, auth = false } = options;
 
-  const headers = {
-    "Accept": "application/json",
-  };
+  const headers = { Accept: "application/json" };
 
-  if (body !== null) {
-    headers["Content-Type"] = "application/json";
-  }
+  if (body !== null) headers["Content-Type"] = "application/json";
 
   if (auth) {
     const token = getToken();
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+    if (token) headers["Authorization"] = `Bearer ${token}`;
   }
 
   let response;
   try {
+    if (!API_BASE) throw new Error('API_BASE non configurato: imposta VITE_API_BASE su Vercel');
     response = await fetch(`${API_BASE}${path}`, {
       method,
       headers,
       body: body !== null ? JSON.stringify(body) : undefined,
     });
-  } catch (err) {
-    // ERRORE DI RETE (backend giù, URL sbagliato, CORS, ecc.)
+  } catch {
     throw new Error("Backend non raggiungibile (failed to fetch)");
   }
 
-  let data = null;
   const text = await response.text();
+  let data = null;
 
   if (text) {
     try {
@@ -89,7 +83,6 @@ async function request(path, options = {}) {
         msg = String(msg);
       }
     }
-
     throw new Error(msg);
   }
 
@@ -114,38 +107,43 @@ export const api = {
 
   // ---------- DISPENSE (ADMIN) ----------
   listDispenseAll() {
-    return request("/api/dispense?include_unpublished=true", {
-      auth: true,
-    });
+    return request("/api/dispense?include_unpublished=true", { auth: true });
   },
 
   createDispensa(payload) {
-    return request("/api/dispense", {
-      method: "POST",
-      body: payload,
-      auth: true,
-    });
+    return request("/api/dispense", { method: "POST", body: payload, auth: true });
   },
 
   updateDispensa(id, payload) {
-    return request(`/api/dispense/${id}`, {
-      method: "PUT",
-      body: payload,
-      auth: true,
-    });
+    return request(`/api/dispense/${id}`, { method: "PUT", body: payload, auth: true });
   },
 
   toggleDispensa(id) {
-    return request(`/api/dispense/${id}/toggle`, {
-      method: "PATCH",
-      auth: true,
-    });
+    return request(`/api/dispense/${id}/toggle`, { method: "PATCH", auth: true });
   },
 
   deleteDispensa(id) {
-    return request(`/api/dispense/${id}`, {
-      method: "DELETE",
-      auth: true,
-    });
+    return request(`/api/dispense/${id}`, { method: "DELETE", auth: true });
+  },
+
+  // ---------- SIMULAZIONI (ADMIN) ----------
+  listSimulazioniAll() {
+    return request("/api/simulazioni?include_unpublished=true", { auth: true });
+  },
+
+  createSimulazione(payload) {
+    return request("/api/simulazioni", { method: "POST", body: payload, auth: true });
+  },
+
+  updateSimulazione(id, payload) {
+    return request(`/api/simulazioni/${id}`, { method: "PUT", body: payload, auth: true });
+  },
+
+  toggleSimulazione(id) {
+    return request(`/api/simulazioni/${id}/toggle`, { method: "PATCH", auth: true });
+  },
+
+  deleteSimulazione(id) {
+    return request(`/api/simulazioni/${id}`, { method: "DELETE", auth: true });
   },
 };

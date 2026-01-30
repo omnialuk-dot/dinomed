@@ -1,598 +1,470 @@
 import { Link } from "react-router-dom";
-import hero from "../assets/photos/hero-desk.jpg";
+import heroImg from "../assets/photos/graduation.jpg";
 
 export default function Home() {
   return (
-    <main className="dm-root">
+    <main className="h4">
       <style>{css}</style>
 
       {/* HERO */}
-      <section className="dm-hero">
-        <div className="dm-hero-bg" style={{ backgroundImage: `url(${hero})` }} />
-        <div className="dm-hero-overlay" />
-
-        <div className="dm-hero-inner">
-          <div className="dm-pill dm-anim-in">
-            <SparkIcon />
-            <span>Premium mode • DinoMed</span>
-          </div>
-
-          <h1 className="dm-title dm-anim-in delay-1">
-            Meno caos. <br />
-            <span className="dm-grad">Più risultati.</span>
-          </h1>
-
-          <p className="dm-sub dm-anim-in delay-2">
-            Simulazioni realistiche, dispense chiare e metodo. Un’esperienza
-            ordinata, veloce, e fatta per studenti veri.
-          </p>
-
-          <div className="dm-actions dm-anim-in delay-3">
-            <Link to="/simulazioni" className="dm-btn dm-btn-primary">
-              Inizia dalle simulazioni →
-            </Link>
-            <Link to="/dispense" className="dm-btn dm-btn-ghost">
-              Esplora le dispense
-            </Link>
-          </div>
-
-          <div className="dm-metrics dm-anim-in delay-4">
-            <Metric label="Struttura" value="Chiara" icon={<GridIcon />} tone="blue" />
-<Metric label="Studio" value="Concentrato" icon={<BookIcon />} tone="yellow" />
-<Metric label="Tempo" value="Ottimizzato" icon={<BoltIcon />} tone="cyan" />
-          </div>
-        </div>
-      </section>
-
-      {/* VALUE GRID */}
-      <section className="dm-section">
-        <div className="dm-sectionHead">
-          <h2 className="dm-h2">Perché DinoMed funziona</h2>
-          <p className="dm-p">
-            Non è un blog: è un sistema. Se sai cosa fare oggi, passi prima.
-          </p>
-        </div>
-
-        <div className="dm-grid">
-          <Feature
-            icon={<BrainIcon />}
-            title="Simulazioni che sembrano l’esame"
-            text="Allenati come in sessione vera: ritmo, difficoltà e feedback pulito."
-            to="/simulazioni"
-            cta="Vai alle simulazioni →"
-          />
-          <Feature
-            icon={<BookIcon />}
-            title="Dispense davvero filtrabili"
-            text="Tag, livello, pagine e a chi serve. Trovi quello che ti serve in 10 secondi."
-            to="/dispense"
-            cta="Vai alle dispense →"
-          />
-          <Feature
-            icon={<TargetIcon />}
-            title="Metodo: studio → prova → ripasso"
-            text="Capisci dove sbagli, cosa ripassare e quando. Niente “ripasso infinito”."
-            to="/dispense"
-            cta="Imposta il ripasso →"
-          />
-        </div>
-      </section>
-
-      {/* TRUST + CTA */}
-      <section className="dm-cta">
-        <div className="dm-ctaCard">
-          <div className="dm-ctaLeft">
-            <div className="dm-badge">
-              <ShieldIcon />
-              <span>Affidabile, ordinato, veloce</span>
+      <section className="h4-hero">
+        <div className="h4-heroGrid">
+          <div className="h4-left">
+            <div className="h4-kicker">
+              <span className="h4-dot" aria-hidden="true" />
+              <span className="h4-brand">
+                <span className="h4-dino">Dino</span>
+                <span className="h4-med">Med</span>
+              </span>
+              <span className="h4-sep">•</span>
+              <span className="h4-tagline">Studenti per studenti</span>
             </div>
-            <h3 className="dm-h3">Fai una simulazione, poi apri la dispensa giusta.</h3>
-            <p className="dm-p2">
-              DinoMed ti accompagna: fai → controlla → ripassa. Così migliori davvero.
+
+            <h1 className="h4-title">
+              Studia <span className="h4-grad">meglio</span>. <br className="h4-br" />
+              Senza perdere tempo.
+            </h1>
+
+            <p className="h4-sub">
+              Simulazioni e dispense ordinate per il semestre filtro. Pulito, veloce, dritto al punto.
             </p>
+
+            <div className="h4-ctaRow">
+              <Link className="h4-btn h4-primary" to="/simulazioni">
+                Fai una simulazione <span aria-hidden="true">→</span>
+                <span className="h4-shine" aria-hidden="true" />
+              </Link>
+              <Link className="h4-btn h4-soft" to="/dispense">
+                Vai alle dispense <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+
+            <div className="h4-trust">
+              <span className="h4-pill">✅ Ordinato</span>
+              <span className="h4-pill">⚡ Rapido</span>
+              <span className="h4-pill">🎯 Mirato</span>
+            </div>
           </div>
 
-          <div className="dm-ctaRight">
-            <Link to="/simulazioni" className="dm-btn dm-btn-primary dm-btn-wide">
-              Inizia ora →
-            </Link>
-            <Link to="/dispense" className="dm-btn dm-btn-ghost dm-btn-wide">
-              Vedi dispense
-            </Link>
+          <div className="h4-right" aria-hidden="true">
+            <div className="h4-visual">
+              <img className="h4-img" src={heroImg} alt="" />
+              <div className="h4-overlay" />
+
+              {/* micro cards “wow” */}
+              <div className="h4-float h4-floatTop">
+                <span className="h4-badge">
+                  <IconCheck /> Correzione chiara
+                </span>
+                <span className="h4-badge">
+                  <IconClock /> Timer opzionale
+                </span>
+              </div>
+
+              <div className="h4-float h4-floatBottom">
+                <div className="h4-miniTitle">Dentro trovi</div>
+                <div className="h4-miniGrid">
+                  <div className="h4-miniItem">
+                    <span className="h4-miniDot" /> Simulazioni pronte
+                  </div>
+                  <div className="h4-miniItem">
+                    <span className="h4-miniDot" /> PDF ordinati
+                  </div>
+                  <div className="h4-miniItem">
+                    <span className="h4-miniDot" /> Ripasso guidato
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ADMIN */}
-      <section className="dm-admin">
-        <div className="dm-adminLeft">
-          <div className="dm-lock">
-            <LockIcon />
-          </div>
-          <div>
-            <div className="dm-adminTitle">Area riservata</div>
-            <div className="dm-adminText">
-              Gestione contenuti: aggiungi/modifica dispense e simulazioni.
-            </div>
-          </div>
+      {/* 3 CARDS (sezione super pulita) */}
+      <section className="h4-section">
+        <div className="h4-sectionHead">
+          <h2 className="h4-h2">Cosa vuoi fare oggi?</h2>
+          <p className="h4-h2Sub">Scegli una strada. Il resto è già pronto.</p>
         </div>
 
-        <Link to="/admin" className="dm-btn dm-btn-primary">
-          Accedi →
-        </Link>
+        <div className="h4-cards">
+          <Link className="h4-card" to="/simulazioni">
+            <div className="h4-cardIcon isSim" aria-hidden="true">
+              <IconBoltBig />
+            </div>
+            <div className="h4-cardTitle">Simulazioni</div>
+            <div className="h4-cardText">Allenati come all’esame. Inizia in 10 secondi.</div>
+            <div className="h4-cardCta">
+              Apri <span aria-hidden="true">→</span>
+            </div>
+          </Link>
+
+          <Link className="h4-card" to="/dispense">
+            <div className="h4-cardIcon isPdf" aria-hidden="true">
+              <IconBookBig />
+            </div>
+            <div className="h4-cardTitle">Dispense</div>
+            <div className="h4-cardText">PDF ordinati e trovabili. Niente caos.</div>
+            <div className="h4-cardCta">
+              Apri <span aria-hidden="true">→</span>
+            </div>
+          </Link>
+
+          <Link className="h4-card" to="/chi-siamo">
+            <div className="h4-cardIcon isWho" aria-hidden="true">
+              <IconUsersBig />
+            </div>
+            <div className="h4-cardTitle">Chi siamo</div>
+            <div className="h4-cardText">Studenti come te. Cresce semestre dopo semestre.</div>
+            <div className="h4-cardCta">
+              Apri <span aria-hidden="true">→</span>
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      {/* MINI WHY (1 riga, non papiro) */}
+      <section className="h4-why">
+        <div className="h4-whyInner">
+          <div className="h4-whyLeft">
+            <div className="h4-whyTitle">Perché DinoMed?</div>
+            <div className="h4-whyText">
+              Perché nel semestre filtro la differenza la fa una cosa: trovare il materiale giusto subito.
+            </div>
+          </div>
+
+          <Link className="h4-btn h4-soft" to="/contatti">
+            Scrivici <span aria-hidden="true">→</span>
+          </Link>
+        </div>
       </section>
     </main>
   );
 }
 
-function Metric({ label, value, icon, tone }) {
+/* ---------------- icons ---------------- */
+function IconCheck() {
   return (
-    <div className={`dm-metric dm-${tone}`}>
-      <div className="dm-metricIcon">{icon}</div>
-      <div>
-        <div className="dm-metricLabel">{label}</div>
-        <div className="dm-metricValue">{value}</div>
-      </div>
-    </div>
+    <span className="h4-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
+  );
+}
+function IconClock() {
+  return (
+    <span className="h4-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10Z" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
   );
 }
 
-function Feature({ icon, title, text, to, cta }) {
+function IconBoltBig() {
   return (
-    <article className="dm-card">
-      <div className="dm-cardTop">
-        <div className="dm-icon">{icon}</div>
-        <h3 className="dm-cardTitle">{title}</h3>
-      </div>
-      <p className="dm-cardText">{text}</p>
-      <Link to={to} className="dm-cardLink">
-        {cta}
-      </Link>
-    </article>
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
   );
 }
-
-/* --- ICONS (SVG inline, no assets, no libs) --- */
-function SparkIcon() {
+function IconBookBig() {
   return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none">
       <path
-        d="M12 2l1.2 4.2L17 8l-3.8 1.8L12 14l-1.2-4.2L7 8l3.8-1.8L12 2z"
-        fill="currentColor"
+        d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2V5a2 2 0 0 1 2-2Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
       />
-      <path
-        d="M5 14l.8 2.6L8 18l-2.2 1.4L5 22l-.8-2.6L2 18l2.2-1.4L5 14z"
-        fill="currentColor"
-        opacity="0.7"
-      />
+      <path d="M8 7h8M8 10h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+function IconUsersBig() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M16 11a3 3 0 1 0-6 0 3 3 0 0 0 6 0Z" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M4 20a8 8 0 0 1 16 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M19 8.5a2.2 2.2 0 1 0-1.8 4.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
 }
 
-function GridIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <path
-        d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function CompassIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <path
-        d="M12 2a10 10 0 100 20 10 10 0 000-20zm2.7 6.3l-1.5 4-4 1.5 1.5-4 4-1.5z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function BoltIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <path
-        d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function BrainIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-      <path
-        d="M9 3a4 4 0 00-4 4v1a3 3 0 000 6v1a4 4 0 004 4h1v-2H9a2 2 0 01-2-2v-1H6a1 1 0 010-2h1V10H6a1 1 0 010-2h1V7a2 2 0 012-2h1V3H9zm6 0h-1v2h1a2 2 0 012 2v1h1a1 1 0 010 2h-1v2h1a1 1 0 010 2h-1v1a2 2 0 01-2 2h-1v2h1a4 4 0 004-4v-1a3 3 0 000-6V7a4 4 0 00-4-4z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function BookIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-      <path
-        d="M4 4h10a2 2 0 012 2v14H6a2 2 0 01-2-2V4zm14 2h2v14h-2V6z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function TargetIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-      <path
-        d="M12 2a10 10 0 1010 10h-2a8 8 0 11-8-8V2zm6 10a6 6 0 11-6-6v2a4 4 0 104 4h2zm-6-2a2 2 0 102 2h2a4 4 0 11-4-4v2z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <path
-        d="M12 2l8 4v6c0 5-3.5 9.4-8 10-4.5-.6-8-5-8-10V6l8-4z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <path
-        d="M17 10V8a5 5 0 00-10 0v2H5v12h14V10h-2zm-8 0V8a3 3 0 016 0v2H9z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-/* --- CSS --- */
+/* ---------------- CSS (molta aria + ordine) ---------------- */
 const css = `
-.dm-root{
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 24px 20px 48px;
+:root{
+  --dino:#22c55e; --dino2:#16a34a;
+  --med:#38bdf8;  --med2:#0ea5e9;
+
+  --ink: rgba(15,23,42,0.92);
+  --ink2: rgba(15,23,42,0.72);
+  --bd: rgba(15,23,42,0.10);
+  --shadow2: 0 12px 28px rgba(2,6,23,0.08);
 }
+
+.h4{ max-width: 1120px; margin: 0 auto; padding: 22px; }
 
 /* HERO */
-.dm-hero{
-  position: relative;
-  border-radius: 32px;
-  overflow: hidden;
-  border: 1px solid rgba(15,23,42,0.10);
-  box-shadow: 0 30px 90px rgba(15,23,42,0.14);
-}
-.dm-hero-bg{
-  position:absolute;
-  inset:0;
-  background-size: cover;
-  background-position: center;
-  filter: saturate(0.85) contrast(0.95);
-  transform: scale(1.04);
-}
-.dm-hero-overlay{
-  position:absolute;
-  inset:0;
+.h4-hero{
+  border-radius: 28px;
+  border: 1px solid var(--bd);
   background:
-    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.92), rgba(255,255,255,0.68) 45%, rgba(255,255,255,0.38) 70%),
-    linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.78));
-}
-.dm-hero-inner{
-  position: relative;
-  padding: 38px 30px;
-  max-width: 720px;
-}
-
-.dm-pill{
-  display:inline-flex;
-  align-items:center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(37,99,235,0.18);
-  background: rgba(37,99,235,0.06);
-  color: rgba(15,23,42,0.84);
-  font-weight: 950;
+    radial-gradient(900px 280px at 12% -25%, rgba(34,197,94,0.16), transparent 60%),
+    radial-gradient(900px 280px at 70% -30%, rgba(56,189,248,0.16), transparent 55%),
+    rgba(255,255,255,0.90);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow2);
+  overflow:hidden;
 }
 
-.dm-title{
-  margin: 14px 0 10px 0;
-  font-size: 54px;
-  line-height: 1.03;
-  letter-spacing: -1px;
-  color: rgba(15,23,42,0.94);
-}
-.dm-grad{
-  background: linear-gradient(90deg, #10b981, #2563eb);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.dm-sub{
-  margin: 0;
-  margin-top: 12px;
-  font-size: 18px;
-  line-height: 1.45;
-  font-weight: 800;
-  color: rgba(15,23,42,0.70);
-  max-width: 60ch;
-}
-
-.dm-actions{
-  margin-top: 22px;
-  display:flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.dm-btn{
-  text-decoration:none;
-  padding: 14px 18px;
-  border-radius: 16px;
-  font-weight: 950;
-  user-select:none;
-  transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
-}
-.dm-btn-primary{
-  background: rgba(15,23,42,0.92);
-  color: white;
-  box-shadow: 0 20px 60px rgba(15,23,42,0.22);
-}
-.dm-btn-primary:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 28px 90px rgba(15,23,42,0.30);
-}
-.dm-btn-ghost{
-  background: rgba(255,255,255,0.92);
-  border: 1px solid rgba(15,23,42,0.14);
-  color: rgba(15,23,42,0.86);
-}
-.dm-btn-ghost:hover{
-  transform: translateY(-2px);
-}
-
-.dm-metrics{
-  margin-top: 22px;
-  display:flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.dm-metric{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.76);
-  box-shadow: 0 12px 40px rgba(15,23,42,0.08);
-}
-.dm-metricIcon{
-  width: 38px;
-  height: 38px;
+.h4-heroGrid{
   display:grid;
-  place-items:center;
-  border-radius: 14px;
-  background: rgba(16,185,129,0.10);
-  border: 1px solid rgba(16,185,129,0.16);
-  color: rgba(15,23,42,0.85);
-}
-.dm-metricLabel{
-  font-weight: 900;
-  color: rgba(15,23,42,0.70);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-}
-.dm-metricValue{
-  font-weight: 1000;
-  color: rgba(15,23,42,0.92);
-}
-
-/* SECTION */
-.dm-section{
-  margin-top: 20px;
-}
-.dm-sectionHead{
-  margin: 18px 0 12px 0;
-  padding: 0 2px;
-}
-.dm-h2{
-  margin: 0;
-  font-size: 18px;
-  font-weight: 1000;
-  color: rgba(15,23,42,0.92);
-}
-.dm-p{
-  margin: 8px 0 0 0;
-  color: rgba(15,23,42,0.66);
-  font-weight: 800;
-  line-height: 1.4;
-}
-
-.dm-grid{
-  margin-top: 12px;
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 14px;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 28px;
+  padding: 28px;
+  align-items: center;
 }
 @media (max-width: 980px){
-  .dm-title{ font-size: 44px; }
-  .dm-grid{ grid-template-columns: 1fr; }
+  .h4-heroGrid{ grid-template-columns: 1fr; padding: 18px; gap: 18px; }
 }
 
-.dm-card{
-  border-radius: 22px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.92);
-  box-shadow: 0 16px 55px rgba(15,23,42,0.06);
-  padding: 16px;
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-}
-.dm-card:hover{
-  transform: translateY(-3px);
-  box-shadow: 0 24px 85px rgba(15,23,42,0.12);
-  border-color: rgba(37,99,235,0.22);
-}
-.dm-cardTop{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-}
-.dm-icon{
-  width: 42px;
-  height: 42px;
-  border-radius: 16px;
-  display:grid;
-  place-items:center;
-  background: rgba(37,99,235,0.06);
-  border: 1px solid rgba(37,99,235,0.16);
-  color: rgba(15,23,42,0.86);
-}
-.dm-cardTitle{
-  margin: 0;
-  font-size: 15px;
-  font-weight: 1000;
-  color: rgba(15,23,42,0.92);
-}
-.dm-cardText{
-  margin: 10px 0 0 0;
-  color: rgba(15,23,42,0.68);
-  font-weight: 800;
-  line-height: 1.4;
-}
-.dm-cardLink{
-  display:inline-block;
-  margin-top: 10px;
-  text-decoration:none;
-  font-weight: 950;
-  color: rgba(37,99,235,0.95);
-}
-.dm-cardLink:hover{ text-decoration: underline; }
-
-/* CTA */
-.dm-cta{
-  margin-top: 14px;
-}
-.dm-ctaCard{
-  border-radius: 26px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(37,99,235,0.08));
-  box-shadow: 0 16px 55px rgba(15,23,42,0.06);
-  padding: 18px;
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.dm-badge{
+.h4-kicker{
   display:inline-flex;
   align-items:center;
   gap: 10px;
-  padding: 8px 14px;
+  padding: 10px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(16,185,129,0.35);
-  background: rgba(16,185,129,0.14);
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.68);
   font-weight: 950;
-  color: rgba(15,23,42,0.9);
+  color: rgba(15,23,42,0.82);
 }
-.dm-h3{
-  margin: 12px 0 8px 0;
-  font-size: 16px;
+.h4-dot{
+  width: 10px; height: 10px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--dino), var(--med));
+  box-shadow: 0 10px 20px rgba(2,6,23,0.10);
+}
+.h4-brand{ display:inline-flex; gap: 0; }
+.h4-dino{ color: var(--dino2); font-weight: 1000; }
+.h4-med{ color: var(--med2); font-weight: 1000; }
+.h4-sep{ opacity:.55; }
+
+.h4-title{
+  margin: 16px 0 10px;
+  font-size: 46px;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  color: var(--ink);
   font-weight: 1000;
 }
-.dm-p2{
-  margin: 0;
-  color: rgba(15,23,42,0.68);
-  font-weight: 800;
-  line-height: 1.4;
-  max-width: 60ch;
+.h4-br{ display:none; }
+@media (max-width: 520px){
+  .h4-title{ font-size: 36px; }
+  .h4-br{ display:block; }
 }
-.dm-ctaRight{
-  display:grid;
-  gap: 10px;
+.h4-grad{
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color: transparent;
 }
-.dm-btn-wide{ justify-content:center; }
 
-/* ADMIN */
-.dm-admin{
-  margin-top: 16px;
-  padding: 14px;
-  border-radius: 20px;
-  border: 1px dashed rgba(15,23,42,0.22);
-  background: rgba(15,23,42,0.03);
-  display:flex;
+.h4-sub{ margin: 0; color: var(--ink2); font-weight: 850; max-width: 70ch; }
+
+.h4-ctaRow{ margin-top: 18px; display:flex; gap: 12px; flex-wrap: wrap; }
+.h4-btn{
+  position: relative;
+  overflow: hidden;
+  display:inline-flex;
   align-items:center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-radius: 999px;
+  text-decoration:none;
+  font-weight: 1000;
+  border: 1px solid rgba(15,23,42,0.10);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.10);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  color: rgba(15,23,42,0.86);
+  background: rgba(255,255,255,0.72);
+}
+.h4-btn:hover{ transform: translateY(-1px); box-shadow: 0 18px 40px rgba(2,6,23,0.14); filter: saturate(1.03); }
+
+.h4-primary{
+  color:white;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+}
+.h4-soft{
+  background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(56,189,248,0.10));
+}
+
+.h4-shine{
+  position:absolute; inset:0;
+  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.26) 25%, transparent 50%);
+  transform: translateX(-120%);
+  animation: h4Shine 4.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes h4Shine{
+  0%, 58% { transform: translateX(-120%); }
+  88%, 100% { transform: translateX(120%); }
+}
+
+.h4-trust{ margin-top: 18px; display:flex; gap: 10px; flex-wrap: wrap; }
+.h4-pill{
+  display:inline-flex;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.62);
+  font-weight: 900;
+  color: rgba(15,23,42,0.78);
+}
+
+/* VISUAL */
+.h4-visual{
+  position: relative;
+  border-radius: 24px;
+  overflow:hidden;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.92);
+  box-shadow: var(--shadow2);
+  height: 430px;
+}
+@media (max-width: 980px){ .h4-visual{ height: 320px; } }
+
+.h4-img{
+  width:100%; height:100%;
+  object-fit: cover;
+  display:block;
+  transform: scale(1.02);
+  filter: saturate(0.96) contrast(1.05);
+}
+.h4-overlay{
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0.88) 100%);
+}
+
+.h4-float{
+  position:absolute;
+  left: 14px; right: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.40);
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 18px 55px rgba(2,6,23,0.10);
+  padding: 12px;
+}
+.h4-floatTop{ top: 14px; display:flex; gap: 8px; flex-wrap: wrap; }
+.h4-floatBottom{ bottom: 14px; }
+
+.h4-badge{
+  display:inline-flex; align-items:center; gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.70);
+  font-weight: 950;
+  color: rgba(15,23,42,0.78);
+}
+
+.h4-miniTitle{ font-weight: 1000; color: rgba(15,23,42,0.90); }
+.h4-miniGrid{ margin-top: 10px; display:grid; gap: 8px; }
+.h4-miniItem{ display:flex; gap: 8px; align-items:center; font-weight: 900; color: rgba(15,23,42,0.76); }
+.h4-miniDot{
+  width: 10px; height: 10px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+}
+
+.h4-ico{ width: 18px; height: 18px; display:inline-grid; place-items:center; }
+.h4-ico svg{ width: 18px; height: 18px; }
+
+/* SECTION */
+.h4-section{ margin-top: 28px; padding-top: 6px; }
+.h4-sectionHead{ margin: 0 4px 14px; }
+.h4-h2{ margin:0; font-size: 18px; font-weight: 1000; color: var(--ink); letter-spacing: -0.01em; }
+.h4-h2Sub{ margin: 6px 0 0; color: rgba(15,23,42,0.66); font-weight: 850; }
+
+.h4-cards{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 980px){ .h4-cards{ grid-template-columns: 1fr; } }
+
+.h4-card{
+  border-radius: 24px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background:
+    radial-gradient(520px 220px at 30% -10%, rgba(34,197,94,0.10), transparent 60%),
+    radial-gradient(520px 220px at 80% -10%, rgba(56,189,248,0.10), transparent 60%),
+    rgba(255,255,255,0.90);
+  box-shadow: 0 14px 52px rgba(2,6,23,0.08);
+  padding: 18px;
+  text-decoration:none;
+  color: rgba(15,23,42,0.88);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.h4-card:hover{
+  transform: translateY(-2px);
+  border-color: rgba(56,189,248,0.22);
+  box-shadow: 0 18px 62px rgba(2,6,23,0.10);
+}
+
+.h4-cardIcon{
+  width: 52px; height: 52px;
+  border-radius: 18px;
+  display:grid; place-items:center;
+  border: 1px solid rgba(15,23,42,0.08);
+  margin-bottom: 14px;
+}
+.h4-cardIcon svg{ width: 24px; height: 24px; }
+.h4-cardIcon.isSim{
+  background: linear-gradient(135deg, rgba(56,189,248,0.16), rgba(56,189,248,0.06));
+  color: rgba(14,165,233,0.95);
+  border-color: rgba(56,189,248,0.20);
+}
+.h4-cardIcon.isPdf{
+  background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(34,197,94,0.06));
+  color: rgba(22,163,74,0.95);
+  border-color: rgba(34,197,94,0.18);
+}
+.h4-cardIcon.isWho{
+  background: linear-gradient(135deg, rgba(16,185,129,0.14), rgba(16,185,129,0.06));
+  color: rgba(5,150,105,0.95);
+  border-color: rgba(16,185,129,0.18);
+}
+
+.h4-cardTitle{ font-weight: 1000; color: rgba(15,23,42,0.92); letter-spacing: -0.01em; }
+.h4-cardText{ margin-top: 6px; font-weight: 850; color: rgba(15,23,42,0.72); line-height: 1.35; }
+.h4-cardCta{ margin-top: 14px; font-weight: 1000; color: rgba(15,23,42,0.84); display:flex; gap: 8px; align-items:center; }
+
+/* WHY */
+.h4-why{
+  margin-top: 28px;
+  border-radius: 28px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background:
+    radial-gradient(700px 220px at 20% -20%, rgba(34,197,94,0.12), transparent 60%),
+    radial-gradient(700px 220px at 85% -20%, rgba(56,189,248,0.12), transparent 55%),
+    rgba(255,255,255,0.90);
+  box-shadow: var(--shadow2);
+  overflow:hidden;
+}
+.h4-whyInner{
+  padding: 20px 22px;
+  display:flex;
   justify-content: space-between;
-  gap: 12px;
+  align-items:center;
+  gap: 14px;
   flex-wrap: wrap;
 }
-.dm-adminLeft{
-  display:flex;
-  align-items:center;
-  gap: 12px;
-}
-.dm-lock{
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
-  display:grid;
-  place-items:center;
-  background: rgba(15,23,42,0.06);
-  border: 1px solid rgba(15,23,42,0.12);
-  color: rgba(15,23,42,0.85);
-}
-.dm-adminTitle{
-  font-weight: 1000;
-  color: rgba(15,23,42,0.92);
-}
-.dm-adminText{
-  font-weight: 800;
-  color: rgba(15,23,42,0.65);
-  font-size: 14px;
-}
-
-/* METRIC COLOR THEMES */
-.dm-blue .dm-metricIcon{
-  background: rgba(37,99,235,0.12);
-  border-color: rgba(37,99,235,0.25);
-}
-.dm-yellow .dm-metricIcon{
-  background: rgba(234,179,8,0.18);
-  border-color: rgba(234,179,8,0.35);
-}
-.dm-cyan .dm-metricIcon{
-  background: rgba(6,182,212,0.18);
-  border-color: rgba(6,182,212,0.35);
-}
-
-/* ANIMATIONS */
-.dm-anim-in{ animation: dmIn .7s ease-out both; }
-.delay-1{ animation-delay: .06s; }
-.delay-2{ animation-delay: .12s; }
-.delay-3{ animation-delay: .18s; }
-.delay-4{ animation-delay: .24s; }
-@keyframes dmIn{
-  from{ opacity:0; transform: translateY(12px) }
-  to{ opacity:1; transform: translateY(0) }
-}
-
-/* mobile */
-@media (max-width: 600px){
-  .dm-hero-inner{ padding: 28px 20px; }
-  .dm-title{ font-size: 40px; }
-}
+.h4-whyTitle{ font-weight: 1000; color: rgba(15,23,42,0.92); }
+.h4-whyText{ margin-top: 6px; font-weight: 850; color: rgba(15,23,42,0.70); max-width: 80ch; }
 `;
-

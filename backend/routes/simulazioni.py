@@ -1,163 +1,206 @@
-from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import List, Optional, Literal, Dict, Any
 from datetime import datetime
-from pathlib import Path
-import json
 import uuid
-import os
+import random
 
 router = APIRouter(prefix="/api/simulazioni", tags=["simulazioni"])
 
-DATA_FILE = (Path(__file__).resolve().parent.parent / "data" / "simulazioni.json")
+# =========================
+# In-memory sessions (DEV)
+# =========================
+SESSIONS: Dict[str, Dict[str, Any]] = {}
 
 
-# ---------- helpers (file-based storage) ----------
-
-def _ensure_file():
-    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
-    if not DATA_FILE.exists():
-        DATA_FILE.write_text("[]", encoding="utf-8")
-
-def _read_all() -> List[dict]:
-    _ensure_file()
-    raw = DATA_FILE.read_text(encoding="utf-8").strip()
-    if not raw:
-        return []
-    try:
-        data = json.loads(raw)
-        return data if isinstance(data, list) else []
-    except json.JSONDecodeError:
-        # se il file si è corrotto, non crashare il server
-        return []
-
-def _write_all(items: List[dict]) -> None:
-    _ensure_file()
-    DATA_FILE.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+# =========================
+# Models
+# =========================
+class Section(BaseModel):
+    materia: str
+    scelta: int
+    completamento: int
+    tag: List[str] = []
+    difficolta: str = "Base"
 
 
-def _require_admin(req: Request):
-    """
-    Sicurezza semplice:
-    - se in .env metti ADMIN_TOKEN=qualcosa
-      allora serve header: Authorization: Bearer <token>
-    - se ADMIN_TOKEN non è settato, in locale permette (comodo per dev)
-    """
-    token = os.getenv("ADMIN_TOKEN", "").strip()
-    if not token:
-        return
-    auth = req.headers.get("authorization", "")
-    if auth != f"Bearer {token}":
-        raise HTTPException(status_code=401, detail="Not authorized")
+class StartPayload(BaseModel):
+    duration_min: int = 0
+    sections: List[Section]
+    order: List[str]
 
 
-# ---------- models ----------
-
-class Simulazione(BaseModel):
+class AnswerIn(BaseModel):
     id: str
-    titolo: str
-    descrizione: str = ""
-    materia: str = "Altro"
-    livello: str = "Base"
-    tag: List[str] = Field(default_factory=list)
-    durataMin: Optional[int] = None
-    link: Optional[str] = None
-    published: bool = False
-    created_at: str
-    updated_at: str
+    tipo: Literal["scelta", "completamento"]
+    answer_index: Optional[int] = None
+    answer_text: Optional[str] = None
 
 
-class SimulazioneCreate(BaseModel):
-    titolo: str
-    descrizione: str = ""
-    materia: str = "Altro"
-    livello: str = "Base"
-    tag: List[str] = Field(default_factory=list)
-    durataMin: Optional[int] = None
-    link: Optional[str] = None
-    published: bool = False
+class SubmitPayload(BaseModel):
+    answers: List[AnswerIn]
 
 
-class SimulazioneUpdate(BaseModel):
-    titolo: Optional[str] = None
-    descrizione: Optional[str] = None
-    materia: Optional[str] = None
-    livello: Optional[str] = None
-    tag: Optional[List[str]] = None
-    durataMin: Optional[int] = None
-    link: Optional[str] = None
-    published: Optional[bool] = None
+# =========================
+# Helpers
+# =========================
+def _norm(s: Optional[str]) -> str:
+    return (s or "").strip().lower()
 
 
-# ---------- endpoints ----------
+def _make_mock_question(materia: str, tipo: str, tag: List[str]) -> Dict[str, Any]:
+    qid = str(uuid.uuid4())
+    if tipo == "scelta":
+        opzioni = ["A", "B", "C", "D", "E"]
+        correct = random.randint(0, len(opzioni) - 1)
+        return {
+            "id": qid,
+            "materia": materia,
+            "tipo": "scelta",
+            "tag": tag,
+            "testo": f"[{materia}] Domanda a crocette (mock) #{qid[:4]}",
+            "opzioni": opzioni,
+            # soluzione salvata solo in sessione, non la mandiamo al client
+            "_correct_index": correct,
+            "_spiegazione": f"Spiegazione (mock): la risposta corretta è {opzioni[correct]} perché è un test di prova.",
+        }
 
-@router.get("", response_model=List[Simulazione])
-@router.get("/", response_model=List[Simulazione])
-async def list_pubbliche():
-    """Lista pubblica: ritorna solo simulazioni pubblicate."""
-    items = _read_all()
-    return [x for x in items if x.get("published", False) is True]
-
-
-@router.get("/all", response_model=List[Simulazione])
-async def list_all(request: Request):
-    """Lista completa (admin)."""
-    _require_admin(request)
-    return _read_all()
-
-
-@router.get("/{sim_id}", response_model=Simulazione)
-async def get_one(sim_id: str):
-    items = _read_all()
-    for x in items:
-        if x.get("id") == sim_id:
-            # se non è pubblicata, la vedrà solo chi usa /all (admin). Qui lasciamo semplice.
-            return x
-    raise HTTPException(status_code=404, detail="Simulazione non trovata")
-
-
-@router.post("", response_model=Simulazione)
-@router.post("/", response_model=Simulazione)
-async def create_one(request: Request, body: SimulazioneCreate):
-    _require_admin(request)
-
-    now = datetime.utcnow().isoformat() + "Z"
-    new_item = {
-        "id": str(uuid.uuid4()),
-        **body.model_dump(),
-        "created_at": now,
-        "updated_at": now,
+    # completamento
+    correct_word = random.choice(["equilibrio", "energia", "osmosi", "tampone", "mole"])
+    return {
+        "id": qid,
+        "materia": materia,
+        "tipo": "completamento",
+        "tag": tag,
+        "testo": f"[{materia}] Completa con UNA parola (mock) #{qid[:4]}",
+        "_correct_text": correct_word,
+        "_spiegazione": f"Spiegazione (mock): la parola corretta è '{correct_word}' perché così è impostata la domanda di test.",
     }
 
-    items = _read_all()
-    items.insert(0, new_item)
-    _write_all(items)
-    return new_item
+
+def _public_question(q: Dict[str, Any]) -> Dict[str, Any]:
+    # ritorna al client senza campi privati (soluzioni)
+    out = dict(q)
+    out.pop("_correct_index", None)
+    out.pop("_correct_text", None)
+    out.pop("_spiegazione", None)
+    return out
 
 
-@router.put("/{sim_id}", response_model=Simulazione)
-async def update_one(request: Request, sim_id: str, body: SimulazioneUpdate):
-    _require_admin(request)
+# =========================
+# Routes
+# =========================
+@router.post("/start")
+def start(payload: StartPayload):
+    if not payload.sections:
+        raise HTTPException(status_code=422, detail="Nessuna sezione selezionata.")
 
-    items = _read_all()
-    for i, x in enumerate(items):
-        if x.get("id") == sim_id:
-            patch = {k: v for k, v in body.model_dump().items() if v is not None}
-            x.update(patch)
-            x["updated_at"] = datetime.utcnow().isoformat() + "Z"
-            items[i] = x
-            _write_all(items)
-            return x
-    raise HTTPException(status_code=404, detail="Simulazione non trovata")
+    session_id = str(uuid.uuid4())
+    started_at = datetime.utcnow().isoformat()
+
+    # genera domande mock (poi le sostituiremo con banca domande vera)
+    questions: List[Dict[str, Any]] = []
+    for sec in payload.sections:
+        for _ in range(max(0, int(sec.scelta))):
+            questions.append(_make_mock_question(sec.materia, "scelta", sec.tag))
+        for _ in range(max(0, int(sec.completamento))):
+            questions.append(_make_mock_question(sec.materia, "completamento", sec.tag))
+
+    # salva sessione
+    SESSIONS[session_id] = {
+        "session_id": session_id,
+        "started_at": started_at,
+        "duration_min": int(payload.duration_min or 0),
+        "order": payload.order or [],
+        "questions": questions,
+    }
+
+    # ritorno pubblico
+    return {
+        "session_id": session_id,
+        "duration_min": int(payload.duration_min or 0),
+        "order": payload.order or [],
+        "questions": [_public_question(q) for q in questions],
+        "created_at": started_at,
+    }
 
 
-@router.delete("/{sim_id}")
-async def delete_one(request: Request, sim_id: str):
-    _require_admin(request)
+@router.post("/{session_id}/submit")
+def submit(session_id: str, payload: SubmitPayload):
+    sess = SESSIONS.get(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Sessione non trovata (riavvio server?).")
 
-    items = _read_all()
-    new_items = [x for x in items if x.get("id") != sim_id]
-    if len(new_items) == len(items):
-        raise HTTPException(status_code=404, detail="Simulazione non trovata")
-    _write_all(new_items)
-    return {"ok": True}
+    questions = sess["questions"]
+    qmap = {q["id"]: q for q in questions}
+
+    correct = 0
+    results = []
+
+    for a in payload.answers:
+        q = qmap.get(a.id)
+        if not q:
+            # domanda non trovata: la segniamo come errata
+            results.append({
+                "id": a.id,
+                "ok": False,
+                "materia": "—",
+                "tipo": a.tipo,
+                "testo": "Domanda non trovata",
+                "your_answer": None,
+                "correct_answer": None,
+                "spiegazione": "La domanda non esiste in questa sessione.",
+            })
+            continue
+
+        if q["tipo"] == "scelta":
+            your = a.answer_index
+            corr = q.get("_correct_index")
+            ok = (your is not None) and (int(your) == int(corr))
+            if ok:
+                correct += 1
+            results.append({
+                "id": q["id"],
+                "ok": ok,
+                "materia": q["materia"],
+                "tipo": q["tipo"],
+                "testo": q["testo"],
+                "your_answer": None if your is None else str(int(your)),
+                "correct_answer": str(int(corr)),
+                "spiegazione": q.get("_spiegazione", "—"),
+            })
+
+        else:
+            your_txt = _norm(a.answer_text)
+            corr_txt = _norm(q.get("_correct_text"))
+            ok = (your_txt != "") and (your_txt == corr_txt)
+            if ok:
+                correct += 1
+            results.append({
+                "id": q["id"],
+                "ok": ok,
+                "materia": q["materia"],
+                "tipo": q["tipo"],
+                "testo": q["testo"],
+                "your_answer": your_txt if your_txt else "—",
+                "correct_answer": corr_txt if corr_txt else "—",
+                "spiegazione": q.get("_spiegazione", "—"),
+            })
+
+    total = len(questions)
+    percent = round((correct / total) * 100, 1) if total else 0.0
+
+    # tempo impiegato
+    started_at = datetime.fromisoformat(sess["started_at"])
+    spent_sec = int((datetime.utcnow() - started_at).total_seconds())
+
+    return {
+        "score": {"correct": correct, "total": total, "percent": percent},
+        "time_spent_sec": spent_sec,
+        "results": results,
+    }
+
+
+@router.get("/ping")
+def ping():
+    return {"ok": True, "msg": "simulazioni alive"}

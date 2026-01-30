@@ -1,666 +1,1095 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import bookheartImg from "../assets/photos/bookheart.jpg";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
+const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
 
-/* ---------------- Icons (inline, zero dipendenze) ---------------- */
-function Icon({ name, size = 18 }) {
-  const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none" };
+/* ---------------- helpers ---------------- */
+const s = (v) => String(v ?? "").trim();
+const low = (v) => s(v).toLowerCase();
+const uniq = (arr) => Array.from(new Set(arr));
 
-  if (name === "chem") {
-    return (
-      <svg {...common}>
-        <path d="M10 2v6l-5.5 9.2A3.5 3.5 0 0 0 7.5 22h9a3.5 3.5 0 0 0 3-4.8L14 8V2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M8.2 14h7.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (name === "math") {
-    return (
-      <svg {...common}>
-        <path d="M6 8h12M6 16h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M9 6l6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M15 6l-6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (name === "bio") {
-    return (
-      <svg {...common}>
-        <path d="M12 2c2 2 3 4 3 6a3 3 0 0 1-6 0c0-2 1-4 3-6Z" stroke="currentColor" strokeWidth="2" />
-        <path d="M7 12c0 5 3 10 5 10s5-5 5-10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M8 15h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (name === "phys") {
-    return (
-      <svg {...common}>
-        <path d="M12 3v18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M4 9c2-3 6-4 8-4s6 1 8 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M4 15c2 3 6 4 8 4s6-1 8-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  // default
-  return (
-    <svg {...common}>
-      <path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
+function getPdfUrl(d) {
+  const pick = d?.link || d?.file_url || d?.file || d?.url;
+  if (!pick) return null;
+
+  const p = String(pick);
+  if (p.startsWith("http")) return p;
+  if (p.startsWith("/")) return API_BASE + p;
+  return API_BASE + "/" + p;
 }
 
-function materiaIcon(materia = "") {
-  const m = materia.toLowerCase();
-  if (m.includes("chim")) return "chem";
-  if (m.includes("mat")) return "math";
-  if (m.includes("bio")) return "bio";
-  if (m.includes("fis")) return "phys";
-  return "doc";
+function formatDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("it-IT", { day: "2-digit", month: "short" });
 }
 
-function normalizeTag(s) {
-  return String(s || "").trim().toLowerCase();
+function parseQS(search) {
+  const p = new URLSearchParams(search);
+  return {
+    q: p.get("q") || "",
+    m: p.get("m") || "Tutte",
+    t: p.get("t") || "Tutti",
+    sort: p.get("sort") || "recenti",
+  };
 }
 
-function uniq(arr) {
-  return Array.from(new Set(arr));
+function setQS(navigate, location, next) {
+  const p = new URLSearchParams(location.search);
+  p.set("q", next.q || "");
+  p.set("m", next.m || "Tutte");
+  p.set("t", next.t || "Tutti");
+  p.set("sort", next.sort || "recenti");
+  // pulizia URL
+  if (!next.q) p.delete("q");
+  if (next.m === "Tutte") p.delete("m");
+  if (next.t === "Tutti") p.delete("t");
+  if (next.sort === "recenti") p.delete("sort");
+  navigate({ pathname: location.pathname, search: p.toString() ? `?${p.toString()}` : "" }, { replace: true });
 }
 
-/* ---------------- Page ---------------- */
+/* ---------------- page ---------------- */
 export default function Dispense() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // init dai parametri url
+  const init = useMemo(() => parseQS(location.search), [location.search]);
+
   const [items, setItems] = useState([]);
-  const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
 
-  // UX states
-  const [query, setQuery] = useState("");
-  const [materia, setMateria] = useState("Tutte");
-  const [tag, setTag] = useState("Tutti");
-  const [sort, setSort] = useState("recenti"); // recenti | pagine | titolo
+  const [q, setQ] = useState(init.q);
+  const [materia, setMateria] = useState(init.m);
+  const [tag, setTag] = useState(init.t);
+  const [sort, setSort] = useState(init.sort); // recenti | pagine | titolo
 
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(null);
+
+  const didInitRef = useRef(false);
+
+  // carico dati
   useEffect(() => {
+    let alive = true;
+
     async function load() {
       setLoading(true);
       setErr("");
       try {
-        const res = await fetch(`${API_BASE}/api/dispense`);
-        if (!res.ok) {
-          let detail = "";
-          try {
-            const j = await res.json();
-            detail = j?.detail ? ` — ${JSON.stringify(j.detail)}` : "";
-          } catch {}
-          throw new Error(`Errore backend (${res.status})${detail}`);
-        }
-        const data = await res.json();
-        setItems(Array.isArray(data) ? data : []);
+        const r = await fetch(`${API_BASE}/api/dispense`);
+        if (!r.ok) throw new Error(`Errore caricamento (${r.status})`);
+        const d = await r.json();
+        if (!alive) return;
+        setItems(Array.isArray(d) ? d : []);
       } catch (e) {
-        setErr(e.message || "Errore: non riesco a caricare le dispense.");
+        if (!alive) return;
+        setErr(e?.message || "Non riesco a caricare le dispense.");
       } finally {
+        if (!alive) return;
         setLoading(false);
       }
     }
+
     load();
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  const allMaterie = useMemo(() => {
-    const ms = items.map((x) => x.materia).filter(Boolean);
+  // sync stato -> URL (solo dopo mount)
+  useEffect(() => {
+    if (!didInitRef.current) {
+      didInitRef.current = true;
+      return;
+    }
+    setQS(navigate, location, { q, m: materia, t: tag, sort });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, materia, tag, sort]);
+
+  // opzioni filtri
+  const materie = useMemo(() => {
+    const ms = items.map((x) => s(x.materia)).filter(Boolean);
+    ms.sort((a, b) => a.localeCompare(b, "it"));
     return ["Tutte", ...uniq(ms)];
   }, [items]);
 
-  const allTags = useMemo(() => {
-    const ts = [];
+  const tags = useMemo(() => {
+    const all = [];
     for (const x of items) {
-      if (Array.isArray(x.tag)) ts.push(...x.tag);
+      if (Array.isArray(x.tag)) all.push(...x.tag.map((t) => s(t)).filter(Boolean));
     }
-    const cleaned = uniq(ts.map((t) => String(t).trim()).filter(Boolean));
-    cleaned.sort((a, b) => a.localeCompare(b, "it"));
-    return ["Tutti", ...cleaned];
+    const u = uniq(all);
+    u.sort((a, b) => a.localeCompare(b, "it"));
+    return ["Tutti", ...u];
   }, [items]);
 
+  // filtro + sort
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const query = low(q);
 
     let arr = items.filter((x) => {
-      if (materia !== "Tutte" && (x.materia || "") !== materia) return false;
+      if (materia !== "Tutte" && s(x.materia) !== materia) return false;
+
       if (tag !== "Tutti") {
-        const tags = Array.isArray(x.tag) ? x.tag : [];
-        const has = tags.some((t) => String(t).trim() === tag);
-        if (!has) return false;
+        const xt = Array.isArray(x.tag) ? x.tag.map(s) : [];
+        if (!xt.includes(tag)) return false;
       }
-      if (!q) return true;
+
+      if (!query) return true;
 
       const blob = [
         x.titolo,
         x.descrizione,
-        x.materia,
         x.aChiServe,
+        x.materia,
         Array.isArray(x.tag) ? x.tag.join(" ") : "",
-        x.filename,
       ]
-        .join(" ")
-        .toLowerCase();
+        .map(low)
+        .join(" ");
 
-      return blob.includes(q);
+      return blob.includes(query);
     });
 
-    // sort
     if (sort === "pagine") {
       arr = arr.slice().sort((a, b) => (b.pagine || 0) - (a.pagine || 0));
     } else if (sort === "titolo") {
-      arr = arr.slice().sort((a, b) => String(a.titolo || "").localeCompare(String(b.titolo || ""), "it"));
+      arr = arr.slice().sort((a, b) => s(a.titolo).localeCompare(s(b.titolo), "it"));
     } else {
-      // recenti (created_at desc if available)
-      arr = arr.slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+      // recenti
+      arr = arr.slice().sort((a, b) => s(b.created_at).localeCompare(s(a.created_at)));
     }
 
     return arr;
-  }, [items, query, materia, tag, sort]);
+  }, [items, q, materia, tag, sort]);
 
-  const featured = useMemo(() => {
-    // “sezione curata” in alto: massimo 3 dispense più recenti
-    return filtered.slice(0, 3);
-  }, [filtered]);
+  const top = useMemo(() => filtered.slice(0, 6), [filtered]);
+  const rest = useMemo(() => filtered.slice(6), [filtered]);
 
-  const rest = useMemo(() => filtered.slice(3), [filtered]);
+  const hasFilters =
+    q.trim() !== "" || materia !== "Tutte" || tag !== "Tutti" || sort !== "recenti";
+
+  function reset() {
+    setQ("");
+    setMateria("Tutte");
+    setTag("Tutti");
+    setSort("recenti");
+  }
+
+  function openCard(d) {
+    setActive(d);
+    setOpen(true);
+  }
+
+  function closeModal() {
+    setOpen(false);
+    setTimeout(() => setActive(null), 150);
+  }
+
+  // chiusura ESC
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === "Escape") closeModal();
+    }
+    if (open) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   return (
-    <main className="dm-page">
+    <main className="dp">
       <style>{css}</style>
 
-      {/* Hero */}
-      <section className="dm-hero">
-        <div className="dm-heroTop">
-          <div className="dm-kicker">DinoMad • Dispense</div>
-          <h1 className="dm-title">Dispense fatte per farti capire davvero.</h1>
-          <p className="dm-sub">
-            Niente caos, niente “blog”. Qui trovi schede chiare, tag utili e PDF pronti quando servono.
-          </p>
-        </div>
+      {/* HERO */}
+      <section className="dp-hero">
+        <div className="dp-heroInner">
+          <div className="dp-left">
+            <div className="dp-kicker">
+              <span className="dp-kDot" aria-hidden="true" />
+              Dispense
+            </div>
 
-        {/* Controls */}
-        <div className="dm-controls">
-          <div className="dm-search">
-            <span className="dm-searchIcon">⌕</span>
-            <input
-              className="dm-input"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Cerca: acidi, equilibrio, limiti, cinetica..."
-            />
+            <h1 className="dp-title">
+              Studia più <span className="dp-grad">chiaro</span>, senza caos.
+            </h1>
+
+            <p className="dp-sub">
+              Qui trovi dispense ordinate e PDF pronti. Filtra in due secondi e vai dritto al punto.
+            </p>
+
+            <div className="dp-miniRow">
+              <span className="dp-pill">
+                <b>{items.length}</b> totali
+              </span>
+              <span className="dp-pill dp-soft">
+                <b>{filtered.length}</b> risultati
+              </span>
+              <a className="dp-pill dp-link" href="/contatti">
+                Manca una dispensa? Scrivici →
+              </a>
+            </div>
           </div>
 
-          <div className="dm-filters">
-            <select className="dm-select" value={materia} onChange={(e) => setMateria(e.target.value)}>
-              {allMaterie.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
+          <div className="dp-right" aria-hidden="true">
+            <div className="dp-orb dp-orbA" />
+            <div className="dp-orb dp-orbB" />
 
-            <select className="dm-select" value={tag} onChange={(e) => setTag(e.target.value)}>
-              {allTags.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-
-            <select className="dm-select" value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="recenti">Più recenti</option>
-              <option value="pagine">Più pagine</option>
-              <option value="titolo">Titolo (A→Z)</option>
-            </select>
-          </div>
-
-          <div className="dm-metaRow">
-            <span className="dm-pill">
-              <b>{filtered.length}</b> risultati
-            </span>
-            <span className="dm-pill dm-muted">
-              API: <span className="dm-mono">{API_BASE}</span>
-            </span>
+            <div className="dp-glass">
+              <img className="dp-glassImg" src={bookheartImg} alt="" />
+              <div className="dp-glassOverlay" />
+              <div className="dp-glassLine" />
+              <div className="dp-glassLine dp-glassLine2" />
+              <div className="dp-glassLine dp-glassLine3" />
+              <div className="dp-glassHint">PDF • Tag • Ripasso</div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* States */}
+      {/* CONTROLS */}
+      <section className="dp-controls">
+        <div className="dp-search">
+          <span className="dp-searchIcon" aria-hidden="true">⌕</span>
+          <input
+            className="dp-input"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cerca: acidi e basi, equilibrio, limiti, cinetica…"
+          />
+          {q.trim() ? (
+            <button className="dp-clear" onClick={() => setQ("")} aria-label="Svuota ricerca">
+              ✕
+            </button>
+          ) : null}
+        </div>
+
+        <div className="dp-filterGrid">
+          <div className="dp-field">
+            <div className="dp-label">Materia</div>
+            <select className="dp-select" value={materia} onChange={(e) => setMateria(e.target.value)}>
+              {materie.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="dp-field">
+            <div className="dp-label">Tag</div>
+            <select className="dp-select" value={tag} onChange={(e) => setTag(e.target.value)}>
+              {tags.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="dp-field">
+            <div className="dp-label">Ordina</div>
+            <div className="dp-pills">
+              <button type="button" className={"dp-pillBtn" + (sort === "recenti" ? " isOn" : "")} onClick={() => setSort("recenti")}>
+                Recenti
+              </button>
+              <button type="button" className={"dp-pillBtn" + (sort === "pagine" ? " isOn" : "")} onClick={() => setSort("pagine")}>
+                Pagine
+              </button>
+              <button type="button" className={"dp-pillBtn" + (sort === "titolo" ? " isOn" : "")} onClick={() => setSort("titolo")}>
+                Titolo
+              </button>
+            </div>
+          </div>
+
+          <button className="dp-reset" type="button" onClick={reset} disabled={!hasFilters}>
+            Reset
+          </button>
+        </div>
+      </section>
+
+      {/* STATES */}
       {err ? (
-        <div className="dm-alert">
-          <b>⚠️ Errore</b>
-          <div style={{ marginTop: 6, whiteSpace: "pre-wrap" }}>{err}</div>
+        <div className="dp-alert">
+          <div className="dp-alertTitle">⚠️ Qualcosa non va</div>
+          <div className="dp-alertText">{err}</div>
         </div>
       ) : null}
 
       {loading ? (
-        <div className="dm-skeletonWrap">
-          <div className="dm-skeletonCard" />
-          <div className="dm-skeletonCard" />
-          <div className="dm-skeletonCard" />
+        <div className="dp-grid">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div className="dp-skel" key={i}>
+              <div className="dp-sTop" />
+              <div className="dp-sLine" />
+              <div className="dp-sLine dp-sLine2" />
+              <div className="dp-sTags" />
+            </div>
+          ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="dm-empty">
-          <div className="dm-emptyTitle">Nessuna dispensa trovata.</div>
-          <div className="dm-emptyText">
-            Prova a cambiare filtro o scrivere una parola chiave diversa.
-          </div>
+        <div className="dp-empty">
+          <div className="dp-emptyTitle">Nessuna dispensa trovata.</div>
+          <div className="dp-emptyText">Cambia filtro o prova con una parola diversa.</div>
+          <button className="dp-ghostBtn" type="button" onClick={reset}>
+            Reset filtri
+          </button>
         </div>
       ) : (
         <>
-          {/* Featured */}
-          <section className="dm-section">
-            <div className="dm-sectionHead">
-              <h2 className="dm-h2">In evidenza</h2>
-              <div className="dm-sectionHint">Le più recenti (e spesso le più utili per iniziare).</div>
+          <section className="dp-section">
+            <div className="dp-sectionHead">
+              <h2 className="dp-h2">In evidenza</h2>
+              <div className="dp-h2Hint">clicca una card per vedere dettagli e aprire il PDF</div>
             </div>
-
-            <div className="dm-grid dm-gridFeatured">
-              {featured.map((d) => (
-                <DispensaCard key={d.id} d={d} featured />
+            <div className="dp-grid dp-gridTop">
+              {top.map((d) => (
+                <DispensaCard key={d.id ?? d.titolo} d={d} premium onOpen={() => openCard(d)} />
               ))}
             </div>
           </section>
 
-          {/* Rest */}
-          <section className="dm-section">
-            <div className="dm-sectionHead">
-              <h2 className="dm-h2">Tutte le dispense</h2>
-              <div className="dm-sectionHint">Filtra per materia o tag e vai dritto al punto.</div>
+          <section className="dp-section">
+            <div className="dp-sectionHead">
+              <h2 className="dp-h2">Tutte le dispense</h2>
+              <div className="dp-h2Hint">ordinate e filtrabili — come deve essere</div>
             </div>
-
-            <div className="dm-grid">
+            <div className="dp-grid">
               {rest.map((d) => (
-                <DispensaCard key={d.id} d={d} />
+                <DispensaCard key={d.id ?? d.titolo} d={d} onOpen={() => openCard(d)} />
               ))}
             </div>
           </section>
         </>
       )}
+
+      {/* MODAL */}
+      {open ? (
+        <div className="dp-modalBackdrop" onMouseDown={closeModal} role="presentation">
+          <div className="dp-modal" onMouseDown={(e) => e.stopPropagation()} role="dialog" aria-label="Dettagli dispensa">
+            <button className="dp-modalClose" onClick={closeModal} aria-label="Chiudi">
+              ✕
+            </button>
+
+            {active ? (
+              <>
+                <div className="dp-modalHead">
+                  <div className="dp-modalTitle">{s(active.titolo) || "Dispensa"}</div>
+                  <div className="dp-modalMeta">
+                    <span className="dp-badge">{s(active.materia) || "Altro"}</span>
+                    <span className="dp-metaSep">•</span>
+                    <span className="dp-metaText">{active.pagine || 0} pag.</span>
+                    {active.created_at ? (
+                      <>
+                        <span className="dp-metaSep">•</span>
+                        <span className="dp-metaText">{formatDate(active.created_at)}</span>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+
+                {active.aChiServe ? (
+                  <div className="dp-line">
+                    <span className="dp-lineK">A chi serve:</span>
+                    <span className="dp-lineV">{s(active.aChiServe)}</span>
+                  </div>
+                ) : null}
+
+                {active.descrizione ? (
+                  <div className="dp-modalDesc">{s(active.descrizione)}</div>
+                ) : (
+                  <div className="dp-modalDesc dp-muted">
+                    Nessuna descrizione aggiunta (puoi inserirla dall’admin quando carichi).
+                  </div>
+                )}
+
+                {Array.isArray(active.tag) && active.tag.length ? (
+                  <div className="dp-tags">
+                    {active.tag.map((t, i) => (
+                      <span className="dp-tag" key={s(t) + i}>
+                        {s(t)}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="dp-modalActions">
+                  {getPdfUrl(active) ? (
+                    <a className="dp-btn" href={getPdfUrl(active)} target="_blank" rel="noreferrer">
+                      Apri PDF <span className="dp-arrow">→</span>
+                      <span className="dp-shine" aria-hidden="true" />
+                    </a>
+                  ) : (
+                    <span className="dp-btn dp-btnDisabled">PDF non disponibile</span>
+                  )}
+                </div>
+              </>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
 
-function DispensaCard({ d, featured = false }) {
-  const iconName = materiaIcon(d.materia);
-  const tags = Array.isArray(d.tag) ? d.tag : [];
-  const hasPdf = !!d.file_url;
+/* ---------------- card ---------------- */
+function DispensaCard({ d, premium = false, onOpen }) {
+  const titolo = s(d.titolo) || "Dispensa";
+  const materia = s(d.materia) || "Altro";
+  const pagine = d.pagine ?? 0;
+  const date = formatDate(d.created_at);
+  const tags = Array.isArray(d.tag) ? d.tag.map(s).filter(Boolean) : [];
+  const desc = s(d.descrizione);
+  const aChi = s(d.aChiServe);
+  const hasPdf = !!getPdfUrl(d);
 
   return (
-    <article className={`dm-card ${featured ? "dm-cardFeatured" : ""}`}>
-      <div className="dm-cardTop">
-        <div className="dm-icWrap" aria-hidden="true">
-          <Icon name={iconName} size={18} />
+    <button type="button" className={"dp-card" + (premium ? " isPremium" : "")} onClick={onOpen}>
+      <div className="dp-cardBar" aria-hidden="true" />
+
+      <div className="dp-cardHead">
+        <div className="dp-cardTitle">{titolo}</div>
+        <div className="dp-cardMeta">
+          <span className="dp-badge">{materia}</span>
+          <span className="dp-metaSep">•</span>
+          <span className="dp-metaText">{pagine} pag.</span>
+          {date ? (
+            <>
+              <span className="dp-metaSep">•</span>
+              <span className="dp-metaText">{date}</span>
+            </>
+          ) : null}
+          <span className={"dp-pdfChip" + (hasPdf ? " ok" : "")}>{hasPdf ? "PDF ✔" : "PDF —"}</span>
         </div>
+      </div>
 
-        <div className="dm-cardTitleWrap">
-          <div className="dm-cardTitle">{d.titolo}</div>
-          <div className="dm-cardSub">
-            <span className="dm-badge">{d.materia || "Altro"}</span>
-            <span className="dm-dot">•</span>
-            <span className="dm-soft">{d.pagine || 0} pag.</span>
-          </div>
+      {aChi ? (
+        <div className="dp-line">
+          <span className="dp-lineK">A chi serve:</span>
+          <span className="dp-lineV">{aChi}</span>
         </div>
+      ) : null}
+
+      {desc ? <div className="dp-desc">{desc}</div> : null}
+
+      {tags.length ? (
+        <div className="dp-tags">
+          {tags.slice(0, 6).map((t, i) => (
+            <span className="dp-tag" key={t + i}>
+              {t}
+            </span>
+          ))}
+          {tags.length > 6 ? <span className="dp-tag dp-tagMore">+{tags.length - 6}</span> : null}
+        </div>
+      ) : null}
+
+      <div className="dp-cardHint">
+        Apri dettagli <span className="dp-arrow">→</span>
       </div>
-
-      <div className="dm-cardBody">
-        {d.aChiServe ? (
-          <div className="dm-line">
-            <span className="dm-lineLabel">A chi serve:</span>
-            <span className="dm-lineText">{d.aChiServe}</span>
-          </div>
-        ) : null}
-
-        {d.descrizione ? <div className="dm-desc">{d.descrizione}</div> : null}
-
-        {tags.length > 0 ? (
-          <div className="dm-tags">
-            {tags.slice(0, 6).map((t, idx) => (
-              <span key={`${d.id}-t-${idx}`} className={`dm-tag ${normalizeTag(t).length > 10 ? "dm-tagWide" : ""}`}>
-                {t}
-              </span>
-            ))}
-            {tags.length > 6 ? <span className="dm-tag dm-tagMore">+{tags.length - 6}</span> : null}
-          </div>
-        ) : null}
-      </div>
-
-      <div className="dm-cardActions">
-        {hasPdf ? (
-          <a className="dm-btn dm-btnPrimary" href={d.file_url} target="_blank" rel="noreferrer">
-            Apri PDF <span className="dm-arrow">→</span>
-          </a>
-        ) : (
-          <span className="dm-btn dm-btnGhost" title="Carica un PDF dall'admin (filename) per abilitarlo">
-            PDF non disponibile
-          </span>
-        )}
-      </div>
-    </article>
+    </button>
   );
 }
 
-/* ---------------- CSS (premium, app-like, hover) ---------------- */
+/* ---------------- CSS (premium) ---------------- */
 const css = `
-.dm-page{
-  padding: 18px;
-  max-width: 1100px;
-  margin: 0 auto;
+:root{
+  --dino:#22c55e;
+  --dino2:#16a34a;
+  --med:#38bdf8;
+  --med2:#0ea5e9;
+
+  --ink:#0b1220;
+  --ink2: rgba(15,23,42,0.72);
+
+  --bd: rgba(15,23,42,0.10);
+  --glass: rgba(255,255,255,0.72);
+
+  --shadow2: 0 10px 30px rgba(2,6,23,0.08);
+  --shadow: 0 18px 50px rgba(2,6,23,0.10);
 }
 
-.dm-hero{
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.92);
+.dp{
+  max-width:1100px;
+  margin:0 auto;
+  padding:18px;
+}
+
+/* HERO */
+.dp-hero{
   border-radius: 22px;
+  border: 1px solid var(--bd);
+  background:
+    radial-gradient(900px 260px at 12% -25%, rgba(34,197,94,0.16), transparent 60%),
+    radial-gradient(900px 260px at 70% -30%, rgba(56,189,248,0.16), transparent 55%),
+    rgba(255,255,255,0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow2);
+  overflow:hidden;
+}
+.dp-heroInner{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 14px;
   padding: 18px;
-  box-shadow: 0 18px 55px rgba(15,23,42,0.06);
-  overflow: hidden;
-  position: relative;
 }
-.dm-hero:before{
-  content:"";
-  position:absolute;
-  inset:-120px -160px auto auto;
-  width: 360px;
-  height: 360px;
-  background: radial-gradient(circle at 30% 30%, rgba(37,99,235,0.18), rgba(16,185,129,0.12), rgba(255,255,255,0));
-  filter: blur(0px);
-  transform: rotate(12deg);
-}
-.dm-heroTop{ position: relative; }
-.dm-kicker{
-  display:inline-flex;
-  font-weight: 950;
-  letter-spacing: .2px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(37,99,235,0.06);
-  border: 1px solid rgba(37,99,235,0.14);
-  color: rgba(15,23,42,0.85);
-}
-.dm-title{
-  margin: 10px 0 6px 0;
-  font-size: 34px;
-  line-height: 1.08;
-}
-.dm-sub{
-  margin: 0;
-  color: rgba(15,23,42,0.68);
-  font-weight: 750;
-  max-width: 70ch;
+@media (max-width: 920px){
+  .dp-heroInner{ grid-template-columns: 1fr; }
 }
 
-.dm-controls{
-  position: relative;
-  margin-top: 14px;
-  display: grid;
-  gap: 10px;
-}
-.dm-search{
-  display:flex;
+.dp-kicker{
+  display:inline-flex;
   align-items:center;
   gap: 10px;
-  background: white;
-  border: 1px solid rgba(15,23,42,0.14);
-  border-radius: 16px;
-  padding: 10px 12px;
-  box-shadow: 0 10px 25px rgba(15,23,42,0.05);
-}
-.dm-searchIcon{
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.65);
   font-weight: 950;
-  color: rgba(15,23,42,0.55);
+  color: rgba(15,23,42,0.84);
 }
-.dm-input{
-  width: 100%;
-  border: 0;
-  outline: none;
-  font-weight: 850;
-  font-size: 14px;
+.dp-kDot{
+  width:10px;height:10px;border-radius:999px;
+  background: linear-gradient(90deg, var(--dino), var(--med));
+  box-shadow: 0 10px 20px rgba(2,6,23,0.12);
 }
-.dm-filters{
-  display:flex;
-  gap: 10px;
-  flex-wrap: wrap;
+.dp-title{
+  margin: 10px 0 6px;
+  font-size: 34px;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: rgba(15,23,42,0.94);
+  font-weight: 1000;
 }
-.dm-select{
-  flex: 1;
-  min-width: 180px;
-  border-radius: 14px;
-  padding: 10px 12px;
-  border: 1px solid rgba(15,23,42,0.14);
-  background: white;
-  font-weight: 900;
-  color: rgba(15,23,42,0.85);
-  outline: none;
+.dp-grad{
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color: transparent;
 }
-.dm-metaRow{
+.dp-sub{
+  margin:0;
+  font-weight: 800;
+  color: var(--ink2);
+  max-width: 72ch;
+}
+
+.dp-miniRow{
+  margin-top: 12px;
   display:flex;
   gap: 8px;
   flex-wrap: wrap;
 }
-.dm-pill{
+.dp-pill{
   display:inline-flex;
-  gap: 6px;
   align-items:center;
-  padding: 6px 10px;
+  gap: 8px;
+  padding: 8px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(15,23,42,0.12);
-  background: rgba(15,23,42,0.03);
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.65);
   font-weight: 900;
   color: rgba(15,23,42,0.82);
+  text-decoration:none;
+  transition: transform .18s ease, background .18s ease;
 }
-.dm-muted{ color: rgba(15,23,42,0.55); }
-.dm-mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+.dp-pill:hover{ transform: translateY(-1px); background: rgba(255,255,255,0.80); }
+.dp-soft{
+  background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(56,189,248,0.10));
+}
+.dp-link{ cursor: pointer; }
 
-.dm-alert{
-  margin-top: 12px;
-  padding: 12px;
+/* right visual */
+.dp-right{
+  position: relative;
+  padding: 6px;
+  display:grid;
+  place-items: center;
+  min-height: 210px;
+}
+.dp-orb{
+  position:absolute;
+  width: 240px;
+  height: 240px;
+  border-radius: 999px;
+  filter: blur(22px);
+  opacity: .70;
+  pointer-events:none;
+}
+.dp-orbA{ left:-60px; top:-60px; background: radial-gradient(circle at 30% 30%, rgba(34,197,94,0.45), transparent 60%); }
+.dp-orbB{ right:-70px; bottom:-70px; background: radial-gradient(circle at 60% 60%, rgba(56,189,248,0.45), transparent 60%); }
+
+.dp-glass{
+  width: min(380px, 95%);
+  border-radius: 20px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.55);
+  box-shadow: var(--shadow2);
+  overflow:hidden;
+  position: relative;
+}
+.dp-glassImg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  filter: saturate(0.95) contrast(1.05);
+  transform: scale(1.02);
+}
+.dp-glassOverlay{
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.72) 65%, rgba(255,255,255,0.84) 100%);
+}
+.dp-glassLine{
+  height: 52px;
+  background: linear-gradient(90deg, rgba(15,23,42,0.06), rgba(15,23,42,0.02));
+  border-bottom: 1px solid rgba(15,23,42,0.06);
+  position: relative;
+}
+.dp-glassLine2{ opacity: .85; }
+.dp-glassLine3{ opacity: .70; }
+.dp-glassHint{
+  position:absolute;
+  left: 14px;
+  bottom: 12px;
+  font-weight: 950;
+  color: rgba(15,23,42,0.72);
+}
+
+/* CONTROLS */
+.dp-controls{
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--bd);
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 14px 34px rgba(2,6,23,0.06);
+}
+
+.dp-search{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
   border-radius: 16px;
-  border: 1px solid rgba(239,68,68,0.35);
-  background: rgba(239,68,68,0.08);
-  font-weight: 800;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.78);
+  transition: box-shadow .18s ease, border-color .18s ease;
+}
+.dp-search:focus-within{
+  border-color: rgba(56,189,248,0.30);
+  box-shadow: 0 0 0 4px rgba(56,189,248,0.16);
+}
+.dp-searchIcon{ font-weight: 1000; color: rgba(15,23,42,0.55); }
+.dp-input{
+  width:100%;
+  border:0;
+  outline:0;
+  background: transparent;
+  font-weight: 850;
+  color: rgba(15,23,42,0.90);
+}
+.dp-clear{
+  border:0;
+  background: rgba(15,23,42,0.06);
+  border: 1px solid rgba(15,23,42,0.10);
+  width: 34px; height: 34px;
+  border-radius: 12px;
+  cursor:pointer;
+  font-weight: 1000;
+  color: rgba(15,23,42,0.70);
 }
 
-.dm-section{ margin-top: 16px; }
-.dm-sectionHead{
+.dp-filterGrid{
+  margin-top: 12px;
+  display:grid;
+  grid-template-columns: 1fr 1fr 1.2fr auto;
+  gap: 12px;
+  align-items:end;
+}
+@media (max-width: 980px){
+  .dp-filterGrid{ grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px){
+  .dp-filterGrid{ grid-template-columns: 1fr; }
+}
+
+.dp-field{ display:grid; gap: 8px; }
+.dp-label{
+  font-weight: 950;
+  font-size: 12px;
+  color: rgba(15,23,42,0.72);
+}
+.dp-select{
+  width:100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.78);
+  font-weight: 900;
+  color: rgba(15,23,42,0.84);
+}
+
+.dp-pills{ display:flex; gap: 6px; flex-wrap: wrap; }
+.dp-pillBtn{
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.70);
+  border-radius: 999px;
+  padding: 8px 10px;
+  font-weight: 950;
+  color: rgba(15,23,42,0.78);
+  cursor:pointer;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease;
+}
+.dp-pillBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,0.85); }
+.dp-pillBtn.isOn{
+  background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(56,189,248,0.14));
+  border-color: rgba(56,189,248,0.22);
+  color: rgba(15,23,42,0.92);
+  box-shadow: 0 10px 24px rgba(2,6,23,0.08);
+}
+
+.dp-reset{
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(15,23,42,0.03);
+  font-weight: 1000;
+  cursor:pointer;
+}
+.dp-reset:disabled{ opacity: .45; cursor:not-allowed; }
+
+/* SECTIONS + GRID */
+.dp-section{ margin-top: 18px; }
+.dp-sectionHead{
   display:flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 10px;
   flex-wrap: wrap;
-  padding: 0 2px;
+  gap: 10px;
+  margin: 6px 2px 10px;
 }
-.dm-h2{
+.dp-h2{
   margin: 0;
   font-size: 18px;
+  font-weight: 1000;
+  letter-spacing: -0.01em;
+  color: rgba(15,23,42,0.92);
 }
-.dm-sectionHint{
-  color: rgba(15,23,42,0.60);
-  font-weight: 750;
+.dp-h2Hint{
+  font-weight: 850;
+  font-size: 13px;
+  color: rgba(15,23,42,0.62);
 }
 
-.dm-grid{
-  margin-top: 10px;
+.dp-grid{
   display:grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-.dm-gridFeatured{
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
+.dp-gridTop{ grid-template-columns: repeat(3, 1fr); }
 @media (max-width: 980px){
-  .dm-grid, .dm-gridFeatured{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .dm-title{ font-size: 30px; }
+  .dp-grid{ grid-template-columns: repeat(2, 1fr); }
+  .dp-gridTop{ grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 620px){
-  .dm-grid, .dm-gridFeatured{ grid-template-columns: 1fr; }
-  .dm-title{ font-size: 28px; }
+@media (max-width: 560px){
+  .dp-grid, .dp-gridTop{ grid-template-columns: 1fr; }
 }
 
-.dm-card{
+/* CARDS (button) */
+.dp-card{
+  position: relative;
   border-radius: 18px;
   border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.92);
-  box-shadow: 0 14px 40px rgba(15,23,42,0.06);
-  padding: 12px;
-  display:flex;
-  flex-direction: column;
-  gap: 10px;
-  transform: translateY(0);
+  background: rgba(255,255,255,0.86);
+  box-shadow: 0 14px 36px rgba(2,6,23,0.05);
+  padding: 14px;
+  overflow: hidden;
+  text-align: left;
+  cursor: pointer;
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-.dm-card:hover{
-  transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 20px 60px rgba(15,23,42,0.10);
-  border-color: rgba(37,99,235,0.22);
+.dp-card:hover{
+  transform: translateY(-2px);
+  border-color: rgba(56,189,248,0.22);
+  box-shadow: 0 18px 46px rgba(2,6,23,0.08);
 }
-.dm-cardFeatured{
-  background: linear-gradient(180deg, rgba(37,99,235,0.06), rgba(255,255,255,0.92));
+.dp-card.isPremium{
+  background:
+    radial-gradient(520px 220px at 30% -10%, rgba(34,197,94,0.12), transparent 60%),
+    radial-gradient(520px 220px at 80% -10%, rgba(56,189,248,0.12), transparent 60%),
+    rgba(255,255,255,0.88);
 }
-
-.dm-cardTop{
-  display:flex;
-  gap: 10px;
-  align-items: center;
+.dp-cardBar{
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--dino2), var(--med2));
+  opacity: .85;
 }
-.dm-icWrap{
-  width: 38px;
-  height: 38px;
-  display:grid;
-  place-items:center;
-  border-radius: 14px;
-  border: 1px solid rgba(37,99,235,0.18);
-  background: rgba(37,99,235,0.06);
-  color: rgba(37,99,235,0.95);
-}
-.dm-cardTitleWrap{ min-width: 0; }
-.dm-cardTitle{
-  font-weight: 950;
-  font-size: 16px;
+.dp-cardHead{ padding-left: 6px; }
+.dp-cardTitle{
+  font-weight: 1000;
+  letter-spacing: -0.01em;
   color: rgba(15,23,42,0.92);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
 }
-.dm-cardSub{
-  margin-top: 3px;
+.dp-cardMeta{
+  margin-top: 6px;
   display:flex;
   gap: 8px;
-  align-items:center;
   flex-wrap: wrap;
+  align-items: center;
 }
-.dm-badge{
-  font-size: 12px;
-  font-weight: 950;
+.dp-badge{
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(15,23,42,0.12);
+  border: 1px solid rgba(15,23,42,0.10);
   background: rgba(15,23,42,0.03);
+  font-weight: 950;
+  font-size: 12px;
+  color: rgba(15,23,42,0.78);
 }
-.dm-dot{ color: rgba(15,23,42,0.35); font-weight: 900; }
-.dm-soft{ color: rgba(15,23,42,0.60); font-weight: 850; }
+.dp-metaSep{ opacity: .55; font-weight: 900; }
+.dp-metaText{ font-weight: 850; font-size: 12px; color: rgba(15,23,42,0.66); }
+.dp-pdfChip{
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(15,23,42,0.03);
+  font-weight: 950;
+  font-size: 12px;
+  color: rgba(15,23,42,0.60);
+}
+.dp-pdfChip.ok{
+  background: rgba(34,197,94,0.10);
+  border-color: rgba(34,197,94,0.20);
+  color: rgba(15,23,42,0.82);
+}
 
-.dm-cardBody{ display:grid; gap: 8px; }
-.dm-line{ display:flex; gap: 6px; flex-wrap: wrap; }
-.dm-lineLabel{ font-weight: 950; color: rgba(15,23,42,0.82); }
-.dm-lineText{ font-weight: 750; color: rgba(15,23,42,0.72); }
-.dm-desc{
-  color: rgba(15,23,42,0.72);
-  font-weight: 700;
+.dp-line{
+  margin-top: 10px;
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-left: 6px;
+}
+.dp-lineK{ font-weight: 950; color: rgba(15,23,42,0.62); font-size: 13px; }
+.dp-lineV{ font-weight: 900; color: rgba(15,23,42,0.82); font-size: 13px; }
+.dp-desc{
+  margin-top: 10px;
+  padding-left: 6px;
+  color: rgba(15,23,42,0.70);
+  font-weight: 780;
+  font-size: 13px;
   line-height: 1.35;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
-
-.dm-tags{
+.dp-tags{
+  margin-top: 10px;
+  padding-left: 6px;
   display:flex;
   gap: 6px;
   flex-wrap: wrap;
 }
-.dm-tag{
-  font-size: 12px;
-  font-weight: 950;
-  padding: 5px 10px;
+.dp-tag{
+  padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(16,185,129,0.18);
-  background: rgba(16,185,129,0.08);
-  color: rgba(15,23,42,0.85);
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.72);
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(15,23,42,0.76);
 }
-.dm-tagWide{
-  border-color: rgba(37,99,235,0.18);
-  background: rgba(37,99,235,0.06);
+.dp-tagMore{
+  background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(56,189,248,0.10));
 }
-.dm-tagMore{
-  border-color: rgba(15,23,42,0.12);
-  background: rgba(15,23,42,0.03);
-  color: rgba(15,23,42,0.62);
+.dp-cardHint{
+  margin-top: 12px;
+  padding-left: 6px;
+  font-weight: 950;
+  color: rgba(15,23,42,0.70);
 }
 
-.dm-cardActions{
-  margin-top: auto;
-  display:flex;
-  justify-content: flex-end;
-}
-.dm-btn{
+/* CTA button with shine */
+.dp-btn{
+  position: relative;
+  overflow:hidden;
   display:inline-flex;
   align-items:center;
-  gap: 8px;
+  gap: 10px;
   padding: 10px 12px;
   border-radius: 14px;
-  font-weight: 950;
-  text-decoration: none;
-  user-select: none;
+  text-decoration:none;
+  font-weight: 1000;
+  color: #fff;
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.16);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
 }
-.dm-btnPrimary{
-  background: rgba(15,23,42,0.92);
-  color: white;
-  border: 1px solid rgba(15,23,42,0.20);
-  box-shadow: 0 12px 30px rgba(15,23,42,0.12);
-  transition: transform .18s ease, box-shadow .18s ease;
-}
-.dm-btnPrimary:hover{
+.dp-btn:hover{
   transform: translateY(-1px);
-  box-shadow: 0 18px 45px rgba(15,23,42,0.18);
+  box-shadow: 0 18px 40px rgba(2,6,23,0.22);
+  filter: saturate(1.05);
 }
-.dm-btnGhost{
+.dp-arrow{ font-weight: 1000; }
+.dp-shine{
+  position:absolute;
+  inset:0;
+  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.26) 25%, transparent 50%);
+  transform: translateX(-120%);
+  animation: dpShine 4.2s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes dpShine{
+  0%, 58% { transform: translateX(-120%); }
+  88%, 100% { transform: translateX(120%); }
+}
+.dp-btnDisabled{
+  background: rgba(15,23,42,0.06);
+  border: 1px solid rgba(15,23,42,0.10);
+  color: rgba(15,23,42,0.62);
+  box-shadow: none;
+  cursor: default;
+}
+
+/* States */
+.dp-alert{
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(239,68,68,0.22);
+  background: rgba(239,68,68,0.08);
+}
+.dp-alertTitle{ font-weight: 1000; color: rgba(15,23,42,0.90); }
+.dp-alertText{ margin-top: 6px; font-weight: 850; color: rgba(15,23,42,0.76); }
+
+.dp-empty{
+  margin-top: 14px;
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.78);
+  text-align:center;
+}
+.dp-emptyTitle{ font-weight: 1000; font-size: 18px; }
+.dp-emptyText{ margin-top: 6px; font-weight: 850; color: rgba(15,23,42,0.70); }
+.dp-ghostBtn{
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,42,0.10);
   background: rgba(15,23,42,0.03);
-  color: rgba(15,23,42,0.55);
-  border: 1px dashed rgba(15,23,42,0.18);
+  font-weight: 1000;
+  cursor:pointer;
 }
-.dm-arrow{ font-weight: 1000; }
 
-.dm-skeletonWrap{
-  margin-top: 14px;
+/* Skeletons */
+.dp-skel{
+  border-radius: 18px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.76);
+  padding: 14px;
+  overflow:hidden;
+}
+.dp-sTop{
+  height: 16px;
+  width: 70%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(15,23,42,0.06), rgba(15,23,42,0.02), rgba(15,23,42,0.06));
+  animation: dpSk 1.2s ease-in-out infinite;
+}
+.dp-sLine{
+  margin-top: 10px;
+  height: 12px;
+  width: 88%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(15,23,42,0.06), rgba(15,23,42,0.02), rgba(15,23,42,0.06));
+  animation: dpSk 1.2s ease-in-out infinite;
+}
+.dp-sLine2{ width: 62%; }
+.dp-sTags{
+  margin-top: 12px;
+  height: 12px;
+  width: 55%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(15,23,42,0.06), rgba(15,23,42,0.02), rgba(15,23,42,0.06));
+  animation: dpSk 1.2s ease-in-out infinite;
+}
+@keyframes dpSk{
+  0%{ filter: brightness(1); }
+  50%{ filter: brightness(1.06); }
+  100%{ filter: brightness(1); }
+}
+
+/* MODAL */
+.dp-modalBackdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(2,6,23,0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display:grid;
-  gap: 12px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  place-items: center;
+  padding: 18px;
+  z-index: 999;
 }
-@media (max-width: 980px){ .dm-skeletonWrap{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 620px){ .dm-skeletonWrap{ grid-template-columns: 1fr; } }
-.dm-skeletonCard{
-  height: 180px;
-  border-radius: 18px;
+.dp-modal{
+  width: min(720px, 100%);
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background:
+    radial-gradient(900px 260px at 12% -25%, rgba(34,197,94,0.14), transparent 60%),
+    radial-gradient(900px 260px at 70% -30%, rgba(56,189,248,0.14), transparent 55%),
+    rgba(255,255,255,0.92);
+  box-shadow: 0 30px 90px rgba(2,6,23,0.40);
+  padding: 18px;
+  position: relative;
+  animation: dpPop .14s ease-out;
+}
+@keyframes dpPop{
+  from{ transform: translateY(8px); opacity: .85; }
+  to{ transform: translateY(0); opacity: 1; }
+}
+.dp-modalClose{
+  position:absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
   border: 1px solid rgba(15,23,42,0.10);
-  background: linear-gradient(90deg, rgba(15,23,42,0.04), rgba(15,23,42,0.07), rgba(15,23,42,0.04));
-  background-size: 200% 100%;
-  animation: shimmer 1.1s infinite linear;
+  background: rgba(255,255,255,0.70);
+  cursor:pointer;
+  font-weight: 1000;
+  color: rgba(15,23,42,0.70);
 }
-@keyframes shimmer{
-  0%{ background-position: 0% 0; }
-  100%{ background-position: 200% 0; }
+.dp-modalHead{ padding-right: 54px; }
+.dp-modalTitle{
+  font-weight: 1000;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: rgba(15,23,42,0.92);
 }
-
-.dm-empty{
+.dp-modalMeta{
+  margin-top: 8px;
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items:center;
+}
+.dp-modalDesc{
+  margin-top: 12px;
+  font-weight: 800;
+  color: rgba(15,23,42,0.76);
+  line-height: 1.45;
+}
+.dp-muted{ opacity: .85; }
+.dp-modalActions{
   margin-top: 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.92);
-  padding: 16px;
-  box-shadow: 0 18px 55px rgba(15,23,42,0.06);
+  display:flex;
+  justify-content:flex-end;
 }
-.dm-emptyTitle{ font-weight: 950; font-size: 16px; }
-.dm-emptyText{ margin-top: 6px; color: rgba(15,23,42,0.62); font-weight: 800; }
 `;

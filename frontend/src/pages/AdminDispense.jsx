@@ -1,5 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
-import { api } from "../lib/api";
+import { api, getToken, API_BASE, absUrl } from "../lib/api";
+
+const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
+
+async function uploadPdfToBackend(file) {
+  const token = getToken(); // ✅ usa la chiave giusta: dm_admin_token
+  const form = new FormData();
+  form.append("file", file);
+  form.append("file_type", "pdf");
+
+  const res = await fetch(`${API_BASE}/api/files/upload`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(txt || `Upload fallito (HTTP ${res.status})`);
+  }
+
+  // atteso: { ok:true, file_path:"/uploads/xxx.pdf", stored_as:"xxx.pdf", filename:"original.pdf" }
+  return res.json();
+}
+
+function normalizePdfUrl(link) {
+  return absUrl(link);
+}
 
 function Modal({ open, onClose, title, children }) {
   if (!open) return null;
@@ -61,12 +88,12 @@ const empty = {
   titolo: "",
   descrizione: "",
   materia: "Altro",
-  livello: "Base", // solo UI
+  livello: "Base",
   aChiServe: "",
   pagine: 1,
   tagText: "",
   filename: "",
-  link: "", // solo UI, se vuoi usarlo più avanti
+  link: "",
   pubblicata: true,
 };
 
@@ -87,11 +114,15 @@ export default function AdminDispense() {
   const [current, setCurrent] = useState({ ...empty });
   const [saving, setSaving] = useState(false);
 
+  // upload pdf
+  const [pdfFile, setPdfFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
   async function load() {
     setLoading(true);
     setErr("");
     try {
-      const data = await api.listDispenseAll(); // richiede auth
+      const data = await api.listDispenseAll();
       setItems(Array.isArray(data) ? data : []);
     } catch (e) {
       setErr(e.message || "Errore nel caricamento dispense");
@@ -115,6 +146,7 @@ export default function AdminDispense() {
         x.aChiServe,
         (x.tag || []).join(" "),
         x.filename,
+        x.link,
       ]
         .join(" ")
         .toLowerCase()
@@ -125,6 +157,7 @@ export default function AdminDispense() {
   function openCreate() {
     setMode("create");
     setCurrent({ ...empty });
+    setPdfFile(null);
     setOpen(true);
   }
 
@@ -139,10 +172,11 @@ export default function AdminDispense() {
       pagine: it.pagine || 1,
       tagText: tagsToText(it.tag),
       filename: it.filename || "",
-      link: "",
+      link: it.link || it.file_url || "",
       pubblicata: it.pubblicata ?? true,
       id: it.id,
     });
+    setPdfFile(null);
     setOpen(true);
   }
 
@@ -160,6 +194,7 @@ export default function AdminDispense() {
       pagine: parseInt(current.pagine, 10) || 1,
       tag: tagArr,
       filename: (current.filename || "").trim() || null,
+      link: (current.link || "").trim() || null,
       pubblicata: !!current.pubblicata,
     };
   }
@@ -171,7 +206,6 @@ export default function AdminDispense() {
 
     const payload = buildPayload();
 
-    // validazioni base lato frontend (per UX migliore)
     if (!payload.titolo) {
       setErr("Titolo obbligatorio");
       setSaving(false);
@@ -225,6 +259,39 @@ export default function AdminDispense() {
     } catch (e) {
       setErr(e.message || "Errore eliminazione");
     }
+  }
+
+  async function onUploadPdf() {
+    if (!pdfFile) return;
+    setUploading(true);
+    setErr("");
+
+    try {
+      const data = await uploadPdfToBackend(pdfFile);
+
+      const originalName = data.filename || pdfFile.name;
+      const filePath = data.file_path || data.path || data.url || "";
+
+      const url = normalizePdfUrl(filePath);
+
+      // ✅ aggiorna lo state: questi valori poi vengono inviati in "Salva"
+      setCurrent((c) => ({
+        ...c,
+        filename: originalName,
+        link: url,
+      }));
+
+      setPdfFile(null);
+    } catch (e) {
+      setErr(e.message || "Errore upload PDF");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removePdfFromForm() {
+    setCurrent((c) => ({ ...c, filename: "", link: "" }));
+    setPdfFile(null);
   }
 
   return (
@@ -310,221 +377,215 @@ export default function AdminDispense() {
           </div>
         ) : (
           <div style={{ display: "grid", gap: 10 }}>
-            {filtered.map((it) => (
-              <div
-                key={it.id}
-                style={{
-                  borderRadius: 16,
-                  border: "1px solid rgba(15,23,42,0.12)",
-                  background: "white",
-                  padding: 12,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  alignItems: "center",
-                }}
-              >
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <div
-                      style={{
-                        fontWeight: 950,
-                        color: "#0f172a",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        maxWidth: 520,
-                      }}
-                    >
-                      {it.titolo}
-                    </div>
+            {filtered.map((it) => {
+              const pdfUrl = normalizePdfUrl(it.link || it.file_url || "");
+              return (
+                <div
+                  key={it.id}
+                  style={{
+                    borderRadius: 16,
+                    border: "1px solid rgba(15,23,42,0.12)",
+                    background: "white",
+                    padding: 12,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                      <div
+                        style={{
+                          fontWeight: 950,
+                          color: "#0f172a",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          maxWidth: 520,
+                        }}
+                      >
+                        {it.titolo}
+                      </div>
 
-                    <span
-                      style={{
-                        fontSize: 12,
-                        padding: "4px 8px",
-                        borderRadius: 999,
-                        border: "1px solid rgba(15,23,42,0.12)",
-                        background: it.pubblicata ? "rgba(16,185,129,0.10)" : "rgba(15,23,42,0.04)",
-                        fontWeight: 900,
-                      }}
-                    >
-                      {it.pubblicata ? "Pubblicata" : "Nascosta"}
-                    </span>
-                  </div>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          padding: "4px 8px",
+                          borderRadius: 999,
+                          border: "1px solid rgba(15,23,42,0.12)",
+                          background: it.pubblicata ? "rgba(16,185,129,0.10)" : "rgba(15,23,42,0.04)",
+                          fontWeight: 900,
+                        }}
+                      >
+                        {it.pubblicata ? "Pubblicata" : "Nascosta"}
+                      </span>
 
-                  <div style={{ marginTop: 4, color: "rgba(15,23,42,0.65)", fontWeight: 750 }}>
-                    {it.materia} • {it.pagine} pag.
-                    {it.filename ? ` • file: ${it.filename}` : ""}
-                  </div>
-
-                  {it.aChiServe ? (
-                    <div style={{ marginTop: 6, color: "rgba(15,23,42,0.70)", fontWeight: 650 }}>
-                      <span style={{ fontWeight: 900 }}>A chi serve:</span> {it.aChiServe}
-                    </div>
-                  ) : null}
-
-                  {Array.isArray(it.tag) && it.tag.length > 0 ? (
-                    <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      {it.tag.slice(0, 8).map((t, idx) => (
-                        <span
-                          key={`${it.id}-tag-${idx}`}
+                      {pdfUrl ? (
+                        <a
+                          href={pdfUrl}
+                          target="_blank"
+                          rel="noreferrer"
                           style={{
                             fontSize: 12,
                             padding: "4px 8px",
                             borderRadius: 999,
-                            border: "1px solid rgba(15,23,42,0.12)",
+                            border: "1px solid rgba(37,99,235,0.18)",
                             background: "rgba(37,99,235,0.06)",
                             fontWeight: 900,
+                            textDecoration: "none",
+                            color: "#0f172a",
                           }}
                         >
-                          {t}
-                        </span>
-                      ))}
-                      {it.tag.length > 8 ? (
-                        <span style={{ fontSize: 12, color: "rgba(15,23,42,0.55)", fontWeight: 900 }}>
-                          +{it.tag.length - 8}
-                        </span>
+                          📄 Apri PDF
+                        </a>
                       ) : null}
                     </div>
-                  ) : null}
 
-                  {it.descrizione ? (
-                    <div style={{ marginTop: 8, color: "rgba(15,23,42,0.70)", fontWeight: 650, lineHeight: 1.35 }}>
-                      {it.descrizione}
+                    <div style={{ marginTop: 4, color: "rgba(15,23,42,0.65)", fontWeight: 750 }}>
+                      {it.materia} • {it.pagine} pag.
+                      {it.filename ? ` • file: ${it.filename}` : ""}
                     </div>
-                  ) : null}
+                  </div>
+
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button onClick={() => onToggle(it.id)} style={btnGhost} type="button">
+                      {it.pubblicata ? "Nascondi" : "Pubblica"}
+                    </button>
+
+                    <button onClick={() => openEdit(it)} style={btnGhost} type="button">
+                      Modifica
+                    </button>
+
+                    <button onClick={() => onDelete(it.id)} style={btnDanger} type="button">
+                      Elimina
+                    </button>
+                  </div>
                 </div>
-
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button
-                    onClick={() => onToggle(it.id)}
-                    style={{
-                      padding: "8px 10px",
-                      borderRadius: 12,
-                      border: "1px solid rgba(15,23,42,0.14)",
-                      background: "white",
-                      fontWeight: 900,
-                      cursor: "pointer",
-                    }}
-                    type="button"
-                  >
-                    {it.pubblicata ? "Nascondi" : "Pubblica"}
-                  </button>
-
-                  <button
-                    onClick={() => openEdit(it)}
-                    style={{
-                      padding: "8px 10px",
-                      borderRadius: 12,
-                      border: "1px solid rgba(15,23,42,0.14)",
-                      background: "white",
-                      fontWeight: 900,
-                      cursor: "pointer",
-                    }}
-                    type="button"
-                  >
-                    Modifica
-                  </button>
-
-                  <button
-                    onClick={() => onDelete(it.id)}
-                    style={{
-                      padding: "8px 10px",
-                      borderRadius: 12,
-                      border: "1px solid rgba(239,68,68,0.25)",
-                      background: "rgba(239,68,68,0.06)",
-                      fontWeight: 900,
-                      cursor: "pointer",
-                    }}
-                    type="button"
-                  >
-                    Elimina
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
       {/* Modal */}
-      <Modal
-        open={open}
-        onClose={() => setOpen(false)}
-        title={mode === "create" ? "Nuova dispensa" : "Modifica dispensa"}
-      >
+      <Modal open={open} onClose={() => setOpen(false)} title={mode === "create" ? "Nuova dispensa" : "Modifica dispensa"}>
         <form onSubmit={onSave} style={{ display: "grid", gap: 10 }}>
           <input
             value={current.titolo}
             onChange={(e) => setCurrent({ ...current, titolo: e.target.value })}
             placeholder="Titolo"
             required
-            style={{ padding: 12, borderRadius: 14, border: "1px solid rgba(15,23,42,0.15)" }}
+            style={inp}
           />
 
           <textarea
             value={current.descrizione}
             onChange={(e) => setCurrent({ ...current, descrizione: e.target.value })}
-            placeholder="Descrizione (breve ma utile)"
+            placeholder="Descrizione"
             rows={4}
-            style={{
-              padding: 12,
-              borderRadius: 14,
-              border: "1px solid rgba(15,23,42,0.15)",
-              resize: "vertical",
-            }}
+            style={{ ...inp, resize: "vertical" }}
           />
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
             <input
               value={current.materia}
               onChange={(e) => setCurrent({ ...current, materia: e.target.value })}
-              placeholder="Materia (es: Chimica)"
+              placeholder="Materia"
               required
-              style={{ padding: 12, borderRadius: 14, border: "1px solid rgba(15,23,42,0.15)" }}
+              style={inp}
             />
             <input
               value={current.pagine}
               onChange={(e) => setCurrent({ ...current, pagine: e.target.value })}
-              placeholder="Pagine (es: 12)"
+              placeholder="Pagine"
               type="number"
               min="1"
               required
-              style={{ padding: 12, borderRadius: 14, border: "1px solid rgba(15,23,42,0.15)" }}
+              style={inp}
             />
           </div>
 
           <input
             value={current.aChiServe}
             onChange={(e) => setCurrent({ ...current, aChiServe: e.target.value })}
-            placeholder="A chi serve? (es: ripasso veloce, base completa, ecc.)"
+            placeholder="A chi serve?"
             required
-            style={{ padding: 12, borderRadius: 14, border: "1px solid rgba(15,23,42,0.15)" }}
+            style={inp}
           />
 
           <input
             value={current.tagText}
             onChange={(e) => setCurrent({ ...current, tagText: e.target.value })}
-            placeholder="Tag (separati da virgola) es: acidi, basi, ph"
+            placeholder="Tag (separati da virgola)"
             required
-            style={{ padding: 12, borderRadius: 14, border: "1px solid rgba(15,23,42,0.15)" }}
+            style={inp}
           />
 
-          <input
-            value={current.filename}
-            onChange={(e) => setCurrent({ ...current, filename: e.target.value })}
-            placeholder="Filename PDF (opzionale) es: acidi-basi.pdf"
-            style={{ padding: 12, borderRadius: 14, border: "1px solid rgba(15,23,42,0.15)" }}
-          />
+          {/* PDF upload */}
+          <div style={{ border: "1px solid rgba(15,23,42,0.10)", borderRadius: 14, padding: 12, background: "rgba(15,23,42,0.02)" }}>
+            <div style={{ fontWeight: 950, marginBottom: 6 }}>PDF della dispensa</div>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+              <input type="file" accept="application/pdf" onChange={(e) => setPdfFile(e.target.files?.[0] || null)} />
+
+              <button
+                type="button"
+                onClick={onUploadPdf}
+                disabled={!pdfFile || uploading}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  border: "none",
+                  background: "#0f172a",
+                  color: "white",
+                  fontWeight: 950,
+                  cursor: !pdfFile || uploading ? "not-allowed" : "pointer",
+                  opacity: !pdfFile || uploading ? 0.65 : 1,
+                }}
+              >
+                {uploading ? "Caricamento..." : "Carica PDF"}
+              </button>
+
+              {current.link ? (
+                <a
+                  href={normalizePdfUrl(current.link)}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 12,
+                    border: "1px solid rgba(37,99,235,0.18)",
+                    background: "rgba(37,99,235,0.06)",
+                    fontWeight: 950,
+                    color: "#0f172a",
+                    textDecoration: "none",
+                  }}
+                >
+                  📄 Apri PDF
+                </a>
+              ) : null}
+
+              {(current.link || current.filename) ? (
+                <button type="button" onClick={removePdfFromForm} style={btnDanger}>
+                  Rimuovi PDF
+                </button>
+              ) : null}
+            </div>
+
+            <div style={{ marginTop: 8, fontSize: 12, color: "rgba(15,23,42,0.60)", fontWeight: 800 }}>
+              Dopo l’upload, premi <b>Salva</b> per renderlo permanente.
+            </div>
+
+            <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+              <input value={current.filename} onChange={(e) => setCurrent({ ...current, filename: e.target.value })} placeholder="filename (auto dopo upload)" style={inp} />
+              <input value={current.link} onChange={(e) => setCurrent({ ...current, link: e.target.value })} placeholder="link PDF (auto dopo upload)" style={inp} />
+            </div>
+          </div>
 
           <label style={{ display: "flex", gap: 10, alignItems: "center", fontWeight: 900 }}>
-            <input
-              type="checkbox"
-              checked={!!current.pubblicata}
-              onChange={(e) => setCurrent({ ...current, pubblicata: e.target.checked })}
-            />
-            Pubblicata (visibile agli studenti)
+            <input type="checkbox" checked={!!current.pubblicata} onChange={(e) => setCurrent({ ...current, pubblicata: e.target.checked })} />
+            Pubblicata
           </label>
 
           <button
@@ -542,12 +603,28 @@ export default function AdminDispense() {
           >
             {saving ? "Salvataggio..." : "Salva"}
           </button>
-
-          <div style={{ fontSize: 12, color: "rgba(15,23,42,0.55)", fontWeight: 800 }}>
-            Nota: al momento salviamo in JSON locale se Mongo è disattivo. Più avanti aggiungiamo upload PDF e Mongo.
-          </div>
         </form>
       </Modal>
     </section>
   );
 }
+
+const inp = { padding: 12, borderRadius: 14, border: "1px solid rgba(15,23,42,0.15)" };
+
+const btnGhost = {
+  padding: "8px 10px",
+  borderRadius: 12,
+  border: "1px solid rgba(15,23,42,0.14)",
+  background: "white",
+  fontWeight: 900,
+  cursor: "pointer",
+};
+
+const btnDanger = {
+  padding: "8px 10px",
+  borderRadius: 12,
+  border: "1px solid rgba(239,68,68,0.25)",
+  background: "rgba(239,68,68,0.06)",
+  fontWeight: 900,
+  cursor: "pointer",
+};
