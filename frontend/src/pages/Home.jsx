@@ -39,11 +39,7 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="h4-trust">
-              <span className="h4-pill">✅ Ordinato</span>
-              <span className="h4-pill">⚡ Rapido</span>
-              <span className="h4-pill">🎯 Mirato</span>
-            </div>
+            
           </div>
 
           <div className="h4-right" aria-hidden="true">
