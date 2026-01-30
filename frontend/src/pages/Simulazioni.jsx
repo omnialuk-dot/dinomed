@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import heroImg from "../assets/photos/coding.jpg";
+import heroImg from "../assets/photos/typing.jpg";
 
 export default function Simulazioni() {
   const nav = useNavigate();
