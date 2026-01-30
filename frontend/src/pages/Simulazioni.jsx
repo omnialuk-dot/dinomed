@@ -30,8 +30,8 @@ export default function Simulazioni() {
             <p className="sx-lead">In modo semplice.</p>
 
             <p className="sx-sub">
-              Simulazioni pensate per farti concentrare su ciò che conta,
-              con un’interfaccia pulita e una correzione immediata.
+              Simulazioni pensate per farti concentrare su ciò che conta, con un’interfaccia pulita e una correzione
+              immediata.
             </p>
 
             {/* FLOW LINE */}
@@ -59,7 +59,7 @@ export default function Simulazioni() {
               </button>
             </div>
 
-            {/* STORY STRIP (Dino + pause + azioni) */}
+            {/* STORY STRIP (dino + pause + props) */}
             <div className="sx-story" aria-hidden="true">
               <div className="sx-storyGlow" />
 
@@ -70,10 +70,10 @@ export default function Simulazioni() {
                 <span className="sx-finish" />
               </div>
 
-              {/* Dino wrapper moves; inside we switch poses by phase */}
+              {/* Dino wrapper moves by % (responsive) */}
               <div className="sx-dinoWrap">
                 <div className="sx-dinoChar">
-                  {/* base body */}
+                  {/* base */}
                   <span className="d-body" />
                   <span className="d-belly" />
                   <span className="d-head" />
@@ -84,7 +84,7 @@ export default function Simulazioni() {
                   <span className="d-leg l2" />
                   <span className="d-tail" />
 
-                  {/* props (appear per phase) */}
+                  {/* props (appear by phase) */}
                   <span className="p-book" />
                   <span className="p-desk" />
                   <span className="p-pen" />
@@ -152,7 +152,9 @@ const css = `
   font-weight:900;
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
 }
-@media (max-width: 980px){ .sx-kicker{ position: static; margin-bottom: 10px; } }
+@media (max-width: 980px){
+  .sx-kicker{ position: static; margin-bottom: 10px; }
+}
 .sx-dot{ width:10px;height:10px;border-radius:999px; background:linear-gradient(90deg,var(--dino2),var(--med2)); }
 .sx-brand{display:flex}
 .sx-dino{color:var(--dino2);font-weight:1000}
@@ -167,7 +169,9 @@ const css = `
   padding-top:40px;
   align-items:center;
 }
-@media(max-width:900px){ .sx-grid{grid-template-columns:1fr; padding-top: 0;} }
+@media(max-width:900px){
+  .sx-grid{grid-template-columns:1fr; padding-top: 0;}
+}
 
 /* TEXT */
 .sx-title{
@@ -179,7 +183,7 @@ const css = `
   line-height: 1.05;
 }
 @media (max-width: 520px){ .sx-title{ font-size: 34px; } }
-.sx-grad{ background:linear-gradient(90deg,var(--dino2),var(--med2)); -webkit-background-clip:text; color:transparent; }
+.sx-grad{ background:linear-gradient(90deg,var(--dino2),var(--med2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
 .sx-lead{ margin:8px 0 6px; font-weight:950; color:rgba(15,23,42,0.80); }
 .sx-sub{ margin:0; max-width:70ch; color:var(--ink2); font-weight:850; }
 
@@ -209,7 +213,7 @@ const css = `
 .sx-btn:hover{ transform: translateY(-1px); box-shadow: 0 18px 40px rgba(2,6,23,0.14); filter: saturate(1.03); }
 .sx-primary{ background:linear-gradient(90deg,var(--dino2),var(--med2)); color:white; border: 1px solid rgba(255,255,255,0.22); }
 .sx-shine{
-  position:absolute;inset:0;
+  position:absolute; inset:0;
   background:linear-gradient(115deg,transparent,rgba(255,255,255,.25),transparent);
   transform:translateX(-120%);
   animation:sxShine 4s infinite;
@@ -219,7 +223,7 @@ const css = `
 
 /* ===== STORY STRIP ===== */
 .sx-story{
-  margin-top: 22px; /* spazio sotto bottone, come volevi */
+  margin-top: 22px;
   max-width: 520px;
   height: 84px;
   border-radius: 18px;
@@ -262,6 +266,7 @@ const css = `
 .sx-node.n1{ left: 18%; }
 .sx-node.n2{ left: 50%; }
 .sx-node.n3{ left: 82%; }
+
 .sx-node::after{
   content:"";
   position:absolute; inset:2px;
@@ -269,13 +274,14 @@ const css = `
   background: linear-gradient(90deg, var(--dino2), var(--med2));
   opacity: .10;
 }
-.sx-node.n1::after{ animation: sxNode 8.6s ease-in-out infinite; }
-.sx-node.n2::after{ animation: sxNode 8.6s ease-in-out infinite; animation-delay: 1.9s; }
-.sx-node.n3::after{ animation: sxNode 8.6s ease-in-out infinite; animation-delay: 3.8s; }
+.sx-node.n1::after{ animation: sxNode 10.5s ease-in-out infinite; }
+.sx-node.n2::after{ animation: sxNode 10.5s ease-in-out infinite; animation-delay: 2.3s; }
+.sx-node.n3::after{ animation: sxNode 10.5s ease-in-out infinite; animation-delay: 4.6s; }
 @keyframes sxNode{
-  0%,68%,100%{ opacity: .10; transform: scale(1); }
+  0%,70%,100%{ opacity: .10; transform: scale(1); }
   25%{ opacity: .95; transform: scale(1.10); }
 }
+
 .sx-finish{
   position:absolute;
   right: -2px;
@@ -288,90 +294,73 @@ const css = `
   box-shadow: 0 18px 40px rgba(2,6,23,0.08);
 }
 
-/* Dino movement (slow, with pauses) */
+/* Dino moves with % (responsive) + pause */
 .sx-dinoWrap{
   position:absolute;
   top: 14px;
-  left: 14px;          /* start */
+  left: 14px;
   width: 46px;
   height: 56px;
   z-index: 2;
-  animation: sxTravel 10.5s ease-in-out infinite; /* più lento */
+  animation: sxTravel 10.5s ease-in-out infinite;
   will-change: left, opacity;
 }
 
-/* 100% responsive: usa LEFT in percentuale (si adatta sempre) */
+/* pause on 18% / 50% / 82% */
 @keyframes sxTravel{
   0%   { left: 14px; opacity: 0; }
   6%   { opacity: 1; }
 
-  /* vai al nodo 1 (18%) */
-  20%  { left: calc(18% - 23px); }  /* - metà dinosauro */
-  34%  { left: calc(18% - 23px); }  /* pausa: “legge” */
+  20%  { left: calc(18% - 23px); }
+  34%  { left: calc(18% - 23px); } /* read */
 
-  /* vai al nodo 2 (50%) */
   52%  { left: calc(50% - 23px); }
-  66%  { left: calc(50% - 23px); }  /* pausa: “scrive” */
+  66%  { left: calc(50% - 23px); } /* write */
 
-  /* vai al nodo 3 (82%) */
   84%  { left: calc(82% - 23px); }
-  94%  { left: calc(82% - 23px); opacity: 1; } /* pausa: “graduation” */
+  94%  { left: calc(82% - 23px); opacity: 1; } /* graduate */
 
-  /* esci verso fine */
   100% { left: calc(100% - 46px - 14px); opacity: 0; }
 }
 
-/* Dino character */
-.sx-dinoChar{
-  position: relative;
-  width: 46px;
-  height: 56px;
-}
+.sx-dinoChar{ position: relative; width: 46px; height: 56px; }
 
-/* body */
+/* Dino base */
 .d-body{
-  position:absolute;
-  left: 10px; top: 18px;
+  position:absolute; left: 10px; top: 18px;
   width: 24px; height: 22px;
   border-radius: 14px 14px 12px 12px;
   background: linear-gradient(135deg, rgba(22,163,74,0.85), rgba(14,165,233,0.70));
   box-shadow: 0 14px 26px rgba(2,6,23,0.08);
 }
 .d-belly{
-  position:absolute;
-  left: 16px; top: 26px;
+  position:absolute; left: 16px; top: 26px;
   width: 12px; height: 10px;
   border-radius: 999px;
   background: rgba(255,255,255,0.75);
   opacity: .9;
 }
 .d-head{
-  position:absolute;
-  left: 22px; top: 10px;
+  position:absolute; left: 22px; top: 10px;
   width: 18px; height: 16px;
   border-radius: 14px 14px 12px 12px;
   background: rgba(255,255,255,0.84);
   border: 1px solid rgba(15,23,42,0.10);
 }
 .d-eye{
-  position:absolute;
-  left: 33px; top: 16px;
+  position:absolute; left: 33px; top: 16px;
   width: 3px; height: 3px;
   border-radius: 999px;
   background: rgba(15,23,42,0.55);
 }
 .d-mouth{
-  position:absolute;
-  left: 31px; top: 20px;
+  position:absolute; left: 31px; top: 20px;
   width: 7px; height: 2px;
   border-radius: 999px;
   background: rgba(15,23,42,0.18);
 }
-
-/* tail */
 .d-tail{
-  position:absolute;
-  left: 4px; top: 26px;
+  position:absolute; left: 4px; top: 26px;
   width: 14px; height: 8px;
   border-radius: 999px;
   background: rgba(15,23,42,0.10);
@@ -383,11 +372,8 @@ const css = `
   0%,100%{ transform: rotate(-14deg); }
   50%{ transform: rotate(-26deg); }
 }
-
-/* walking legs */
 .d-leg{
-  position:absolute;
-  top: 40px;
+  position:absolute; top: 40px;
   width: 12px; height: 3px;
   border-radius: 999px;
   background: rgba(15,23,42,0.22);
@@ -400,11 +386,8 @@ const css = `
   0%,100%{ transform: rotate(14deg) translateX(0); }
   50%{ transform: rotate(-14deg) translateX(1px); }
 }
-
-/* arm */
 .d-arm{
-  position:absolute;
-  left: 26px; top: 28px;
+  position:absolute; left: 26px; top: 28px;
   width: 10px; height: 3px;
   border-radius: 999px;
   background: rgba(15,23,42,0.18);
@@ -416,74 +399,66 @@ const css = `
   50%{ transform: rotate(14deg); }
 }
 
-/* ====== PROPS per phase ====== */
-/* default hidden */
+/* PROPS */
 .p-book,.p-desk,.p-pen,.p-cap,.p-star{ opacity:0; pointer-events:none; }
 
-/* Phase 1 (stop at node1): read book */
+/* read phase */
 .p-book{
-  position:absolute;
-  left: 30px; top: 30px;
+  position:absolute; left: 30px; top: 30px;
   width: 14px; height: 10px;
   border-radius: 3px;
   border: 1px solid rgba(15,23,42,0.12);
   background: rgba(255,255,255,0.82);
-  animation: sxBook 8.6s ease-in-out infinite;
+  animation: sxBook 10.5s ease-in-out infinite;
 }
 .p-book::after{
   content:"";
-  position:absolute;
-  left: 6px; top: 1px; bottom: 1px;
-  width: 1px;
-  background: rgba(15,23,42,0.10);
+  position:absolute; left: 6px; top: 1px; bottom: 1px;
+  width: 1px; background: rgba(15,23,42,0.10);
 }
 @keyframes sxBook{
-  0%,16%{ opacity:0; transform: translateY(2px) rotate(0deg); }
-  20%,32%{ opacity:1; transform: translateY(0) rotate(-4deg); }
+  0%,18%{ opacity:0; transform: translateY(2px) rotate(0deg); }
+  22%,32%{ opacity:1; transform: translateY(0) rotate(-4deg); }
   36%,100%{ opacity:0; transform: translateY(2px) rotate(0deg); }
 }
 
-/* Phase 2 (stop at node2): desk + pen */
+/* write phase */
 .p-desk{
-  position:absolute;
-  left: 2px; top: 44px;
+  position:absolute; left: 2px; top: 44px;
   width: 42px; height: 6px;
   border-radius: 999px;
   background: rgba(15,23,42,0.10);
-  animation: sxDesk 8.6s ease-in-out infinite;
+  animation: sxDesk 10.5s ease-in-out infinite;
 }
 .p-pen{
-  position:absolute;
-  left: 30px; top: 36px;
+  position:absolute; left: 30px; top: 36px;
   width: 10px; height: 2px;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--dino2), var(--med2));
-  animation: sxPen 8.6s ease-in-out infinite;
+  animation: sxPen 10.5s ease-in-out infinite;
 }
 @keyframes sxDesk{
-  0%,48%{ opacity:0; transform: translateY(2px); }
-  54%,66%{ opacity:1; transform: translateY(0); }
+  0%,50%{ opacity:0; transform: translateY(2px); }
+  56%,64%{ opacity:1; transform: translateY(0); }
   70%,100%{ opacity:0; transform: translateY(2px); }
 }
 @keyframes sxPen{
-  0%,48%{ opacity:0; transform: translateY(2px) rotate(0deg); }
-  54%,66%{ opacity:1; transform: translateY(0) rotate(-10deg); }
+  0%,50%{ opacity:0; transform: translateY(2px) rotate(0deg); }
+  56%,64%{ opacity:1; transform: translateY(0) rotate(-10deg); }
   70%,100%{ opacity:0; transform: translateY(2px) rotate(0deg); }
 }
 
-/* Phase 3 (near finish): graduation cap + stars */
+/* graduate phase */
 .p-cap{
-  position:absolute;
-  left: 24px; top: 6px;
+  position:absolute; left: 24px; top: 6px;
   width: 16px; height: 6px;
   border-radius: 4px 4px 2px 2px;
   background: rgba(15,23,42,0.28);
-  animation: sxCap 8.6s ease-in-out infinite;
+  animation: sxCap 10.5s ease-in-out infinite;
 }
 .p-cap::after{
   content:"";
-  position:absolute;
-  left: 7px; top: 5px;
+  position:absolute; left: 7px; top: 5px;
   width: 2px; height: 8px;
   border-radius: 999px;
   background: linear-gradient(180deg, var(--dino2), var(--med2));
@@ -494,25 +469,25 @@ const css = `
   width: 6px; height: 2px;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--dino2), var(--med2));
-  animation: sxStars 8.6s ease-in-out infinite;
+  animation: sxStars 10.5s ease-in-out infinite;
 }
 .p-star.s1{ left: 44px; top: 10px; transform: rotate(22deg); }
 .p-star.s2{ left: 42px; top: 18px; transform: rotate(-18deg); }
 .p-star.s3{ left: 38px; top: 6px; transform: rotate(78deg); }
 
 @keyframes sxCap{
-  0%,76%{ opacity:0; transform: translateY(2px); }
-  82%,94%{ opacity:1; transform: translateY(0); }
+  0%,80%{ opacity:0; transform: translateY(2px); }
+  86%,96%{ opacity:1; transform: translateY(0); }
   100%{ opacity:0; transform: translateY(2px); }
 }
 @keyframes sxStars{
-  0%,78%{ opacity:0; transform: translateX(0) scaleX(1); }
-  86%{ opacity:.95; transform: translateX(4px) scaleX(1.25); }
-  94%{ opacity:0; transform: translateX(10px) scaleX(.9); }
+  0%,82%{ opacity:0; transform: translateX(0) scaleX(1); }
+  90%{ opacity:.95; transform: translateX(4px) scaleX(1.25); }
+  96%{ opacity:0; transform: translateX(10px) scaleX(.9); }
   100%{ opacity:0; transform: translateX(0) scaleX(1); }
 }
 
-/* ====== RIGHT visual ====== */
+/* ===== RIGHT VISUAL ===== */
 .sx-visual{
   position:relative;
   height:420px;
@@ -561,16 +536,9 @@ const css = `
 .sx-floatTitle{font-weight:1000;color: rgba(15,23,42,0.90);}
 .sx-floatSub{margin-top:6px;font-weight:850;color:var(--ink2);}
 
-/* Reduce motion */
-@media (prefers-reduced-motion: reduce){
-  .sx-dinoWrap, .d-leg, .d-arm, .d-tail,
-  .p-book, .p-desk, .p-pen, .p-cap, .p-star,
-  .sx-node.n1::after, .sx-node.n2::after, .sx-node.n3::after {
-    animation: none !important;
-  }
-}
-`;
-
+/* If reduced motion: hide strip to avoid “stuck” pieces */
 @media (prefers-reduced-motion: reduce){
   .sx-story{ display:none !important; }
+  .sx-shine{ animation: none !important; }
 }
+`;
