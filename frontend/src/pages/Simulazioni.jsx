@@ -34,8 +34,8 @@ export default function Simulazioni() {
               senza perdere tempo in configurazioni inutili.
             </p>
 
-            {/* COME FUNZIONA — versione elegante */}
-            <div className="sx-flow">
+            {/* COME FUNZIONA — flow line */}
+            <div className="sx-flow" aria-label="Come funziona">
               <div className="sx-flowItem">
                 <span className="sx-flowNum">1</span>
                 <span className="sx-flowTxt">Configura</span>
@@ -58,10 +58,44 @@ export default function Simulazioni() {
                 <span className="sx-shine" aria-hidden="true" />
               </button>
 
-              <div className="sx-pills">
-                <span className="sx-pill">⏱ Veloce</span>
-                <span className="sx-pill">🎯 Mirata</span>
-                <span className="sx-pill">✅ Chiara</span>
+              {/* SOSTITUTO “utile” delle pills */}
+              <div className="sx-mini">
+                <div className="sx-miniCard">
+                  <div className="sx-miniTop">
+                    <span className="sx-miniIco" aria-hidden="true">
+                      <IconTip />
+                    </span>
+                    Consiglio rapido
+                  </div>
+                  <div className="sx-miniText">
+                    Se sei in ripasso: fai <b>15 domande</b> e ordina per <b>argomento</b>.
+                    Se sei vicino all’esame: fai <b>30 domande</b> con <b>timer</b>.
+                  </div>
+                </div>
+
+                <div className="sx-miniCard">
+                  <div className="sx-miniTop">
+                    <span className="sx-miniIco isBlue" aria-hidden="true">
+                      <IconList />
+                    </span>
+                    Cosa ottieni
+                  </div>
+
+                  <div className="sx-miniList" role="list">
+                    <div className="sx-miniItem" role="listitem">
+                      <span className="sx-miniDot" aria-hidden="true" />
+                      Correzione immediata, senza giri.
+                    </div>
+                    <div className="sx-miniItem" role="listitem">
+                      <span className="sx-miniDot" aria-hidden="true" />
+                      Spiegazione breve per fissare il concetto.
+                    </div>
+                    <div className="sx-miniItem" role="listitem">
+                      <span className="sx-miniDot" aria-hidden="true" />
+                      Allenamento “da esame”: ritmo e focus.
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -82,6 +116,50 @@ export default function Simulazioni() {
         </div>
       </section>
     </main>
+  );
+}
+
+/* ================= Icons ================= */
+
+function IconTip() {
+  return (
+    <span className="sx-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path
+          d="M9 18h6"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+        <path
+          d="M10 22h4"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+        <path
+          d="M8.5 14.5c-1.5-1.2-2.5-3-2.5-5a6 6 0 1 1 12 0c0 2-1 3.8-2.5 5-.7.6-1.2 1.3-1.5 2.1H10c-.3-.8-.8-1.5-1.5-2.1Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
+function IconList() {
+  return (
+    <span className="sx-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M9 6h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M9 12h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M9 18h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M4 6h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        <path d="M4 12h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        <path d="M4 18h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    </span>
   );
 }
 
@@ -130,6 +208,10 @@ const css = `
   border:1px solid var(--bd);
   background:rgba(255,255,255,0.75);
   font-weight:900;
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+}
+@media (max-width: 980px){
+  .sx-kicker{ position: static; margin-bottom: 10px; }
 }
 
 .sx-dot{
@@ -147,9 +229,10 @@ const css = `
   grid-template-columns:1.05fr .95fr;
   gap:28px;
   padding-top:40px;
+  align-items:center;
 }
 @media(max-width:900px){
-  .sx-grid{grid-template-columns:1fr}
+  .sx-grid{grid-template-columns:1fr; padding-top: 0;}
 }
 
 /* TEXT */
@@ -159,6 +242,10 @@ const css = `
   letter-spacing:-0.035em;
   margin:0;
   color:var(--ink);
+  line-height: 1.05;
+}
+@media (max-width: 520px){
+  .sx-title{ font-size: 34px; }
 }
 .sx-grad{
   background:linear-gradient(90deg,var(--dino2),var(--med2));
@@ -190,6 +277,7 @@ const css = `
   align-items:center;
   gap:8px;
   font-weight:950;
+  color: rgba(15,23,42,0.82);
 }
 .sx-flowNum{
   width:28px;height:28px;
@@ -210,9 +298,11 @@ const css = `
   margin-top:22px;
   display:flex;
   gap:14px;
-  align-items:center;
+  align-items:flex-start;
   flex-wrap:wrap;
 }
+
+/* CTA */
 .sx-btn{
   position:relative;
   border-radius:999px;
@@ -220,30 +310,95 @@ const css = `
   font-weight:1000;
   border:1px solid var(--bd);
   cursor:pointer;
+  box-shadow: 0 14px 30px rgba(2,6,23,0.10);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+.sx-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 18px 40px rgba(2,6,23,0.14);
+  filter: saturate(1.03);
 }
 .sx-primary{
   background:linear-gradient(90deg,var(--dino2),var(--med2));
   color:white;
+  border: 1px solid rgba(255,255,255,0.22);
 }
 .sx-shine{
   position:absolute;inset:0;
   background:linear-gradient(115deg,transparent,rgba(255,255,255,.25),transparent);
   transform:translateX(-120%);
   animation:sxShine 4s infinite;
+  pointer-events:none;
 }
 @keyframes sxShine{
   0%,60%{transform:translateX(-120%)}
   100%{transform:translateX(120%)}
 }
 
-/* PILLS */
-.sx-pills{display:flex;gap:10px}
-.sx-pill{
-  padding:10px 14px;
-  border-radius:999px;
-  background:rgba(255,255,255,0.65);
-  border:1px solid var(--bd);
-  font-weight:900;
+/* MINI (sostituto delle pills) */
+.sx-mini{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: stretch;
+  flex: 1;
+  min-width: 280px;
+}
+@media (max-width: 900px){
+  .sx-mini{ grid-template-columns: 1fr; min-width: 100%; }
+}
+
+.sx-miniCard{
+  border-radius: 18px;
+  border: 1px solid var(--bd);
+  background: rgba(255,255,255,0.74);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+  padding: 12px;
+}
+
+.sx-miniTop{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  font-weight: 1000;
+  color: rgba(15,23,42,0.88);
+  margin-bottom: 8px;
+}
+.sx-miniIco{
+  width: 34px; height: 34px;
+  border-radius: 14px;
+  display:grid; place-items:center;
+  border: 1px solid rgba(15,23,42,0.08);
+  background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(34,197,94,0.06));
+  color: rgba(22,163,74,0.95);
+}
+.sx-miniIco.isBlue{
+  background: linear-gradient(135deg, rgba(56,189,248,0.16), rgba(56,189,248,0.06));
+  color: rgba(14,165,233,0.95);
+}
+
+.sx-miniText{
+  font-weight: 850;
+  color: rgba(15,23,42,0.72);
+  line-height: 1.35;
+}
+.sx-miniText b{ color: rgba(15,23,42,0.92); }
+
+.sx-miniList{ display:grid; gap: 8px; }
+.sx-miniItem{
+  display:flex;
+  gap: 10px;
+  align-items:flex-start;
+  font-weight: 850;
+  color: rgba(15,23,42,0.72);
+  line-height: 1.28;
+}
+.sx-miniDot{
+  width: 10px; height: 10px;
+  border-radius: 999px;
+  margin-top: 4px;
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+  flex: 0 0 auto;
 }
 
 /* VISUAL */
@@ -254,7 +409,12 @@ const css = `
   overflow:hidden;
   border:1px solid var(--bd);
   box-shadow:var(--shadow);
+  background: rgba(255,255,255,0.92);
 }
+@media (max-width: 900px){
+  .sx-visual{ height: 300px; }
+}
+
 .sx-visualGlow{
   position:absolute;
   inset:-60px;
@@ -262,15 +422,21 @@ const css = `
     radial-gradient(420px 240px at 30% 20%, rgba(34,197,94,0.25), transparent),
     radial-gradient(420px 240px at 70% 20%, rgba(56,189,248,0.25), transparent);
   filter:blur(30px);
+  opacity: .55;
+  pointer-events:none;
+  z-index:0;
 }
 .sx-img{
   width:100%;height:100%;
   object-fit:cover;
   position:relative;
   z-index:1;
+  transform: scale(1.02);
+  filter: saturate(0.96) contrast(1.06);
 }
 .sx-overlay{
   position:absolute;inset:0;
+  z-index:2;
   background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.85));
 }
 .sx-float{
@@ -278,10 +444,16 @@ const css = `
   bottom:14px;left:14px;right:14px;
   padding:12px;
   border-radius:18px;
-  background:rgba(255,255,255,0.8);
+  background:rgba(255,255,255,0.80);
   backdrop-filter:blur(12px);
-  z-index:2;
+  z-index:3;
+  border: 1px solid rgba(255,255,255,0.40);
+  box-shadow: 0 18px 55px rgba(2,6,23,0.10);
 }
-.sx-floatTitle{font-weight:1000}
-.sx-floatSub{font-weight:850;color:var(--ink2)}
+.sx-floatTitle{font-weight:1000;color: rgba(15,23,42,0.90);}
+.sx-floatSub{margin-top:6px;font-weight:850;color:var(--ink2);}
+
+/* ICON BASE */
+.sx-ico{ width: 18px; height: 18px; display:inline-grid; place-items:center; }
+.sx-ico svg{ width: 18px; height: 18px; }
 `;
