@@ -134,3 +134,45 @@
     height: 220px;
   }
 }
+
+/* ACCENT TITLE */
+.dm-header-text h1 {
+  font-size: 2.6rem;
+  line-height: 1.15;
+}
+
+.dm-accent {
+  color: #2563eb;
+}
+
+/* FILTERS */
+.dm-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.dm-filters input,
+.dm-filters select {
+  padding: 0.65rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.dm-filters input {
+  flex: 1;
+}
+
+.dm-filters input:focus,
+.dm-filters select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+/* RESPONSIVE FILTERS */
+@media (max-width: 700px) {
+  .dm-filters {
+    flex-direction: column;
+  }
+}
