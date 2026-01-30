@@ -129,8 +129,8 @@ export default function Home() {
             </div>
           </div>
 
-          <Link className="h4-btn h4-soft" to="/contatti">
-            Scrivici <span aria-hidden="true">→</span>
+          <Link className="h4-btn h4-soft" to="/ChiSiamo">
+            Conoscici <span aria-hidden="true">→</span>
           </Link>
         </div>
       </section>
