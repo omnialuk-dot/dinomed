@@ -1,1095 +1,712 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import bookheartImg from "../assets/photos/bookheart.jpg";
+import React, { useEffect, useMemo, useState } from "react";
+import { getFilesList } from "../api";
 
-const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
-
-/* ---------------- helpers ---------------- */
-const s = (v) => String(v ?? "").trim();
-const low = (v) => s(v).toLowerCase();
-const uniq = (arr) => Array.from(new Set(arr));
-
-function getPdfUrl(d) {
-  const pick = d?.link || d?.file_url || d?.file || d?.url;
-  if (!pick) return null;
-
-  const p = String(pick);
-  if (p.startsWith("http")) return p;
-  if (p.startsWith("/")) return API_BASE + p;
-  return API_BASE + "/" + p;
+function humanizeFilename(name = "") {
+  const base = String(name).replace(/\.pdf$/i, "");
+  return base
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function formatDate(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("it-IT", { day: "2-digit", month: "short" });
+function detectMateria(filename = "") {
+  const s = String(filename).toLowerCase();
+  if (s.includes("chim")) return "Chimica";
+  if (s.includes("fis")) return "Fisica";
+  if (s.includes("bio")) return "Biologia";
+  return "Altro";
 }
 
-function parseQS(search) {
-  const p = new URLSearchParams(search);
-  return {
-    q: p.get("q") || "",
-    m: p.get("m") || "Tutte",
-    t: p.get("t") || "Tutti",
-    sort: p.get("sort") || "recenti",
-  };
+function sortLabel(sort) {
+  if (sort === "az") return "Titolo (A→Z)";
+  if (sort === "za") return "Titolo (Z→A)";
+  return "Più recenti (lista)";
 }
 
-function setQS(navigate, location, next) {
-  const p = new URLSearchParams(location.search);
-  p.set("q", next.q || "");
-  p.set("m", next.m || "Tutte");
-  p.set("t", next.t || "Tutti");
-  p.set("sort", next.sort || "recenti");
-  // pulizia URL
-  if (!next.q) p.delete("q");
-  if (next.m === "Tutte") p.delete("m");
-  if (next.t === "Tutti") p.delete("t");
-  if (next.sort === "recenti") p.delete("sort");
-  navigate({ pathname: location.pathname, search: p.toString() ? `?${p.toString()}` : "" }, { replace: true });
-}
-
-/* ---------------- page ---------------- */
-export default function Dispense() {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  // init dai parametri url
-  const init = useMemo(() => parseQS(location.search), [location.search]);
-
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
-
-  const [q, setQ] = useState(init.q);
-  const [materia, setMateria] = useState(init.m);
-  const [tag, setTag] = useState(init.t);
-  const [sort, setSort] = useState(init.sort); // recenti | pagine | titolo
-
-  const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(null);
-
-  const didInitRef = useRef(false);
-
-  // carico dati
-  useEffect(() => {
-    let alive = true;
-
-    async function load() {
-      setLoading(true);
-      setErr("");
-      try {
-        const r = await fetch(`${API_BASE}/api/dispense`);
-        if (!r.ok) throw new Error(`Errore caricamento (${r.status})`);
-        const d = await r.json();
-        if (!alive) return;
-        setItems(Array.isArray(d) ? d : []);
-      } catch (e) {
-        if (!alive) return;
-        setErr(e?.message || "Non riesco a caricare le dispense.");
-      } finally {
-        if (!alive) return;
-        setLoading(false);
-      }
-    }
-
-    load();
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  // sync stato -> URL (solo dopo mount)
-  useEffect(() => {
-    if (!didInitRef.current) {
-      didInitRef.current = true;
-      return;
-    }
-    setQS(navigate, location, { q, m: materia, t: tag, sort });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, materia, tag, sort]);
-
-  // opzioni filtri
-  const materie = useMemo(() => {
-    const ms = items.map((x) => s(x.materia)).filter(Boolean);
-    ms.sort((a, b) => a.localeCompare(b, "it"));
-    return ["Tutte", ...uniq(ms)];
-  }, [items]);
-
-  const tags = useMemo(() => {
-    const all = [];
-    for (const x of items) {
-      if (Array.isArray(x.tag)) all.push(...x.tag.map((t) => s(t)).filter(Boolean));
-    }
-    const u = uniq(all);
-    u.sort((a, b) => a.localeCompare(b, "it"));
-    return ["Tutti", ...u];
-  }, [items]);
-
-  // filtro + sort
-  const filtered = useMemo(() => {
-    const query = low(q);
-
-    let arr = items.filter((x) => {
-      if (materia !== "Tutte" && s(x.materia) !== materia) return false;
-
-      if (tag !== "Tutti") {
-        const xt = Array.isArray(x.tag) ? x.tag.map(s) : [];
-        if (!xt.includes(tag)) return false;
-      }
-
-      if (!query) return true;
-
-      const blob = [
-        x.titolo,
-        x.descrizione,
-        x.aChiServe,
-        x.materia,
-        Array.isArray(x.tag) ? x.tag.join(" ") : "",
-      ]
-        .map(low)
-        .join(" ");
-
-      return blob.includes(query);
-    });
-
-    if (sort === "pagine") {
-      arr = arr.slice().sort((a, b) => (b.pagine || 0) - (a.pagine || 0));
-    } else if (sort === "titolo") {
-      arr = arr.slice().sort((a, b) => s(a.titolo).localeCompare(s(b.titolo), "it"));
-    } else {
-      // recenti
-      arr = arr.slice().sort((a, b) => s(b.created_at).localeCompare(s(a.created_at)));
-    }
-
-    return arr;
-  }, [items, q, materia, tag, sort]);
-
-  const top = useMemo(() => filtered.slice(0, 6), [filtered]);
-  const rest = useMemo(() => filtered.slice(6), [filtered]);
-
-  const hasFilters =
-    q.trim() !== "" || materia !== "Tutte" || tag !== "Tutti" || sort !== "recenti";
-
-  function reset() {
-    setQ("");
-    setMateria("Tutte");
-    setTag("Tutti");
-    setSort("recenti");
+function Icon({ name = "doc", size = 18 }) {
+  const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none" };
+  if (name === "search") {
+    return (
+      <svg {...common}>
+        <path
+          d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <path
+          d="M16.5 16.5 21 21"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
   }
-
-  function openCard(d) {
-    setActive(d);
-    setOpen(true);
+  if (name === "doc") {
+    return (
+      <svg {...common}>
+        <path
+          d="M7 3h7l3 3v15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <path d="M14 3v3h3" stroke="currentColor" strokeWidth="2" />
+        <path
+          d="M8 12h8M8 16h8"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
   }
-
-  function closeModal() {
-    setOpen(false);
-    setTimeout(() => setActive(null), 150);
+  if (name === "arrow") {
+    return (
+      <svg {...common}>
+        <path
+          d="M5 12h12"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M13 6l6 6-6 6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
   }
-
-  // chiusura ESC
-  useEffect(() => {
-    function onKey(e) {
-      if (e.key === "Escape") closeModal();
-    }
-    if (open) window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
+  if (name === "download") {
+    return (
+      <svg {...common}>
+        <path
+          d="M12 3v10"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M8 10l4 4 4-4"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M5 21h14"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
   return (
-    <main className="dp">
-      <style>{css}</style>
-
-      {/* HERO */}
-      <section className="dp-hero">
-        <div className="dp-heroInner">
-          <div className="dp-left">
-            <div className="dp-kicker">
-              <span className="dp-kDot" aria-hidden="true" />
-              Dispense
-            </div>
-
-            <h1 className="dp-title">
-              Studia più <span className="dp-grad">chiaro</span>, senza caos.
-            </h1>
-
-            <p className="dp-sub">
-              Qui trovi dispense ordinate e PDF pronti. Filtra in due secondi e vai dritto al punto.
-            </p>
-
-            <div className="dp-miniRow">
-              <span className="dp-pill">
-                <b>{items.length}</b> totali
-              </span>
-              <span className="dp-pill dp-soft">
-                <b>{filtered.length}</b> risultati
-              </span>
-              <a className="dp-pill dp-link" href="/contatti">
-                Manca una dispensa? Scrivici →
-              </a>
-            </div>
-          </div>
-
-          <div className="dp-right" aria-hidden="true">
-            <div className="dp-orb dp-orbA" />
-            <div className="dp-orb dp-orbB" />
-
-            <div className="dp-glass">
-              <img className="dp-glassImg" src={bookheartImg} alt="" />
-              <div className="dp-glassOverlay" />
-              <div className="dp-glassLine" />
-              <div className="dp-glassLine dp-glassLine2" />
-              <div className="dp-glassLine dp-glassLine3" />
-              <div className="dp-glassHint">PDF • Tag • Ripasso</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CONTROLS */}
-      <section className="dp-controls">
-        <div className="dp-search">
-          <span className="dp-searchIcon" aria-hidden="true">⌕</span>
-          <input
-            className="dp-input"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Cerca: acidi e basi, equilibrio, limiti, cinetica…"
-          />
-          {q.trim() ? (
-            <button className="dp-clear" onClick={() => setQ("")} aria-label="Svuota ricerca">
-              ✕
-            </button>
-          ) : null}
-        </div>
-
-        <div className="dp-filterGrid">
-          <div className="dp-field">
-            <div className="dp-label">Materia</div>
-            <select className="dp-select" value={materia} onChange={(e) => setMateria(e.target.value)}>
-              {materie.map((m) => (
-                <option key={m} value={m}>{m}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="dp-field">
-            <div className="dp-label">Tag</div>
-            <select className="dp-select" value={tag} onChange={(e) => setTag(e.target.value)}>
-              {tags.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="dp-field">
-            <div className="dp-label">Ordina</div>
-            <div className="dp-pills">
-              <button type="button" className={"dp-pillBtn" + (sort === "recenti" ? " isOn" : "")} onClick={() => setSort("recenti")}>
-                Recenti
-              </button>
-              <button type="button" className={"dp-pillBtn" + (sort === "pagine" ? " isOn" : "")} onClick={() => setSort("pagine")}>
-                Pagine
-              </button>
-              <button type="button" className={"dp-pillBtn" + (sort === "titolo" ? " isOn" : "")} onClick={() => setSort("titolo")}>
-                Titolo
-              </button>
-            </div>
-          </div>
-
-          <button className="dp-reset" type="button" onClick={reset} disabled={!hasFilters}>
-            Reset
-          </button>
-        </div>
-      </section>
-
-      {/* STATES */}
-      {err ? (
-        <div className="dp-alert">
-          <div className="dp-alertTitle">⚠️ Qualcosa non va</div>
-          <div className="dp-alertText">{err}</div>
-        </div>
-      ) : null}
-
-      {loading ? (
-        <div className="dp-grid">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div className="dp-skel" key={i}>
-              <div className="dp-sTop" />
-              <div className="dp-sLine" />
-              <div className="dp-sLine dp-sLine2" />
-              <div className="dp-sTags" />
-            </div>
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="dp-empty">
-          <div className="dp-emptyTitle">Nessuna dispensa trovata.</div>
-          <div className="dp-emptyText">Cambia filtro o prova con una parola diversa.</div>
-          <button className="dp-ghostBtn" type="button" onClick={reset}>
-            Reset filtri
-          </button>
-        </div>
-      ) : (
-        <>
-          <section className="dp-section">
-            <div className="dp-sectionHead">
-              <h2 className="dp-h2">In evidenza</h2>
-              <div className="dp-h2Hint">clicca una card per vedere dettagli e aprire il PDF</div>
-            </div>
-            <div className="dp-grid dp-gridTop">
-              {top.map((d) => (
-                <DispensaCard key={d.id ?? d.titolo} d={d} premium onOpen={() => openCard(d)} />
-              ))}
-            </div>
-          </section>
-
-          <section className="dp-section">
-            <div className="dp-sectionHead">
-              <h2 className="dp-h2">Tutte le dispense</h2>
-              <div className="dp-h2Hint">ordinate e filtrabili — come deve essere</div>
-            </div>
-            <div className="dp-grid">
-              {rest.map((d) => (
-                <DispensaCard key={d.id ?? d.titolo} d={d} onOpen={() => openCard(d)} />
-              ))}
-            </div>
-          </section>
-        </>
-      )}
-
-      {/* MODAL */}
-      {open ? (
-        <div className="dp-modalBackdrop" onMouseDown={closeModal} role="presentation">
-          <div className="dp-modal" onMouseDown={(e) => e.stopPropagation()} role="dialog" aria-label="Dettagli dispensa">
-            <button className="dp-modalClose" onClick={closeModal} aria-label="Chiudi">
-              ✕
-            </button>
-
-            {active ? (
-              <>
-                <div className="dp-modalHead">
-                  <div className="dp-modalTitle">{s(active.titolo) || "Dispensa"}</div>
-                  <div className="dp-modalMeta">
-                    <span className="dp-badge">{s(active.materia) || "Altro"}</span>
-                    <span className="dp-metaSep">•</span>
-                    <span className="dp-metaText">{active.pagine || 0} pag.</span>
-                    {active.created_at ? (
-                      <>
-                        <span className="dp-metaSep">•</span>
-                        <span className="dp-metaText">{formatDate(active.created_at)}</span>
-                      </>
-                    ) : null}
-                  </div>
-                </div>
-
-                {active.aChiServe ? (
-                  <div className="dp-line">
-                    <span className="dp-lineK">A chi serve:</span>
-                    <span className="dp-lineV">{s(active.aChiServe)}</span>
-                  </div>
-                ) : null}
-
-                {active.descrizione ? (
-                  <div className="dp-modalDesc">{s(active.descrizione)}</div>
-                ) : (
-                  <div className="dp-modalDesc dp-muted">
-                    Nessuna descrizione aggiunta (puoi inserirla dall’admin quando carichi).
-                  </div>
-                )}
-
-                {Array.isArray(active.tag) && active.tag.length ? (
-                  <div className="dp-tags">
-                    {active.tag.map((t, i) => (
-                      <span className="dp-tag" key={s(t) + i}>
-                        {s(t)}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-
-                <div className="dp-modalActions">
-                  {getPdfUrl(active) ? (
-                    <a className="dp-btn" href={getPdfUrl(active)} target="_blank" rel="noreferrer">
-                      Apri PDF <span className="dp-arrow">→</span>
-                      <span className="dp-shine" aria-hidden="true" />
-                    </a>
-                  ) : (
-                    <span className="dp-btn dp-btnDisabled">PDF non disponibile</span>
-                  )}
-                </div>
-              </>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-    </main>
+    <svg {...common}>
+      <path
+        d="M4 6h16M4 12h16M4 18h10"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 
-/* ---------------- card ---------------- */
-function DispensaCard({ d, premium = false, onOpen }) {
-  const titolo = s(d.titolo) || "Dispensa";
-  const materia = s(d.materia) || "Altro";
-  const pagine = d.pagine ?? 0;
-  const date = formatDate(d.created_at);
-  const tags = Array.isArray(d.tag) ? d.tag.map(s).filter(Boolean) : [];
-  const desc = s(d.descrizione);
-  const aChi = s(d.aChiServe);
-  const hasPdf = !!getPdfUrl(d);
-
+function MateriaChip({ label, active, onClick }) {
   return (
-    <button type="button" className={"dp-card" + (premium ? " isPremium" : "")} onClick={onOpen}>
-      <div className="dp-cardBar" aria-hidden="true" />
-
-      <div className="dp-cardHead">
-        <div className="dp-cardTitle">{titolo}</div>
-        <div className="dp-cardMeta">
-          <span className="dp-badge">{materia}</span>
-          <span className="dp-metaSep">•</span>
-          <span className="dp-metaText">{pagine} pag.</span>
-          {date ? (
-            <>
-              <span className="dp-metaSep">•</span>
-              <span className="dp-metaText">{date}</span>
-            </>
-          ) : null}
-          <span className={"dp-pdfChip" + (hasPdf ? " ok" : "")}>{hasPdf ? "PDF ✔" : "PDF —"}</span>
-        </div>
-      </div>
-
-      {aChi ? (
-        <div className="dp-line">
-          <span className="dp-lineK">A chi serve:</span>
-          <span className="dp-lineV">{aChi}</span>
-        </div>
-      ) : null}
-
-      {desc ? <div className="dp-desc">{desc}</div> : null}
-
-      {tags.length ? (
-        <div className="dp-tags">
-          {tags.slice(0, 6).map((t, i) => (
-            <span className="dp-tag" key={t + i}>
-              {t}
-            </span>
-          ))}
-          {tags.length > 6 ? <span className="dp-tag dp-tagMore">+{tags.length - 6}</span> : null}
-        </div>
-      ) : null}
-
-      <div className="dp-cardHint">
-        Apri dettagli <span className="dp-arrow">→</span>
-      </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`dp-chip ${active ? "dp-chipOn" : ""}`}
+      aria-pressed={active}
+    >
+      {label}
     </button>
   );
 }
 
-/* ---------------- CSS (premium) ---------------- */
+export default function Dispense() {
+  const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
+
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+
+  // UI state
+  const [q, setQ] = useState("");
+  const [materia, setMateria] = useState("Tutte");
+  const [sort, setSort] = useState("recenti"); // recenti | az | za
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      setErr("");
+      try {
+        const list = await getFilesList();
+        setFiles(Array.isArray(list) ? list : []);
+      } catch (e) {
+        setErr(e?.message || "Errore nel caricamento delle dispense.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const dataset = useMemo(() => {
+    return (files || []).map((filename) => ({
+      filename,
+      title: humanizeFilename(filename),
+      materia: detectMateria(filename),
+    }));
+  }, [files]);
+
+  const countsByMateria = useMemo(() => {
+    const map = { Chimica: 0, Fisica: 0, Biologia: 0, Altro: 0 };
+    for (const d of dataset) map[d.materia] = (map[d.materia] || 0) + 1;
+    return map;
+  }, [dataset]);
+
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+
+    let arr = dataset.filter((d) => {
+      if (materia !== "Tutte" && d.materia !== materia) return false;
+      if (!s) return true;
+      return (d.title + " " + d.filename + " " + d.materia).toLowerCase().includes(s);
+    });
+
+    if (sort === "az") arr = arr.slice().sort((a, b) => a.title.localeCompare(b.title, "it"));
+    else if (sort === "za") arr = arr.slice().sort((a, b) => b.title.localeCompare(a.title, "it"));
+    // recenti: manteniamo l’ordine che arriva dal backend
+    return arr;
+  }, [dataset, q, materia, sort]);
+
+  function openPdf(filename) {
+    window.open(`${API_BASE}/api/files/download/${encodeURIComponent(filename)}`, "_blank", "noreferrer");
+  }
+
+  return (
+    <div className="container">
+      <style>{css}</style>
+
+      {/* Navbar (coerente con Home) */}
+      <nav className="top-nav">
+        <div className="brand">
+          <img src="/logo-full.png" alt="DinoMed Logo" className="logo-img" />
+        </div>
+
+        <div className="nav-links">
+          <a href="/">Home</a>
+          <a href="/dispense" style={{ fontWeight: 900 }}>Dispense</a>
+          <a href="/simulazioni">Simulazioni</a>
+        </div>
+
+        <a href="/simulazioni" className="cta-btn">Inizia</a>
+      </nav>
+
+      {/* Hero */}
+      <section className="dp-hero">
+        <div className="dp-heroLeft">
+          <div className="dp-kicker">DinoMed • Dispense</div>
+          <h1 className="dp-title">Dispense chiare. Zero caos.</h1>
+          <p className="dp-sub">
+            Scarica e apri i PDF quando ti servono. Cerca per parola chiave o filtra per materia.
+          </p>
+
+          <div className="dp-controls">
+            <div className="dp-search">
+              <span className="dp-ic" aria-hidden="true">
+                <Icon name="search" size={18} />
+              </span>
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Cerca: acidi-basi, stechiometria, moto, DNA..."
+                className="dp-input"
+              />
+            </div>
+
+            <div className="dp-row">
+              <div className="dp-chips">
+                <MateriaChip
+                  label={`Tutte (${dataset.length})`}
+                  active={materia === "Tutte"}
+                  onClick={() => setMateria("Tutte")}
+                />
+                <MateriaChip
+                  label={`Chimica (${countsByMateria.Chimica || 0})`}
+                  active={materia === "Chimica"}
+                  onClick={() => setMateria("Chimica")}
+                />
+                <MateriaChip
+                  label={`Fisica (${countsByMateria.Fisica || 0})`}
+                  active={materia === "Fisica"}
+                  onClick={() => setMateria("Fisica")}
+                />
+                <MateriaChip
+                  label={`Biologia (${countsByMateria.Biologia || 0})`}
+                  active={materia === "Biologia"}
+                  onClick={() => setMateria("Biologia")}
+                />
+                <MateriaChip
+                  label={`Altro (${countsByMateria.Altro || 0})`}
+                  active={materia === "Altro"}
+                  onClick={() => setMateria("Altro")}
+                />
+              </div>
+
+              <div className="dp-sortWrap">
+                <span className="dp-sortLbl">Ordina:</span>
+                <select className="dp-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+                  <option value="recenti">Più recenti (lista)</option>
+                  <option value="az">Titolo (A→Z)</option>
+                  <option value="za">Titolo (Z→A)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="dp-meta">
+              <span className="dp-pill">
+                <b>{filtered.length}</b> risultati • {sortLabel(sort)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Hero visual */}
+        <div className="dp-heroRight" aria-hidden="true">
+          <div className="dp-visualCard">
+            <div className="dp-visualTop">
+              <div className="dp-visualBadge">
+                <Icon name="doc" size={16} /> PDF pronti
+              </div>
+              <div className="dp-visualBadge dp-visualBadge2">
+                <Icon name="arrow" size={16} /> Apri / scarica
+              </div>
+            </div>
+
+            <div className="dp-visualBody">
+              <div className="dp-visualBig">📚</div>
+              <div className="dp-visualText">
+                Organizzate per materia, facili da trovare.
+              </div>
+            </div>
+
+            <div className="dp-visualFooter">
+              <div className="dp-miniStat">
+                <div className="dp-miniK">Totali</div>
+                <div className="dp-miniV">{dataset.length}</div>
+              </div>
+              <div className="dp-miniStat">
+                <div className="dp-miniK">Chimica</div>
+                <div className="dp-miniV">{countsByMateria.Chimica || 0}</div>
+              </div>
+              <div className="dp-miniStat">
+                <div className="dp-miniK">Fisica</div>
+                <div className="dp-miniV">{countsByMateria.Fisica || 0}</div>
+              </div>
+              <div className="dp-miniStat">
+                <div className="dp-miniK">Bio</div>
+                <div className="dp-miniV">{countsByMateria.Biologia || 0}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* States */}
+      {err ? (
+        <div className="dp-alert">
+          <b>⚠️ Errore</b>
+          <div style={{ marginTop: 6, whiteSpace: "pre-wrap" }}>{err}</div>
+        </div>
+      ) : null}
+
+      {loading ? (
+        <div className="dp-skelGrid">
+          <div className="dp-skelCard" />
+          <div className="dp-skelCard" />
+          <div className="dp-skelCard" />
+          <div className="dp-skelCard" />
+          <div className="dp-skelCard" />
+          <div className="dp-skelCard" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="dp-empty">
+          <div className="dp-emptyTitle">Nessuna dispensa trovata.</div>
+          <div className="dp-emptyText">
+            Prova a cambiare materia oppure cerca con una parola diversa.
+          </div>
+        </div>
+      ) : (
+        <section className="dp-grid">
+          {filtered.map((d) => (
+            <article key={d.filename} className="dp-card">
+              <div className="dp-cardTop">
+                <div className={`dp-icBox dp-icBox-${d.materia}`}>
+                  <Icon name="doc" size={18} />
+                </div>
+                <div className="dp-cardHead">
+                  <div className="dp-cardTitle" title={d.title}>{d.title}</div>
+                  <div className="dp-cardSub">
+                    <span className={`dp-badge dp-badge-${d.materia}`}>{d.materia}</span>
+                    <span className="dp-soft">•</span>
+                    <span className="dp-softMono">{d.filename}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="dp-actions">
+                <button className="dp-btn dp-btnPrimary" type="button" onClick={() => openPdf(d.filename)}>
+                  Apri PDF <span className="dp-btnIcon"><Icon name="arrow" size={18} /></span>
+                </button>
+
+                <a
+                  className="dp-btn dp-btnGhost"
+                  href={`${API_BASE}/api/files/download/${encodeURIComponent(d.filename)}`}
+                  download
+                >
+                  Scarica <span className="dp-btnIcon"><Icon name="download" size={18} /></span>
+                </a>
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
+    </div>
+  );
+}
+
 const css = `
-:root{
-  --dino:#22c55e;
-  --dino2:#16a34a;
-  --med:#38bdf8;
-  --med2:#0ea5e9;
-
-  --ink:#0b1220;
-  --ink2: rgba(15,23,42,0.72);
-
-  --bd: rgba(15,23,42,0.10);
-  --glass: rgba(255,255,255,0.72);
-
-  --shadow2: 0 10px 30px rgba(2,6,23,0.08);
-  --shadow: 0 18px 50px rgba(2,6,23,0.10);
-}
-
-.dp{
-  max-width:1100px;
-  margin:0 auto;
-  padding:18px;
-}
-
-/* HERO */
+/* ===== Layout page ===== */
 .dp-hero{
+  margin-top: 18px;
   border-radius: 22px;
-  border: 1px solid var(--bd);
-  background:
-    radial-gradient(900px 260px at 12% -25%, rgba(34,197,94,0.16), transparent 60%),
-    radial-gradient(900px 260px at 70% -30%, rgba(56,189,248,0.16), transparent 55%),
-    rgba(255,255,255,0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: var(--shadow2);
-  overflow:hidden;
-}
-.dp-heroInner{
-  display:grid;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: white;
+  padding: 18px;
+  display: grid;
   grid-template-columns: 1.2fr .8fr;
   gap: 14px;
-  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 18px 55px rgba(15,23,42,0.06);
 }
-@media (max-width: 920px){
-  .dp-heroInner{ grid-template-columns: 1fr; }
+.dp-hero:before{
+  content:"";
+  position:absolute;
+  inset:-160px -180px auto auto;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle at 30% 30%, rgba(0,166,118,0.18), rgba(28,140,255,0.14), rgba(255,255,255,0));
+  transform: rotate(10deg);
+  pointer-events:none;
+}
+@media (max-width: 980px){
+  .dp-hero{ grid-template-columns: 1fr; }
+  .dp-heroRight{ display:none; }
 }
 
+.dp-heroLeft{ position: relative; }
 .dp-kicker{
   display:inline-flex;
-  align-items:center;
-  gap: 10px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.65);
-  font-weight: 950;
-  color: rgba(15,23,42,0.84);
-}
-.dp-kDot{
-  width:10px;height:10px;border-radius:999px;
-  background: linear-gradient(90deg, var(--dino), var(--med));
-  box-shadow: 0 10px 20px rgba(2,6,23,0.12);
+  border: 1px solid rgba(0,166,118,0.25);
+  background: rgba(0,166,118,0.08);
+  font-weight: 900;
 }
 .dp-title{
   margin: 10px 0 6px;
   font-size: 34px;
-  line-height: 1.08;
-  letter-spacing: -0.02em;
-  color: rgba(15,23,42,0.94);
-  font-weight: 1000;
-}
-.dp-grad{
-  background: linear-gradient(90deg, var(--dino2), var(--med2));
-  -webkit-background-clip:text;
-  background-clip:text;
-  color: transparent;
+  line-height: 1.05;
 }
 .dp-sub{
-  margin:0;
-  font-weight: 800;
-  color: var(--ink2);
-  max-width: 72ch;
-}
-
-.dp-miniRow{
-  margin-top: 12px;
-  display:flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.dp-pill{
-  display:inline-flex;
-  align-items:center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.65);
-  font-weight: 900;
-  color: rgba(15,23,42,0.82);
-  text-decoration:none;
-  transition: transform .18s ease, background .18s ease;
-}
-.dp-pill:hover{ transform: translateY(-1px); background: rgba(255,255,255,0.80); }
-.dp-soft{
-  background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(56,189,248,0.10));
-}
-.dp-link{ cursor: pointer; }
-
-/* right visual */
-.dp-right{
-  position: relative;
-  padding: 6px;
-  display:grid;
-  place-items: center;
-  min-height: 210px;
-}
-.dp-orb{
-  position:absolute;
-  width: 240px;
-  height: 240px;
-  border-radius: 999px;
-  filter: blur(22px);
-  opacity: .70;
-  pointer-events:none;
-}
-.dp-orbA{ left:-60px; top:-60px; background: radial-gradient(circle at 30% 30%, rgba(34,197,94,0.45), transparent 60%); }
-.dp-orbB{ right:-70px; bottom:-70px; background: radial-gradient(circle at 60% 60%, rgba(56,189,248,0.45), transparent 60%); }
-
-.dp-glass{
-  width: min(380px, 95%);
-  border-radius: 20px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.55);
-  box-shadow: var(--shadow2);
-  overflow:hidden;
-  position: relative;
-}
-.dp-glassImg{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit: cover;
-  filter: saturate(0.95) contrast(1.05);
-  transform: scale(1.02);
-}
-.dp-glassOverlay{
-  position:absolute;
-  inset:0;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.72) 65%, rgba(255,255,255,0.84) 100%);
-}
-.dp-glassLine{
-  height: 52px;
-  background: linear-gradient(90deg, rgba(15,23,42,0.06), rgba(15,23,42,0.02));
-  border-bottom: 1px solid rgba(15,23,42,0.06);
-  position: relative;
-}
-.dp-glassLine2{ opacity: .85; }
-.dp-glassLine3{ opacity: .70; }
-.dp-glassHint{
-  position:absolute;
-  left: 14px;
-  bottom: 12px;
-  font-weight: 950;
-  color: rgba(15,23,42,0.72);
-}
-
-/* CONTROLS */
-.dp-controls{
-  margin-top: 14px;
-  padding: 14px;
-  border-radius: 18px;
-  border: 1px solid var(--bd);
-  background: rgba(255,255,255,0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 14px 34px rgba(2,6,23,0.06);
-}
-
-.dp-search{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.78);
-  transition: box-shadow .18s ease, border-color .18s ease;
-}
-.dp-search:focus-within{
-  border-color: rgba(56,189,248,0.30);
-  box-shadow: 0 0 0 4px rgba(56,189,248,0.16);
-}
-.dp-searchIcon{ font-weight: 1000; color: rgba(15,23,42,0.55); }
-.dp-input{
-  width:100%;
-  border:0;
-  outline:0;
-  background: transparent;
-  font-weight: 850;
-  color: rgba(15,23,42,0.90);
-}
-.dp-clear{
-  border:0;
-  background: rgba(15,23,42,0.06);
-  border: 1px solid rgba(15,23,42,0.10);
-  width: 34px; height: 34px;
-  border-radius: 12px;
-  cursor:pointer;
-  font-weight: 1000;
+  margin: 0;
   color: rgba(15,23,42,0.70);
+  font-weight: 650;
+  max-width: 75ch;
 }
 
-.dp-filterGrid{
-  margin-top: 12px;
-  display:grid;
-  grid-template-columns: 1fr 1fr 1.2fr auto;
-  gap: 12px;
-  align-items:end;
-}
-@media (max-width: 980px){
-  .dp-filterGrid{ grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 560px){
-  .dp-filterGrid{ grid-template-columns: 1fr; }
-}
-
-.dp-field{ display:grid; gap: 8px; }
-.dp-label{
-  font-weight: 950;
-  font-size: 12px;
-  color: rgba(15,23,42,0.72);
-}
-.dp-select{
-  width:100%;
+.dp-controls{ margin-top: 14px; display: grid; gap: 10px; }
+.dp-search{
+  display:flex; align-items:center; gap: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.95);
   padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.78);
-  font-weight: 900;
-  color: rgba(15,23,42,0.84);
+  box-shadow: 0 10px 25px rgba(15,23,42,0.06);
 }
-
-.dp-pills{ display:flex; gap: 6px; flex-wrap: wrap; }
-.dp-pillBtn{
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.70);
-  border-radius: 999px;
-  padding: 8px 10px;
-  font-weight: 950;
-  color: rgba(15,23,42,0.78);
-  cursor:pointer;
-  transition: transform .18s ease, background .18s ease, border-color .18s ease;
+.dp-ic{ color: rgba(15,23,42,0.55); display:grid; place-items:center; }
+.dp-input{
+  width: 100%;
+  border: 0;
+  outline: none;
+  font-weight: 750;
+  font-size: 14px;
+  background: transparent;
 }
-.dp-pillBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,0.85); }
-.dp-pillBtn.isOn{
-  background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(56,189,248,0.14));
-  border-color: rgba(56,189,248,0.22);
-  color: rgba(15,23,42,0.92);
-  box-shadow: 0 10px 24px rgba(2,6,23,0.08);
-}
-
-.dp-reset{
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(15,23,42,0.03);
-  font-weight: 1000;
-  cursor:pointer;
-}
-.dp-reset:disabled{ opacity: .45; cursor:not-allowed; }
-
-/* SECTIONS + GRID */
-.dp-section{ margin-top: 18px; }
-.dp-sectionHead{
+.dp-row{
   display:flex;
   justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
-  margin: 6px 2px 10px;
+  flex-wrap: wrap;
 }
-.dp-h2{
-  margin: 0;
-  font-size: 18px;
-  font-weight: 1000;
-  letter-spacing: -0.01em;
-  color: rgba(15,23,42,0.92);
-}
-.dp-h2Hint{
-  font-weight: 850;
-  font-size: 13px;
-  color: rgba(15,23,42,0.62);
-}
-
-.dp-grid{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-.dp-gridTop{ grid-template-columns: repeat(3, 1fr); }
-@media (max-width: 980px){
-  .dp-grid{ grid-template-columns: repeat(2, 1fr); }
-  .dp-gridTop{ grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 560px){
-  .dp-grid, .dp-gridTop{ grid-template-columns: 1fr; }
-}
-
-/* CARDS (button) */
-.dp-card{
-  position: relative;
-  border-radius: 18px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.86);
-  box-shadow: 0 14px 36px rgba(2,6,23,0.05);
-  padding: 14px;
-  overflow: hidden;
-  text-align: left;
+.dp-chips{ display:flex; gap: 8px; flex-wrap:wrap; }
+.dp-chip{
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.95);
   cursor: pointer;
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  font-weight: 800;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.dp-chip:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 35px rgba(15,23,42,0.08);
+  border-color: rgba(28,140,255,0.25);
+}
+.dp-chipOn{
+  background: rgba(28,140,255,0.08);
+  border-color: rgba(28,140,255,0.26);
+}
+.dp-sortWrap{ display:flex; gap: 8px; align-items:center; }
+.dp-sortLbl{ font-weight: 800; color: rgba(15,23,42,0.60); font-size: 12px; }
+.dp-select{
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: white;
+  font-weight: 850;
+  outline: none;
+}
+
+.dp-meta{ display:flex; gap: 8px; flex-wrap:wrap; }
+.dp-pill{
+  display:inline-flex; gap: 8px; align-items:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(15,23,42,0.03);
+  font-weight: 850;
+  color: rgba(15,23,42,0.75);
+}
+
+/* ===== Right visual ===== */
+.dp-heroRight{ position: relative; display:grid; align-items: stretch; }
+.dp-visualCard{
+  border-radius: 20px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: linear-gradient(180deg, rgba(28,140,255,0.06), rgba(255,255,255,0.95));
+  box-shadow: 0 18px 55px rgba(15,23,42,0.06);
+  padding: 14px;
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.dp-visualCard:before{
+  content:"";
+  position:absolute;
+  inset:auto -120px -120px auto;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle at 30% 30%, rgba(0,166,118,0.20), rgba(255,255,255,0));
+  transform: rotate(-10deg);
+}
+.dp-visualTop{ display:flex; gap: 10px; flex-wrap: wrap; position: relative; }
+.dp-visualBadge{
+  display:inline-flex; gap: 8px; align-items:center;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.85);
+  font-weight: 900;
+}
+.dp-visualBadge2{
+  border-color: rgba(0,166,118,0.25);
+  background: rgba(0,166,118,0.08);
+}
+.dp-visualBody{ position: relative; padding: 6px 2px; }
+.dp-visualBig{ font-size: 40px; line-height: 1; }
+.dp-visualText{ margin-top: 8px; font-weight: 850; color: rgba(15,23,42,0.72); }
+
+.dp-visualFooter{
+  position: relative;
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 10px;
+}
+.dp-miniStat{
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.85);
+  padding: 10px;
+}
+.dp-miniK{ font-size: 12px; color: rgba(15,23,42,0.55); font-weight: 900; }
+.dp-miniV{ margin-top: 4px; font-size: 18px; font-weight: 950; }
+
+/* ===== Alerts / Empty / Skeleton ===== */
+.dp-alert{
+  margin-top: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(239,68,68,0.30);
+  background: rgba(239,68,68,0.08);
+  padding: 12px;
+  font-weight: 800;
+}
+.dp-empty{
+  margin-top: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: white;
+  padding: 16px;
+  box-shadow: 0 18px 55px rgba(15,23,42,0.06);
+}
+.dp-emptyTitle{ font-weight: 950; font-size: 16px; }
+.dp-emptyText{ margin-top: 6px; color: rgba(15,23,42,0.65); font-weight: 750; }
+
+.dp-skelGrid{
+  margin-top: 14px;
+  display:grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 980px){ .dp-skelGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px){ .dp-skelGrid{ grid-template-columns: 1fr; } }
+.dp-skelCard{
+  height: 170px;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: linear-gradient(90deg, rgba(15,23,42,0.04), rgba(15,23,42,0.07), rgba(15,23,42,0.04));
+  background-size: 200% 100%;
+  animation: dpShimmer 1.1s infinite linear;
+}
+@keyframes dpShimmer{
+  0%{ background-position: 0% 0; }
+  100%{ background-position: 200% 0; }
+}
+
+/* ===== Cards grid ===== */
+.dp-grid{
+  margin-top: 14px;
+  display:grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+}
+@media (max-width: 980px){ .dp-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (max-width: 620px){ .dp-grid{ grid-template-columns: 1fr; } }
+
+.dp-card{
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: white;
+  box-shadow: 0 14px 40px rgba(15,23,42,0.06);
+  padding: 12px;
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
 }
 .dp-card:hover{
   transform: translateY(-2px);
-  border-color: rgba(56,189,248,0.22);
-  box-shadow: 0 18px 46px rgba(2,6,23,0.08);
+  box-shadow: 0 20px 60px rgba(15,23,42,0.10);
+  border-color: rgba(28,140,255,0.22);
 }
-.dp-card.isPremium{
-  background:
-    radial-gradient(520px 220px at 30% -10%, rgba(34,197,94,0.12), transparent 60%),
-    radial-gradient(520px 220px at 80% -10%, rgba(56,189,248,0.12), transparent 60%),
-    rgba(255,255,255,0.88);
+.dp-cardTop{ display:flex; gap: 10px; align-items:flex-start; }
+.dp-icBox{
+  width: 40px; height: 40px;
+  display:grid; place-items:center;
+  border-radius: 14px;
+  border: 1px solid rgba(28,140,255,0.18);
+  background: rgba(28,140,255,0.06);
+  color: rgba(28,140,255,0.95);
+  flex: 0 0 auto;
 }
-.dp-cardBar{
-  position:absolute;
-  left:0; top:0; bottom:0;
-  width: 4px;
-  background: linear-gradient(180deg, var(--dino2), var(--med2));
-  opacity: .85;
-}
-.dp-cardHead{ padding-left: 6px; }
+.dp-icBox-Chimica{ border-color: rgba(0,166,118,0.22); background: rgba(0,166,118,0.08); color: rgba(0,166,118,1); }
+.dp-icBox-Fisica{ border-color: rgba(28,140,255,0.22); background: rgba(28,140,255,0.08); color: rgba(28,140,255,1); }
+.dp-icBox-Biologia{ border-color: rgba(99,102,241,0.22); background: rgba(99,102,241,0.08); color: rgba(99,102,241,1); }
+.dp-icBox-Altro{ border-color: rgba(15,23,42,0.14); background: rgba(15,23,42,0.05); color: rgba(15,23,42,0.75); }
+
+.dp-cardHead{ min-width: 0; }
 .dp-cardTitle{
-  font-weight: 1000;
-  letter-spacing: -0.01em;
+  font-weight: 950;
+  font-size: 16px;
   color: rgba(15,23,42,0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
-.dp-cardMeta{
-  margin-top: 6px;
+.dp-cardSub{
+  margin-top: 5px;
   display:flex;
   gap: 8px;
   flex-wrap: wrap;
-  align-items: center;
+  align-items:center;
 }
 .dp-badge{
+  font-size: 12px;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(15,23,42,0.10);
+  border: 1px solid rgba(0,0,0,0.10);
   background: rgba(15,23,42,0.03);
-  font-weight: 950;
-  font-size: 12px;
-  color: rgba(15,23,42,0.78);
-}
-.dp-metaSep{ opacity: .55; font-weight: 900; }
-.dp-metaText{ font-weight: 850; font-size: 12px; color: rgba(15,23,42,0.66); }
-.dp-pdfChip{
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(15,23,42,0.03);
-  font-weight: 950;
-  font-size: 12px;
-  color: rgba(15,23,42,0.60);
-}
-.dp-pdfChip.ok{
-  background: rgba(34,197,94,0.10);
-  border-color: rgba(34,197,94,0.20);
-  color: rgba(15,23,42,0.82);
-}
-
-.dp-line{
-  margin-top: 10px;
-  display:flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding-left: 6px;
-}
-.dp-lineK{ font-weight: 950; color: rgba(15,23,42,0.62); font-size: 13px; }
-.dp-lineV{ font-weight: 900; color: rgba(15,23,42,0.82); font-size: 13px; }
-.dp-desc{
-  margin-top: 10px;
-  padding-left: 6px;
-  color: rgba(15,23,42,0.70);
-  font-weight: 780;
-  font-size: 13px;
-  line-height: 1.35;
-}
-.dp-tags{
-  margin-top: 10px;
-  padding-left: 6px;
-  display:flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.dp-tag{
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.72);
   font-weight: 900;
+}
+.dp-badge-Chimica{ border-color: rgba(0,166,118,0.25); background: rgba(0,166,118,0.08); }
+.dp-badge-Fisica{ border-color: rgba(28,140,255,0.25); background: rgba(28,140,255,0.08); }
+.dp-badge-Biologia{ border-color: rgba(99,102,241,0.25); background: rgba(99,102,241,0.08); }
+.dp-badge-Altro{ border-color: rgba(15,23,42,0.14); background: rgba(15,23,42,0.04); }
+.dp-soft{ color: rgba(15,23,42,0.35); font-weight: 900; }
+.dp-softMono{
+  color: rgba(15,23,42,0.55);
+  font-weight: 800;
   font-size: 12px;
-  color: rgba(15,23,42,0.76);
-}
-.dp-tagMore{
-  background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(56,189,248,0.10));
-}
-.dp-cardHint{
-  margin-top: 12px;
-  padding-left: 6px;
-  font-weight: 950;
-  color: rgba(15,23,42,0.70);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
 }
 
-/* CTA button with shine */
+.dp-actions{
+  display:flex;
+  gap: 10px;
+  margin-top: auto;
+}
 .dp-btn{
-  position: relative;
-  overflow:hidden;
+  flex: 1;
   display:inline-flex;
+  justify-content:center;
   align-items:center;
   gap: 10px;
   padding: 10px 12px;
   border-radius: 14px;
-  text-decoration:none;
-  font-weight: 1000;
-  color: #fff;
-  background: linear-gradient(90deg, var(--dino2), var(--med2));
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow: 0 14px 30px rgba(2,6,23,0.16);
-  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  font-weight: 950;
+  text-decoration: none;
+  user-select: none;
+  border: 1px solid rgba(0,0,0,0.10);
+  cursor: pointer;
+  background: white;
 }
-.dp-btn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 18px 40px rgba(2,6,23,0.22);
-  filter: saturate(1.05);
+.dp-btnIcon{ display:grid; place-items:center; }
+.dp-btnPrimary{
+  background: rgba(28,140,255,0.10);
+  border-color: rgba(28,140,255,0.24);
 }
-.dp-arrow{ font-weight: 1000; }
-.dp-shine{
-  position:absolute;
-  inset:0;
-  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.26) 25%, transparent 50%);
-  transform: translateX(-120%);
-  animation: dpShine 4.2s ease-in-out infinite;
-  pointer-events:none;
+.dp-btnPrimary:hover{
+  background: rgba(28,140,255,0.14);
 }
-@keyframes dpShine{
-  0%, 58% { transform: translateX(-120%); }
-  88%, 100% { transform: translateX(120%); }
+.dp-btnGhost{
+  background: rgba(0,166,118,0.08);
+  border-color: rgba(0,166,118,0.22);
 }
-.dp-btnDisabled{
-  background: rgba(15,23,42,0.06);
-  border: 1px solid rgba(15,23,42,0.10);
-  color: rgba(15,23,42,0.62);
-  box-shadow: none;
-  cursor: default;
-}
-
-/* States */
-.dp-alert{
-  margin-top: 14px;
-  padding: 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(239,68,68,0.22);
-  background: rgba(239,68,68,0.08);
-}
-.dp-alertTitle{ font-weight: 1000; color: rgba(15,23,42,0.90); }
-.dp-alertText{ margin-top: 6px; font-weight: 850; color: rgba(15,23,42,0.76); }
-
-.dp-empty{
-  margin-top: 14px;
-  padding: 22px;
-  border-radius: 18px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.78);
-  text-align:center;
-}
-.dp-emptyTitle{ font-weight: 1000; font-size: 18px; }
-.dp-emptyText{ margin-top: 6px; font-weight: 850; color: rgba(15,23,42,0.70); }
-.dp-ghostBtn{
-  margin-top: 12px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(15,23,42,0.03);
-  font-weight: 1000;
-  cursor:pointer;
-}
-
-/* Skeletons */
-.dp-skel{
-  border-radius: 18px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.76);
-  padding: 14px;
-  overflow:hidden;
-}
-.dp-sTop{
-  height: 16px;
-  width: 70%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(15,23,42,0.06), rgba(15,23,42,0.02), rgba(15,23,42,0.06));
-  animation: dpSk 1.2s ease-in-out infinite;
-}
-.dp-sLine{
-  margin-top: 10px;
-  height: 12px;
-  width: 88%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(15,23,42,0.06), rgba(15,23,42,0.02), rgba(15,23,42,0.06));
-  animation: dpSk 1.2s ease-in-out infinite;
-}
-.dp-sLine2{ width: 62%; }
-.dp-sTags{
-  margin-top: 12px;
-  height: 12px;
-  width: 55%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(15,23,42,0.06), rgba(15,23,42,0.02), rgba(15,23,42,0.06));
-  animation: dpSk 1.2s ease-in-out infinite;
-}
-@keyframes dpSk{
-  0%{ filter: brightness(1); }
-  50%{ filter: brightness(1.06); }
-  100%{ filter: brightness(1); }
-}
-
-/* MODAL */
-.dp-modalBackdrop{
-  position: fixed;
-  inset: 0;
-  background: rgba(2,6,23,0.55);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  display:grid;
-  place-items: center;
-  padding: 18px;
-  z-index: 999;
-}
-.dp-modal{
-  width: min(720px, 100%);
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,0.18);
-  background:
-    radial-gradient(900px 260px at 12% -25%, rgba(34,197,94,0.14), transparent 60%),
-    radial-gradient(900px 260px at 70% -30%, rgba(56,189,248,0.14), transparent 55%),
-    rgba(255,255,255,0.92);
-  box-shadow: 0 30px 90px rgba(2,6,23,0.40);
-  padding: 18px;
-  position: relative;
-  animation: dpPop .14s ease-out;
-}
-@keyframes dpPop{
-  from{ transform: translateY(8px); opacity: .85; }
-  to{ transform: translateY(0); opacity: 1; }
-}
-.dp-modalClose{
-  position:absolute;
-  top: 12px;
-  right: 12px;
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.70);
-  cursor:pointer;
-  font-weight: 1000;
-  color: rgba(15,23,42,0.70);
-}
-.dp-modalHead{ padding-right: 54px; }
-.dp-modalTitle{
-  font-weight: 1000;
-  font-size: 18px;
-  letter-spacing: -0.01em;
-  color: rgba(15,23,42,0.92);
-}
-.dp-modalMeta{
-  margin-top: 8px;
-  display:flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items:center;
-}
-.dp-modalDesc{
-  margin-top: 12px;
-  font-weight: 800;
-  color: rgba(15,23,42,0.76);
-  line-height: 1.45;
-}
-.dp-muted{ opacity: .85; }
-.dp-modalActions{
-  margin-top: 14px;
-  display:flex;
-  justify-content:flex-end;
+.dp-btnGhost:hover{
+  background: rgba(0,166,118,0.12);
 }
 `;
