@@ -15,15 +15,15 @@ export default function Simulazioni() {
 
     let raf = 0;
 
-    // più lento + pause chiare
+    // timeline: lento + pause chiare
     const T = {
       fadeIn: 450,
       move1: 2200,
-      stop1: 1700, // READ
+      stop1: 1900, // READ
       move2: 2200,
-      stop2: 1700, // WRITE
+      stop2: 1900, // WRITE
       move3: 2200,
-      stop3: 1600, // GRAD
+      stop3: 1700, // GRAD
       exit: 900,
     };
     const total = Object.values(T).reduce((a, b) => a + b, 0);
@@ -32,10 +32,10 @@ export default function Simulazioni() {
     const lerp = (a, b, t) => a + (b - a) * t;
     const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
-    const getLayout = () => {
+    const layout = () => {
       const pad = 14;
       const w = storyEl.clientWidth;
-      const dW = 48; // mascotte PIÙ PICCOLA (prima era enorme)
+      const dW = 64; // mascotte + scena (dimensione giusta per capirci)
       const inner = Math.max(0, w - pad * 2 - dW);
 
       return {
@@ -47,14 +47,12 @@ export default function Simulazioni() {
       };
     };
 
-    const setPhase = (p) => {
-      storyEl.dataset.phase = p;
-    };
+    const setPhase = (p) => (storyEl.dataset.phase = p);
 
     const start = performance.now();
 
     const tick = (now) => {
-      const { x0, x1, x2, x3, xEnd } = getLayout();
+      const { x0, x1, x2, x3, xEnd } = layout();
       let t = (now - start) % total;
 
       const s1 = T.fadeIn;
@@ -115,7 +113,6 @@ export default function Simulazioni() {
       <style>{css}</style>
 
       <section className="smx-hero">
-        {/* kicker */}
         <div className="smx-kicker">
           <span className="smx-dot" aria-hidden="true" />
           <span className="smx-brand">
@@ -131,9 +128,7 @@ export default function Simulazioni() {
             <h1 className="smx-title">
               Allenati <span className="smx-grad">come all’esame</span>.
             </h1>
-
             <p className="smx-lead">In modo semplice.</p>
-
             <p className="smx-sub">
               Simulazioni pensate per farti concentrare su ciò che conta, con un’interfaccia pulita e una correzione immediata.
             </p>
@@ -162,7 +157,7 @@ export default function Simulazioni() {
               </button>
             </div>
 
-            {/* STRIP ANIMATA — chiara, leggibile */}
+            {/* STRIP “STORIA” — 3 scene leggibili */}
             <div className="smx-story" ref={storyRef} data-phase="walk" aria-hidden="true">
               <div className="smx-storyGlow" />
 
@@ -173,60 +168,136 @@ export default function Simulazioni() {
               </div>
 
               <div className="smx-mover" ref={moverRef}>
-                {/* Mascotte (piccola, dritta, senza faccia blu) */}
-                <div className="smx-mascot">
-                  <svg viewBox="0 0 64 64" className="m-svg" aria-hidden="true">
+                <svg className="smx-scene" viewBox="0 0 160 84" aria-hidden="true">
+                  {/* shadow */}
+                  <ellipse cx="54" cy="74" rx="38" ry="8" fill="rgba(15,23,42,0.10)" />
+
+                  {/* ===== DINO BASE (stile “tua immagine”: verde pieno + linee bianche) ===== */}
+                  <g className="dino">
                     {/* tail */}
-                    <path d="M10 38c-7 2-9 10 2 10 6 0 9-2 13-6" fill="#16a34a" opacity=".95" />
-                    {/* body */}
-                    <ellipse cx="30" cy="40" rx="16" ry="12" fill="#22c55e" />
-                    <ellipse cx="33" cy="41" rx="9" ry="7" fill="#16a34a" opacity=".35" />
-                    {/* legs (green, not white) */}
-                    <path d="M22 50c-5 2-7 6 2 6 6 0 6-2 8-4" fill="#15803d" />
-                    <path d="M33 50c-5 2-7 6 2 6 6 0 6-2 8-4" fill="#15803d" />
-                    {/* neck */}
-                    <rect x="33" y="26" width="10" height="10" rx="6" fill="#16a34a" />
-                    {/* head */}
                     <path
-                      d="M26 14c10-6 28-2 30 10 2 12-14 18-27 16-10-2-14-18-3-26z"
+                      d="M22 50c-18 6-18 20 8 16 10-2 18-8 24-14"
+                      fill="#16a34a"
+                      opacity="0.95"
+                    />
+                    {/* body */}
+                    <path
+                      d="M40 36c6-10 28-14 40-4 12 10 8 32-10 36-18 4-40-8-30-32Z"
                       fill="#22c55e"
                     />
-                    {/* spines */}
-                    <path d="M39 13l4-6 4 7" fill="#15803d" opacity=".95" />
-                    <path d="M48 14l4-6 4 7" fill="#15803d" opacity=".95" />
-                    <path d="M55 18l3-5 3 6" fill="#15803d" opacity=".95" />
-                    {/* eye */}
-                    <circle cx="48" cy="22" r="2.6" fill="#0f172a" opacity=".9" />
-                    {/* mask (small, not whole face) */}
+                    {/* belly shading */}
                     <path
-                      d="M49 28c6 0 10 1 10 4s-4 5-10 5-10-2-10-5 4-4 10-4z"
-                      fill="#7dd3fc"
-                      opacity=".95"
+                      d="M56 40c14-6 26 2 26 14 0 10-10 18-24 14-12-4-14-20-2-28Z"
+                      fill="rgba(0,0,0,0.10)"
                     />
-                    <path d="M40 31c3-3 15-3 18 0" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" />
-                    {/* arm */}
-                    <path d="M40 40c7 0 9 4 12 6" stroke="#15803d" strokeWidth="6" strokeLinecap="round" />
-                  </svg>
 
-                  {/* PROPS (tutti colorati, mai bianchi) */}
-                  <div className="p-book" aria-hidden="true">
-                    <span className="bk1" />
-                    <span className="bk2" />
-                  </div>
+                    {/* head */}
+                    <path
+                      d="M58 14c18-12 56-4 56 20 0 18-24 26-44 22-20-4-30-26-12-42Z"
+                      fill="#22c55e"
+                    />
+                    {/* head highlight */}
+                    <path
+                      d="M74 22c14-8 34-4 34 10 0 12-18 16-32 12"
+                      fill="rgba(255,255,255,0.10)"
+                    />
 
-                  <div className="p-clip" aria-hidden="true">
-                    <span className="clp" />
-                    <span className="pen" />
-                  </div>
+                    {/* spines (ATTACCATI) */}
+                    <path d="M84 12l8-12 10 14" fill="#15803d" opacity="0.95" />
+                    <path d="M98 12l8-12 10 14" fill="#15803d" opacity="0.95" />
+                    <path d="M112 18l7-10 8 12" fill="#15803d" opacity="0.95" />
+                    <path d="M118 30l10-8 6 14" fill="#15803d" opacity="0.95" />
 
-                  <div className="p-grad" aria-hidden="true">
-                    <span className="cap" />
-                    <span className="dip" />
-                    <span className="star s1" />
-                    <span className="star s2" />
-                    <span className="star s3" />
-                  </div>
-                </div>
+                    {/* eye */}
+                    <circle cx="104" cy="30" r="4" fill="#0f172a" opacity="0.92" />
+
+                    {/* mouth white stroke (come tua reference) */}
+                    <path
+                      d="M78 38c12 8 30 8 44 2"
+                      fill="none"
+                      stroke="#ffffff"
+                      strokeWidth="5"
+                      strokeLinecap="round"
+                      opacity="0.9"
+                    />
+                    <path
+                      d="M70 48c10 8 26 10 40 6"
+                      fill="none"
+                      stroke="#ffffff"
+                      strokeWidth="5"
+                      strokeLinecap="round"
+                      opacity="0.9"
+                    />
+
+                    {/* arm base */}
+                    <path
+                      className="arm"
+                      d="M84 56c10 0 18 6 22 10"
+                      fill="none"
+                      stroke="#15803d"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                    />
+
+                    {/* legs */}
+                    <path
+                      className="leg1"
+                      d="M54 66c-12 4-16 14 8 12 12-2 14-6 20-10"
+                      fill="#15803d"
+                    />
+                    <path
+                      className="leg2"
+                      d="M72 66c-12 4-16 14 8 12 12-2 14-6 20-10"
+                      fill="#15803d"
+                      opacity="0.95"
+                    />
+                  </g>
+
+                  {/* ===== READ SCENE (LIBRO ROSSO GRANDE) ===== */}
+                  <g className="scene scene-read">
+                    {/* book */}
+                    <path d="M110 58c20-8 38 2 38 16v6H98v-6c0-6 4-12 12-16Z" fill="#b91c1c" />
+                    <path d="M110 58c16-6 30 2 30 14v8h-10v-8c0-6-8-10-20-8Z" fill="#ef4444" />
+                    <path d="M106 62c14-8 30-2 32 10" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity=".85" />
+                    <path d="M106 70c14-8 30-2 32 10" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity=".85" />
+                  </g>
+
+                  {/* ===== WRITE SCENE (BANCO ARANCIONE + FOGLIO + PENNA) ===== */}
+                  <g className="scene scene-write">
+                    {/* desk */}
+                    <path d="M96 54h58v16H96z" fill="#f97316" />
+                    <path d="M100 70h10v12h-10zM140 70h10v12h-10z" fill="#ea580c" />
+                    {/* paper */}
+                    <path d="M110 56h26v14h-26z" fill="#fde68a" stroke="rgba(15,23,42,0.12)" strokeWidth="2" />
+                    <path d="M114 60h18" stroke="rgba(15,23,42,0.35)" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M114 64h16" stroke="rgba(15,23,42,0.30)" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M114 68h12" stroke="rgba(15,23,42,0.28)" strokeWidth="2" strokeLinecap="round" />
+                    {/* pen */}
+                    <path d="M136 58l14 10" stroke="#0ea5e9" strokeWidth="6" strokeLinecap="round" />
+                    <path d="M148 66l6 4" stroke="#16a34a" strokeWidth="6" strokeLinecap="round" />
+                  </g>
+
+                  {/* ===== GRAD SCENE (TOCCO + DIPLOMA) ===== */}
+                  <g className="scene scene-grad">
+                    {/* cap */}
+                    <path d="M102 6l32 10-32 10-32-10 32-10Z" fill="#0f172a" opacity=".92" />
+                    <path d="M92 22h20v6H92z" fill="#0f172a" opacity=".88" />
+                    <path d="M132 18v18" stroke="#fbbf24" strokeWidth="4" strokeLinecap="round" />
+                    <circle cx="132" cy="38" r="4" fill="#fbbf24" />
+
+                    {/* diploma */}
+                    <path
+                      d="M120 44c12 0 22 10 22 22v8h-52v-8c0-12 10-22 22-22h8Z"
+                      fill="#fbbf24"
+                    />
+                    <path d="M96 52c14-6 32-6 46 0" stroke="rgba(15,23,42,0.25)" strokeWidth="3" strokeLinecap="round" />
+                    <circle cx="132" cy="70" r="4" fill="#ef4444" />
+                    {/* stars */}
+                    <path className="st s1" d="M148 28h10" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" />
+                    <path className="st s2" d="M146 36h10" stroke="#0ea5e9" strokeWidth="4" strokeLinecap="round" />
+                    <path className="st s3" d="M144 22h10" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" />
+                  </g>
+                </svg>
               </div>
             </div>
           </div>
@@ -429,8 +500,8 @@ const css = `
 /* STRIP */
 .smx-story{
   margin-top: 22px;
-  max-width: 520px;
-  height: 86px;
+  max-width: 560px;
+  height: 96px;
   border-radius: 18px;
   border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.72);
@@ -447,10 +518,11 @@ const css = `
   opacity: .95;
   pointer-events:none;
 }
+
 .smx-track{
   position:absolute;
   left: 14px; right: 14px;
-  top: 52px;
+  top: 60px;
   height: 2px;
   border-radius: 999px;
   background: rgba(15,23,42,0.10);
@@ -482,127 +554,45 @@ const css = `
 .smx-mover{
   position:absolute;
   left: 14px;
-  top: 12px;
-  width: 48px;
-  height: 48px;
+  top: 6px;
+  width: 160px;
+  height: 84px;
   z-index: 2;
   transform: translateX(0);
   opacity: 1;
   will-change: transform, opacity;
 }
 
-/* mascotte */
-.smx-mascot{
-  position: relative;
-  width: 48px;
-  height: 48px;
-}
-.m-svg{
-  width: 48px;
-  height: 48px;
+.smx-scene{
+  width: 160px;
+  height: 84px;
   display:block;
-  filter: drop-shadow(0 10px 22px rgba(2,6,23,0.10));
 }
 
-/* PROPS — TUTTI COLORATI, VISIBILI */
-.p-book, .p-clip, .p-grad{
-  position:absolute;
-  inset:0;
-  opacity:0;
-  transform: translateY(2px);
-  transition: opacity .18s ease, transform .18s ease;
-  pointer-events:none;
+/* micro-walk only in walk */
+.smx-story[data-phase="walk"] .dino{
+  animation: bob .55s ease-in-out infinite;
+  transform-origin: 60px 60px;
 }
-.smx-story[data-phase="read"]  .p-book{ opacity:1; transform: translateY(0); }
-.smx-story[data-phase="write"] .p-clip{ opacity:1; transform: translateY(0); }
-.smx-story[data-phase="grad"]  .p-grad{ opacity:1; transform: translateY(0); }
+@keyframes bob{
+  0%,100%{ transform: translateY(0); }
+  50%{ transform: translateY(-2px); }
+}
+.smx-story[data-phase="walk"] .leg1{ transform: translateX(0); }
+.smx-story[data-phase="walk"] .leg2{ transform: translateX(1px); }
 
-/* BOOK (blu, non bianco) */
-.p-book .bk1{
-  position:absolute; left: 34px; top: 30px;
-  width: 12px; height: 14px;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #60a5fa, #38bdf8);
-  box-shadow: 0 10px 20px rgba(2,6,23,0.10);
-}
-.p-book .bk2{
-  position:absolute; left: 37px; top: 32px;
-  width: 2px; height: 10px;
-  border-radius: 2px;
-  background: rgba(255,255,255,0.35);
-}
+/* scenes visibility */
+.scene{ opacity:0; transform: translateY(2px); transition: opacity .18s ease, transform .18s ease; }
+.smx-story[data-phase="read"]  .scene-read{ opacity:1; transform: translateY(0); }
+.smx-story[data-phase="write"] .scene-write{ opacity:1; transform: translateY(0); }
+.smx-story[data-phase="grad"]  .scene-grad{ opacity:1; transform: translateY(0); }
 
-/* CLIPBOARD + PEN (tutto leggibile) */
-.p-clip .clp{
-  position:absolute; left: 30px; top: 28px;
-  width: 16px; height: 18px;
-  border-radius: 4px;
-  background: linear-gradient(180deg, #fbbf24, #f59e0b);
-  box-shadow: 0 10px 20px rgba(2,6,23,0.10);
-  border: 1px solid rgba(15,23,42,0.10);
-}
-.p-clip .clp::after{
-  content:"";
-  position:absolute; left: 3px; top: 5px;
-  width: 10px; height: 2px;
-  border-radius: 999px;
-  background: rgba(15,23,42,0.22);
-  box-shadow: 0 5px 0 rgba(15,23,42,0.20);
-}
-.p-clip .pen{
-  position:absolute; left: 22px; top: 40px;
-  width: 16px; height: 4px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--dino2), var(--med2));
-  transform: rotate(-18deg);
-  box-shadow: 0 10px 18px rgba(2,6,23,0.10);
-}
-
-/* GRAD: cap + diploma + stelline */
-.p-grad .cap{
-  position:absolute; left: 30px; top: 10px;
-  width: 16px; height: 6px;
-  border-radius: 4px 4px 2px 2px;
-  background: rgba(15,23,42,0.32);
-}
-.p-grad .cap::after{
-  content:"";
-  position:absolute; left: 7px; top: 5px;
-  width: 2px; height: 10px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--dino2), var(--med2));
-}
-.p-grad .dip{
-  position:absolute; left: 28px; top: 30px;
-  width: 18px; height: 10px;
-  border-radius: 4px;
-  background: linear-gradient(180deg, #fde68a, #fbbf24);
-  box-shadow: 0 10px 18px rgba(2,6,23,0.10);
-  border: 1px solid rgba(15,23,42,0.10);
-}
-.p-grad .dip::after{
-  content:"";
-  position:absolute; right: 3px; top: 3px;
-  width: 6px; height: 4px;
-  border-radius: 2px;
-  background: rgba(15,23,42,0.12);
-}
-.p-grad .star{
-  position:absolute;
-  width: 8px; height: 3px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--dino2), var(--med2));
-  opacity:.0;
-  transform: translateX(0) scaleX(1);
-  animation: starPop .9s ease-in-out infinite;
-}
-.p-grad .star.s1{ left: 44px; top: 10px; transform: rotate(22deg); }
-.p-grad .star.s2{ left: 42px; top: 18px; transform: rotate(-18deg); animation-delay:.15s; }
-.p-grad .star.s3{ left: 38px; top: 6px;  transform: rotate(78deg);  animation-delay:.30s; }
-.smx-story[data-phase="grad"] .p-grad .star{ opacity:1; }
-
-@keyframes starPop{
-  0%,100%{ transform: translateX(0) scaleX(1); opacity:.70; }
+/* stars pop */
+.smx-story[data-phase="grad"] .st{ animation: pop .9s ease-in-out infinite; opacity:1; }
+.smx-story[data-phase="grad"] .st.s2{ animation-delay:.12s; }
+.smx-story[data-phase="grad"] .st.s3{ animation-delay:.24s; }
+@keyframes pop{
+  0%,100%{ transform: translateX(0) scaleX(1); opacity:.75; }
   50%{ transform: translateX(4px) scaleX(1.25); opacity:1; }
 }
 `;
