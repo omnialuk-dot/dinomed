@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
 
@@ -11,7 +11,7 @@ export default function Dispense() {
     async function load() {
       try {
         const res = await fetch(`${API_BASE}/api/dispense`);
-        if (!res.ok) throw new Error("Impossibile caricare le dispense");
+        if (!res.ok) throw new Error("Errore nel caricamento delle dispense");
         const data = await res.json();
         setItems(Array.isArray(data) ? data : []);
       } catch (e) {
@@ -23,66 +23,46 @@ export default function Dispense() {
     load();
   }, []);
 
-  const featured = useMemo(() => items.slice(0, 3), [items]);
-  const all = useMemo(() => items, [items]);
-
   return (
-    <main className="dmDispPage">
+    <main className="h4">
       <style>{css}</style>
 
-      {/* HERO */}
-      <section className="dmHero">
-        <div>
-          <span className="dmKicker">DinoMed • Dispense</span>
-          <h1 className="dmTitle">Studia con materiali chiari e mirati</h1>
-          <p className="dmSub">
-            Dispense ordinate per argomento, pensate per capire davvero.
-          </p>
+      {/* HEADER COERENTE CON HOME */}
+      <section className="h4-section">
+        <div className="h4-kicker">
+          <span className="h4-dot" aria-hidden="true" />
+          <span className="h4-tagline">Materiale di studio</span>
         </div>
+
+        <h1 className="h4-title">
+          Dispense <span className="h4-grad">ordinate</span>
+        </h1>
+
+        <p className="h4-sub">
+          Niente caos. Solo ciò che serve, quando serve.
+        </p>
       </section>
 
-      {err && <div className="dmError">⚠️ {err}</div>}
-
-      {loading ? (
-        <div className="dmLoading">Caricamento dispense…</div>
-      ) : (
-        <>
-          {/* IN EVIDENZA */}
-          {featured.length > 0 && (
-            <section className="dmSection">
-              <h2 className="dmH2">In evidenza</h2>
-              <div className="dmGrid">
-                {featured.map((d) => (
-                  <Card key={d.id} d={d} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* TUTTE */}
-          <section className="dmSection">
-            <h2 className="dmH2">Tutte le dispense</h2>
-            {all.length === 0 ? (
-              <div className="dmEmpty">Nessuna dispensa disponibile.</div>
+      {/* CONTENUTO */}
+      <section className="h4-section">
+        {err && <div className="h4-state h4-error">⚠️ {err}</div>}
+        {loading ? (
+          <div className="h4-state">Caricamento dispense…</div>
+        ) : (
+          <div className="h4-list">
+            {items.length === 0 ? (
+              <div className="h4-state">Nessuna dispensa disponibile.</div>
             ) : (
-              <div className="dmGrid">
-                {all.map((d) => (
-                  <Card key={d.id} d={d} />
-                ))}
-              </div>
+              items.map((d) => <DispensaItem key={d.id} d={d} />)
             )}
-          </section>
-        </>
-      )}
+          </div>
+        )}
+      </section>
     </main>
   );
 }
 
-/* =====================
-   CARD
-   ===================== */
-function Card({ d }) {
-  const hasPdf = Boolean(d.file_url || d.link);
+function DispensaItem({ d }) {
   const pdfUrl = d.file_url
     ? d.file_url.startsWith("http")
       ? d.file_url
@@ -90,166 +70,88 @@ function Card({ d }) {
     : d.link;
 
   return (
-    <article className="dmCard">
-      <div className="dmCardTop">
-        <span className="dmBadge">{d.materia || "Dispensa"}</span>
-        <span className="dmPages">{d.pagine || 0} pag.</span>
+    <article className="h4-card">
+      <div className="h4-cardTop">
+        <span className="h4-pill">{d.materia || "Dispensa"}</span>
+        {d.pagine && <span className="h4-meta">{d.pagine} pag.</span>}
       </div>
 
-      <h3 className="dmCardTitle">{d.titolo}</h3>
+      <h3 className="h4-cardTitle">{d.titolo}</h3>
 
-      {d.descrizione && <p className="dmDesc">{d.descrizione}</p>}
+      {d.descrizione && (
+        <p className="h4-cardText">{d.descrizione}</p>
+      )}
 
-      <div className="dmCardActions">
-        {hasPdf ? (
+      <div className="h4-cardCta">
+        {pdfUrl ? (
           <a
             href={pdfUrl}
             target="_blank"
             rel="noreferrer"
-            className="dmBtn dmBtnPrimary"
+            className="h4-link"
           >
             Apri PDF →
           </a>
         ) : (
-          <span className="dmBtn dmBtnGhost">PDF non disponibile</span>
+          <span className="h4-disabled">Non disponibile</span>
         )}
       </div>
     </article>
   );
 }
 
-/* =====================
-   CSS
-   ===================== */
+/* =========================
+   STESSO SISTEMA VISIVO HOME
+   ========================= */
 const css = `
-.dmDispPage{
-  padding:18px;
-  max-width:1100px;
-  margin:0 auto;
+.h4-section{
+  margin-top: 28px;
 }
-
-.dmHero{
-  border-radius:22px;
-  padding:22px;
-  background:linear-gradient(135deg, rgba(16,185,129,.12), rgba(37,99,235,.10));
-  border:1px solid rgba(15,23,42,.08);
-  box-shadow:0 18px 55px rgba(15,23,42,.06);
-}
-
-.dmKicker{
-  display:inline-block;
-  font-weight:900;
-  padding:6px 10px;
-  border-radius:999px;
-  background:white;
-  border:1px solid rgba(15,23,42,.12);
-}
-
-.dmTitle{
-  margin:12px 0 6px;
-  font-size:34px;
-}
-
-.dmSub{
-  margin:0;
-  font-weight:750;
-  color:rgba(15,23,42,.65);
-  max-width:70ch;
-}
-
-.dmSection{
-  margin-top:26px;
-}
-
-.dmH2{
-  margin-bottom:12px;
-  font-size:20px;
-}
-
-.dmGrid{
+.h4-list{
   display:grid;
-  grid-template-columns:repeat(3, minmax(0,1fr));
-  gap:14px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
 }
-
-@media(max-width:900px){
-  .dmGrid{ grid-template-columns:repeat(2,1fr); }
+.h4-card{
+  border-radius: 22px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.90);
+  padding: 16px 18px;
+  box-shadow: var(--shadow2);
 }
-@media(max-width:560px){
-  .dmGrid{ grid-template-columns:1fr; }
-}
-
-.dmCard{
-  background:white;
-  border-radius:18px;
-  padding:14px;
-  border:1px solid rgba(15,23,42,.10);
-  box-shadow:0 14px 40px rgba(15,23,42,.06);
+.h4-cardTop{
   display:flex;
-  flex-direction:column;
-}
-
-.dmCardTop{
-  display:flex;
-  justify-content:space-between;
+  justify-content: space-between;
   align-items:center;
+  gap: 8px;
 }
-
-.dmBadge{
-  font-size:12px;
-  font-weight:900;
-  padding:4px 8px;
-  border-radius:999px;
-  background:rgba(16,185,129,.12);
+.h4-pill{
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  background:#fff;
 }
-
-.dmPages{
-  font-size:12px;
-  font-weight:800;
-  color:rgba(15,23,42,.55);
+.h4-meta{
+  font-weight: 800;
+  font-size: 12px;
+  color: rgba(15,23,42,0.55);
 }
-
-.dmCardTitle{
-  margin:10px 0 6px;
-  font-size:16px;
-  font-weight:950;
+.h4-state{
+  padding: 18px;
+  font-weight: 900;
+  color: rgba(15,23,42,0.65);
 }
-
-.dmDesc{
-  font-size:14px;
-  font-weight:700;
-  color:rgba(15,23,42,.70);
-  line-height:1.35;
+.h4-error{
+  color: #b91c1c;
 }
-
-.dmCardActions{
-  margin-top:auto;
-  display:flex;
-  justify-content:flex-end;
+.h4-disabled{
+  opacity: 0.5;
+  font-weight: 900;
 }
-
-.dmBtn{
-  padding:10px 12px;
-  border-radius:14px;
-  font-weight:900;
-  text-decoration:none;
-}
-
-.dmBtnPrimary{
-  background:rgba(15,23,42,.92);
-  color:white;
-}
-
-.dmBtnGhost{
-  border:1px dashed rgba(15,23,42,.20);
-  color:rgba(15,23,42,.55);
-}
-
-.dmLoading,
-.dmEmpty,
-.dmError{
-  margin-top:20px;
-  font-weight:800;
-  color:rgba(15,23,42,.65);
+.h4-link{
+  font-weight: 1000;
+  color: rgba(15,23,42,0.85);
 }
 `;
