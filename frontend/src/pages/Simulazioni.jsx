@@ -15,15 +15,14 @@ export default function Simulazioni() {
 
     let raf = 0;
 
-    // tempi: lenti + soste leggibili (come ti piace)
     const T = {
       fadeIn: 350,
       move1: 2200,
-      stop1: 1700, // READ
+      stop1: 1700,
       move2: 2200,
-      stop2: 1700, // WRITE
+      stop2: 1700,
       move3: 2200,
-      stop3: 1700, // GRAD
+      stop3: 1700,
       exit: 850,
     };
     const total = Object.values(T).reduce((a, b) => a + b, 0);
@@ -35,18 +34,10 @@ export default function Simulazioni() {
     const layout = () => {
       const pad = 14;
       const w = storyEl.clientWidth;
-
-      // scena compatta (resta come base “2”)
       const dW = 110;
       const inner = Math.max(0, w - pad * 2 - dW);
 
-      return {
-        x0: 0,
-        x1: inner * 0.18,
-        x2: inner * 0.5,
-        x3: inner * 0.82,
-        xEnd: inner,
-      };
+      return { x0: 0, x1: inner * 0.18, x2: inner * 0.5, x3: inner * 0.82, xEnd: inner };
     };
 
     const setPhase = (p) => (storyEl.dataset.phase = p);
@@ -114,7 +105,6 @@ export default function Simulazioni() {
       <style>{css}</style>
 
       <section className="smx-hero">
-        {/* Kicker in alto a sinistra */}
         <div className="smx-kicker">
           <span className="smx-dot" aria-hidden="true" />
           <span className="smx-brand">
@@ -161,7 +151,6 @@ export default function Simulazioni() {
               </button>
             </div>
 
-            {/* STRIP ANIMAZIONE (premium) */}
             <div className="smx-story" ref={storyRef} data-phase="walk" aria-hidden="true">
               <div className="smx-storyGlow" />
 
@@ -173,10 +162,9 @@ export default function Simulazioni() {
 
               <div className="smx-mover" ref={moverRef}>
                 <svg className="smx-scene" viewBox="0 0 110 70" aria-hidden="true">
-                  {/* shadow */}
                   <ellipse cx="28" cy="62" rx="18" ry="4" fill="rgba(15,23,42,0.10)" />
 
-                  {/* ===== STICKMAN VERDE ===== */}
+                  {/* stickman */}
                   <g className="man" transform="translate(6,8)">
                     <circle cx="20" cy="12" r="6" className="mFill" />
                     <path d="M20 18v18" className="mStroke" />
@@ -188,67 +176,42 @@ export default function Simulazioni() {
                     <path d="M22 52h8" className="mFoot" />
                   </g>
 
-                  {/* ===== READ (FIX: libro più piccolo + più vicino alle mani) ===== */}
+                  {/* READ — libro MOLTO più piccolo */}
                   <g className="scene scene-read">
-                    {/* libro di profilo, più piccolo e più “in mano” */}
-                    <path
-                      d="M38 31l12-4c2-1 4 1 4 3v17c0 2-2 4-4 3l-12-4V31z"
-                      fill="#ef4444"
-                    />
-                    {/* bordo pagine */}
-                    <path d="M40 31l9-3" stroke="#fde68a" strokeWidth="2.6" strokeLinecap="round" />
-                    <path d="M40 44l9 3" stroke="#fde68a" strokeWidth="2.6" strokeLinecap="round" />
-                    {/* righe */}
-                    <path
-                      d="M43 35h6M43 38h5.2M43 41h4.6"
-                      stroke="rgba(255,255,255,0.78)"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                    />
-                    {/* aggancio mano → libro (più corto e credibile) */}
-                    <path d="M32 38L38 34" stroke="rgba(15,23,42,0.14)" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M34 33l8-3c2-.8 3.5.6 3.5 2.4v11.5c0 1.8-1.5 3.2-3.5 2.4l-8-3V33z" fill="#ef4444" />
+                    <path d="M35.5 33l6-2.2M35.5 43l6 2.2" stroke="#fde68a" strokeWidth="2.2" strokeLinecap="round" />
+                    <path d="M38 36h4.2M38 38.8h3.6M38 41.6h3.2" stroke="rgba(255,255,255,0.78)" strokeWidth="1.3" strokeLinecap="round" />
+                    <path d="M30 38L34 35.6" stroke="rgba(15,23,42,0.14)" strokeWidth="2" strokeLinecap="round" />
                   </g>
 
-                  {/* ===== WRITE (FIX: scrivania più pulita + gambette + penna più piccola) ===== */}
+                  {/* WRITE — scrivania MOLTO più piccola + penna MOLTO più piccola */}
                   <g className="scene scene-write">
-                    {/* piano tavolo (più piccolo e leggero) */}
-                    <path
-                      d="M52 41h44c2 0 3.6 1.6 3.6 3.6v5.8H48.4v-5.8c0-2 1.6-3.6 3.6-3.6Z"
-                      fill="#f97316"
-                    />
-                    {/* bordino */}
-                    <path d="M48.4 47.2h51.2" stroke="rgba(255,255,255,0.40)" strokeWidth="2" strokeLinecap="round" />
+                    {/* tabletop */}
+                    <path d="M54 44h34c1.6 0 2.8 1.2 2.8 2.8v4.4H51.2v-4.4c0-1.6 1.2-2.8 2.8-2.8Z" fill="#f97316" />
+                    <path d="M51.2 48h39.6" stroke="rgba(255,255,255,0.40)" strokeWidth="2" strokeLinecap="round" />
+                    {/* legs */}
+                    <path d="M56.5 51.2v10.8" stroke="#ea580c" strokeWidth="4.2" strokeLinecap="round" />
+                    <path d="M85.5 51.2v10.8" stroke="#ea580c" strokeWidth="4.2" strokeLinecap="round" />
+                    {/* feet */}
+                    <path d="M52 62h9.5" stroke="rgba(15,23,42,0.16)" strokeWidth="3.2" strokeLinecap="round" />
+                    <path d="M80.5 62h9.5" stroke="rgba(15,23,42,0.16)" strokeWidth="3.2" strokeLinecap="round" />
 
-                    {/* gambette (più fini) */}
-                    <path d="M56 50.4v13" stroke="#ea580c" strokeWidth="5" strokeLinecap="round" />
-                    <path d="M92 50.4v13" stroke="#ea580c" strokeWidth="5" strokeLinecap="round" />
-                    {/* piedini */}
-                    <path d="M50 63.5h12" stroke="rgba(15,23,42,0.16)" strokeWidth="3.8" strokeLinecap="round" />
-                    <path d="M86 63.5h12" stroke="rgba(15,23,42,0.16)" strokeWidth="3.8" strokeLinecap="round" />
+                    {/* paper */}
+                    <path d="M64 44.6h10.5v6.8H64z" fill="#fde68a" stroke="rgba(15,23,42,0.12)" strokeWidth="1.2" />
+                    <path d="M65.3 46.5h7.7M65.3 48.3h6.5M65.3 50.1h4.8" stroke="rgba(15,23,42,0.22)" strokeWidth="1.2" strokeLinecap="round" />
 
-                    {/* foglio (ridotto) */}
-                    <path d="M64 42.2h14.5v9.3H64z" fill="#fde68a" stroke="rgba(15,23,42,0.12)" strokeWidth="1.4" />
-                    <path
-                      d="M66 45.2h10.5M66 47.8h9.2M66 50.4h6.8"
-                      stroke="rgba(15,23,42,0.22)"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                    />
-
-                    {/* penna (più piccola, mano → foglio) */}
-                    <path d="M34 38L60 46" stroke="#0ea5e9" strokeWidth="3.6" strokeLinecap="round" />
-                    <path d="M58.5 45.6l7.2 2.2" stroke="#16a34a" strokeWidth="3.6" strokeLinecap="round" />
+                    {/* pen (tiny) */}
+                    <path d="M34 38L60.5 46" stroke="#0ea5e9" strokeWidth="2.6" strokeLinecap="round" />
+                    <path d="M59.2 45.6l5.8 1.8" stroke="#16a34a" strokeWidth="2.6" strokeLinecap="round" />
                   </g>
 
-                  {/* ===== GRAD (NON TOCCATA: diploma + camminata ti piacciono) ===== */}
+                  {/* GRAD — invariato */}
                   <g className="scene scene-grad">
-                    {/* cap */}
                     <path d="M20 2l18 6-18 6-18-6 18-6Z" fill="#0f172a" opacity=".9" transform="translate(6,6)" />
                     <path d="M20 10h12v4H20z" fill="#0f172a" opacity=".86" transform="translate(6,6)" />
                     <path d="M38 8v14" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round" transform="translate(6,6)" />
                     <circle cx="44" cy="28" r="3" fill="#fbbf24" />
 
-                    {/* diploma roll */}
                     <path
                       d="M50 44h22c3 0 6 3 6 6v10c0 3-3 6-6 6H50c-3 0-6-3-6-6V50c0-3 3-6 6-6Z"
                       fill="#fde68a"
@@ -258,10 +221,8 @@ export default function Simulazioni() {
                     <path d="M54 50h14M54 54h12" stroke="rgba(15,23,42,0.22)" strokeWidth="2" strokeLinecap="round" />
                     <circle cx="72" cy="60" r="3" fill="#ef4444" />
 
-                    {/* link from hand */}
                     <path d="M34 40L50 50" stroke="rgba(15,23,42,0.14)" strokeWidth="2" strokeLinecap="round" />
 
-                    {/* stars */}
                     <path className="st s1" d="M92 18h10" stroke="#22c55e" strokeWidth="3.2" strokeLinecap="round" />
                     <path className="st s2" d="M90 26h10" stroke="#0ea5e9" strokeWidth="3.2" strokeLinecap="round" />
                     <path className="st s3" d="M88 12h10" stroke="#22c55e" strokeWidth="3.2" strokeLinecap="round" />
@@ -276,7 +237,6 @@ export default function Simulazioni() {
               <div className="smx-visualGlow" />
               <img className="smx-img" src={heroImg} alt="" />
               <div className="smx-overlay" />
-
               <div className="smx-float">
                 <div className="smx-floatTitle">Modalità simulazione</div>
                 <div className="smx-floatSub">Entra, scegli e parti.</div>
@@ -289,7 +249,6 @@ export default function Simulazioni() {
   );
 }
 
-/* ---------------- CSS premium ---------------- */
 const css = `
 :root{
   --dino:#22c55e; --dino2:#16a34a;
@@ -304,8 +263,6 @@ const css = `
 }
 
 .smx{ max-width:1120px; margin:0 auto; padding:22px; }
-
-/* HERO premium glass */
 .smx-hero{
   position: relative;
   border-radius: 28px;
@@ -322,24 +279,15 @@ const css = `
 }
 
 .smx-kicker{
-  position:absolute;
-  top: 14px;
-  left: 14px;
-  display:inline-flex;
-  align-items:center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 999px;
+  position:absolute; top: 14px; left: 14px;
+  display:inline-flex; align-items:center; gap: 10px;
+  padding: 10px 14px; border-radius: 999px;
   border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.70);
-  font-weight: 950;
-  color: rgba(15,23,42,0.82);
+  font-weight: 950; color: rgba(15,23,42,0.82);
 }
-@media (max-width: 980px){
-  .smx-kicker{ position: static; margin-bottom: 10px; }
-}
-.smx-dot{
-  width: 10px; height: 10px; border-radius: 999px;
+@media (max-width: 980px){ .smx-kicker{ position: static; margin-bottom: 10px; } }
+.smx-dot{ width: 10px; height: 10px; border-radius: 999px;
   background: linear-gradient(90deg, var(--dino), var(--med));
   box-shadow: 0 10px 20px rgba(2,6,23,0.10);
 }
@@ -348,87 +296,46 @@ const css = `
 .smx-med{ color: var(--med2); font-weight: 1000; }
 .smx-sep{ opacity:.55; }
 
-.smx-grid{
-  display:grid;
-  grid-template-columns: 1.05fr .95fr;
-  gap: 26px;
-  align-items:center;
-  padding-top: 34px;
-}
-@media (max-width: 980px){
-  .smx-grid{ grid-template-columns: 1fr; padding-top: 0; }
-}
+.smx-grid{ display:grid; grid-template-columns: 1.05fr .95fr; gap: 26px; align-items:center; padding-top: 34px; }
+@media (max-width: 980px){ .smx-grid{ grid-template-columns: 1fr; padding-top: 0; } }
 
-/* testi */
-.smx-title{
-  margin: 0;
-  font-size: 46px;
-  line-height: 1.02;
-  letter-spacing: -0.035em;
-  color: var(--ink);
-  font-weight: 1000;
-}
-@media (max-width: 520px){ .smx-title{ font-size: 36px; } }
-.smx-grad{
-  background: linear-gradient(90deg, var(--dino2), var(--med2));
-  -webkit-background-clip:text;
-  background-clip:text;
-  color: transparent;
-}
-.smx-lead{ margin: 10px 0 6px; font-weight: 950; color: rgba(15,23,42,0.80); }
-.smx-sub{ margin: 0; color: var(--ink2); font-weight: 850; max-width: 70ch; }
+.smx-title{ margin:0; font-size:46px; line-height:1.02; letter-spacing:-0.035em; color: var(--ink); font-weight:1000; }
+@media (max-width: 520px){ .smx-title{ font-size:36px; } }
+.smx-grad{ background: linear-gradient(90deg, var(--dino2), var(--med2)); -webkit-background-clip:text; background-clip:text; color: transparent; }
+.smx-lead{ margin:10px 0 6px; font-weight:950; color: rgba(15,23,42,0.80); }
+.smx-sub{ margin:0; color: var(--ink2); font-weight:850; max-width:70ch; }
 
-/* flow */
 .smx-flow{ margin-top:18px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
 .smx-flowItem{ display:flex; align-items:center; gap:8px; font-weight:950; color: rgba(15,23,42,0.82); }
-.smx-flowNum{
-  width:28px;height:28px;border-radius:999px;
-  display:grid;place-items:center;
-  background:linear-gradient(90deg,var(--dino2),var(--med2));
-  color:white;font-size:14px;
+.smx-flowNum{ width:28px;height:28px;border-radius:999px; display:grid;place-items:center;
+  background:linear-gradient(90deg,var(--dino2),var(--med2)); color:white;font-size:14px;
 }
 .smx-flowSep{ width:22px; height:1px; background:rgba(15,23,42,0.2); }
 
-/* CTA */
-.smx-actions{ margin-top: 20px; display:flex; gap: 12px; align-items:center; flex-wrap:wrap; }
+.smx-actions{ margin-top:20px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
 .smx-btn{
-  position: relative;
-  overflow:hidden;
-  display:inline-flex;
-  align-items:center;
-  gap: 10px;
-  padding: 13px 16px;
-  border-radius: 999px;
-  font-weight: 1000;
-  border: 1px solid rgba(15,23,42,0.10);
+  position: relative; overflow:hidden;
+  display:inline-flex; align-items:center; gap: 10px;
+  padding: 13px 16px; border-radius:999px;
+  font-weight:1000; border: 1px solid rgba(15,23,42,0.10);
   box-shadow: 0 14px 30px rgba(2,6,23,0.10);
   transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
   cursor:pointer;
 }
 .smx-btn:hover{ transform: translateY(-1px); box-shadow: 0 18px 40px rgba(2,6,23,0.14); filter: saturate(1.03); }
-.smx-primary{
-  color: white;
-  border: 1px solid rgba(255,255,255,0.22);
-  background: linear-gradient(90deg, var(--dino2), var(--med2));
-}
+.smx-primary{ color:white; border: 1px solid rgba(255,255,255,0.22); background: linear-gradient(90deg, var(--dino2), var(--med2)); }
 .smx-shine{
   position:absolute; inset:0;
   background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.26) 25%, transparent 50%);
   transform: translateX(-120%);
   animation: smxShine 4.2s ease-in-out infinite;
-  pointer-events: none;
+  pointer-events:none;
 }
-@keyframes smxShine{
-  0%, 58% { transform: translateX(-120%); }
-  88%, 100% { transform: translateX(120%); }
-}
+@keyframes smxShine{ 0%,58%{ transform: translateX(-120%);} 88%,100%{ transform: translateX(120%);} }
 
-/* visual */
 .smx-visual{
-  position: relative;
-  border-radius: 24px;
-  overflow:hidden;
-  border: 1px solid rgba(15,23,42,0.10);
+  position: relative; border-radius:24px; overflow:hidden;
+  border:1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.92);
   box-shadow: var(--shadow);
   height: 420px;
@@ -439,138 +346,85 @@ const css = `
   background:
     radial-gradient(420px 240px at 22% 18%, rgba(34,197,94,0.22), transparent 58%),
     radial-gradient(420px 240px at 78% 18%, rgba(56,189,248,0.22), transparent 58%);
-  filter: blur(26px);
-  opacity: .55;
-  pointer-events:none;
-  z-index:0;
+  filter: blur(26px); opacity:.55; pointer-events:none; z-index:0;
 }
-.smx-img{
-  position:relative; z-index:1;
-  width:100%; height:100%;
-  object-fit: cover;
-  display:block;
-  transform: scale(1.02);
-  filter: saturate(0.96) contrast(1.06);
-}
-.smx-overlay{
-  position:absolute; inset:0; z-index:2;
-  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0.86) 100%);
-}
+.smx-img{ position:relative; z-index:1; width:100%; height:100%; object-fit:cover; display:block; transform: scale(1.02); filter: saturate(0.96) contrast(1.06); }
+.smx-overlay{ position:absolute; inset:0; z-index:2; background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0.86) 100%); }
 .smx-float{
-  position:absolute;
-  left: 14px; right: 14px; bottom: 14px;
-  z-index:3;
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.40);
+  position:absolute; left:14px; right:14px; bottom:14px;
+  z-index:3; border-radius:18px;
+  border:1px solid rgba(255,255,255,0.40);
   background: rgba(255,255,255,0.78);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 18px 55px rgba(2,6,23,0.10);
-  padding: 12px;
+  padding:12px;
 }
-.smx-floatTitle{ font-weight: 1000; color: rgba(15,23,42,0.90); }
-.smx-floatSub{ margin-top: 6px; font-weight: 850; color: rgba(15,23,42,0.70); }
+.smx-floatTitle{ font-weight:1000; color: rgba(15,23,42,0.90); }
+.smx-floatSub{ margin-top:6px; font-weight:850; color: rgba(15,23,42,0.70); }
 
-/* strip */
 .smx-story{
-  margin-top: 22px;
-  max-width: 560px;
-  height: 92px;
-  border-radius: 18px;
-  border: 1px solid rgba(15,23,42,0.10);
+  margin-top:22px; max-width:560px; height:92px;
+  border-radius:18px; border:1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.72);
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
-  position: relative;
-  overflow: hidden;
+  position:relative; overflow:hidden;
 }
 .smx-storyGlow{
   position:absolute; inset:-50px;
   background:
     radial-gradient(320px 160px at 18% 70%, rgba(34,197,94,0.18), transparent 60%),
     radial-gradient(320px 160px at 82% 40%, rgba(56,189,248,0.18), transparent 60%);
-  filter: blur(24px);
-  opacity: .95;
-  pointer-events:none;
+  filter: blur(24px); opacity:.95; pointer-events:none;
 }
-
 .smx-track{
-  position:absolute;
-  left: 14px; right: 14px;
-  top: 60px;
-  height: 2px;
-  border-radius: 999px;
-  background: rgba(15,23,42,0.10);
-  z-index: 1;
+  position:absolute; left:14px; right:14px; top:60px;
+  height:2px; border-radius:999px; background: rgba(15,23,42,0.10); z-index:1;
 }
 .smx-node{
-  position:absolute;
-  top: -6px;
-  width: 14px; height: 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(15,23,42,0.10);
+  position:absolute; top:-6px;
+  width:14px; height:14px; border-radius:999px;
+  border:1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.82);
   box-shadow: 0 10px 22px rgba(2,6,23,0.06);
 }
-.smx-node.n1{ left: 18%; }
-.smx-node.n2{ left: 50%; }
-.smx-node.n3{ left: 82%; }
+.smx-node.n1{ left:18%; } .smx-node.n2{ left:50%; } .smx-node.n3{ left:82%; }
 .smx-node::after{
-  content:"";
-  position:absolute; inset:2px;
-  border-radius:999px;
-  background: linear-gradient(90deg, var(--dino2), var(--med2));
-  opacity:.14;
+  content:""; position:absolute; inset:2px; border-radius:999px;
+  background: linear-gradient(90deg, var(--dino2), var(--med2)); opacity:.14;
 }
-.smx-story[data-phase="read"]  .smx-node.n1::after{ opacity:.95; }
+.smx-story[data-phase="read"] .smx-node.n1::after{ opacity:.95; }
 .smx-story[data-phase="write"] .smx-node.n2::after{ opacity:.95; }
-.smx-story[data-phase="grad"]  .smx-node.n3::after{ opacity:.95; }
+.smx-story[data-phase="grad"] .smx-node.n3::after{ opacity:.95; }
 
-/* mover */
 .smx-mover{
-  position:absolute;
-  left: 14px;
-  top: 10px;
-  width: 110px;
-  height: 70px;
-  z-index: 2;
-  transform: translateX(0);
-  opacity: 1;
+  position:absolute; left:14px; top:10px;
+  width:110px; height:70px;
+  z-index:2; opacity:1;
   will-change: transform, opacity;
 }
 .smx-scene{ width:110px; height:70px; display:block; }
 
-/* stickman style */
 .mStroke{ stroke: var(--stick); stroke-width: 3.1; stroke-linecap: round; fill: none; }
 .mFill{ fill: var(--stick); }
 .mFoot{ stroke: rgba(15,23,42,0.18); stroke-width: 3.2; stroke-linecap: round; fill:none; }
 
-/* camminata (uguale a prima) */
-.smx-story[data-phase="walk"] .man{
-  animation: bob .58s ease-in-out infinite;
-  transform-origin: 20px 40px;
-}
+.smx-story[data-phase="walk"] .man{ animation: bob .58s ease-in-out infinite; transform-origin: 20px 40px; }
 .smx-story[data-phase="walk"] .leg1{ animation: legA .58s ease-in-out infinite; transform-origin: 20px 36px; }
 .smx-story[data-phase="walk"] .leg2{ animation: legB .58s ease-in-out infinite; transform-origin: 20px 36px; }
+
 @keyframes bob{
   0%,100%{ transform: translate(6px,8px) translateY(0); }
   50%{ transform: translate(6px,8px) translateY(-1.6px); }
 }
-@keyframes legA{
-  0%,100%{ transform: rotate(10deg); }
-  50%{ transform: rotate(-10deg); }
-}
-@keyframes legB{
-  0%,100%{ transform: rotate(-10deg); }
-  50%{ transform: rotate(10deg); }
-}
+@keyframes legA{ 0%,100%{ transform: rotate(10deg);} 50%{ transform: rotate(-10deg);} }
+@keyframes legB{ 0%,100%{ transform: rotate(-10deg);} 50%{ transform: rotate(10deg);} }
 
-/* scene switching */
 .scene{ opacity:0; transform: translateY(2px); transition: opacity .18s ease, transform .18s ease; }
 .smx-story[data-phase="read"]  .scene-read{ opacity:1; transform: translateY(0); }
 .smx-story[data-phase="write"] .scene-write{ opacity:1; transform: translateY(0); }
 .smx-story[data-phase="grad"]  .scene-grad{ opacity:1; transform: translateY(0); }
 
-/* stars */
 .smx-story[data-phase="grad"] .st{ animation: pop .9s ease-in-out infinite; opacity:1; }
 .smx-story[data-phase="grad"] .st.s2{ animation-delay:.12s; }
 .smx-story[data-phase="grad"] .st.s3{ animation-delay:.24s; }
