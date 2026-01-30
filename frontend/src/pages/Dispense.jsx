@@ -11,6 +11,7 @@ export default function Dispense() {
 
   const [search, setSearch] = useState("");
   const [materia, setMateria] = useState("Tutte");
+  const [sort, setSort] = useState("AZ"); // AZ | ZA | PAGES_ASC | PAGES_DESC
 
   useEffect(() => {
     fetch(`${API_BASE}/api/dispense`)
@@ -30,37 +31,69 @@ export default function Dispense() {
   }, []);
 
   const materieDisponibili = useMemo(() => {
-    const set = new Set(dispense.map((d) => d.materia).filter(Boolean));
+    const set = new Set(dispense.map((d) => d?.materia).filter(Boolean));
     return ["Tutte", ...Array.from(set)];
   }, [dispense]);
 
-  const dispenseFiltrate = useMemo(() => {
+  const dispenseFiltrateOrdinate = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return dispense.filter((d) => {
+
+    const filtered = dispense.filter((d) => {
+      if (!d) return false;
+
       const matchMateria = materia === "Tutte" || d.materia === materia;
-      const hay = `${d.titolo || ""} ${d.descrizione || ""}`.toLowerCase();
+
+      const hay = `${d.titolo || ""} ${d.descrizione || ""} ${d.materia || ""}`.toLowerCase();
       const matchSearch = q === "" || hay.includes(q);
+
       return matchMateria && matchSearch;
     });
-  }, [dispense, search, materia]);
+
+    const pagesVal = (d) => {
+      const n = Number.parseInt(d?.pagine, 10);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    const sorted = filtered.slice().sort((a, b) => {
+      if (sort === "AZ" || sort === "ZA") {
+        const ta = (a?.titolo || "").toLowerCase();
+        const tb = (b?.titolo || "").toLowerCase();
+        const cmp = ta.localeCompare(tb, "it");
+        return sort === "AZ" ? cmp : -cmp;
+      }
+
+      const pa = pagesVal(a);
+      const pb = pagesVal(b);
+
+      // Metti quelli senza pagine in fondo
+      if (pa === null && pb === null) return 0;
+      if (pa === null) return 1;
+      if (pb === null) return -1;
+
+      return sort === "PAGES_ASC" ? pa - pb : pb - pa;
+    });
+
+    return sorted;
+  }, [dispense, search, materia, sort]);
 
   return (
     <main className="dm-page">
       <header className="dm-header with-image">
         <div className="dm-header-text">
           <span className="dm-kicker">Dispense</span>
-          <h1 className="dm-gradient-title">
-            Studia meglio. <br />
-            Studia con metodo.
+
+          <h1 className="dm-title">
+            Ripassa <span className="dm-grad">meglio</span>.<br className="dm-br" />
+            Senza confusione.
           </h1>
-          <p>
-            Dispense selezionate, ordinate per argomento e pensate per aiutarti a capire davvero,
-            non solo a memorizzare.
+
+          <p className="dm-sub">
+            Materiale pulito, essenziale e ordinato. Trova subito la dispensa giusta e vai dritto al punto.
           </p>
         </div>
 
         <div className="dm-header-image">
-          <img src={heroImg} alt="Studio medico" />
+          <img src={heroImg} alt="Dispense e studio" />
         </div>
       </header>
 
@@ -80,6 +113,13 @@ export default function Dispense() {
               </option>
             ))}
           </select>
+
+          <select value={sort} onChange={(e) => setSort(e.target.value)}>
+            <option value="AZ">Titolo: A → Z</option>
+            <option value="ZA">Titolo: Z → A</option>
+            <option value="PAGES_ASC">Pagine: poche → tante</option>
+            <option value="PAGES_DESC">Pagine: tante → poche</option>
+          </select>
         </div>
       )}
 
@@ -88,18 +128,18 @@ export default function Dispense() {
 
       {!loading && !error && (
         <section className="dm-grid">
-          {dispenseFiltrate.length === 0 && (
+          {dispenseFiltrateOrdinate.length === 0 && (
             <p className="dm-status">Nessuna dispensa trovata.</p>
           )}
 
-          {dispenseFiltrate.map((d) => (
-            <article key={d.id} className="dm-card">
+          {dispenseFiltrateOrdinate.map((d) => (
+            <article key={d.id ?? `${d.titolo}-${d.materia}`} className="dm-card">
               <div className="dm-card-top">
                 <span className="dm-tag">{d.materia || "Dispensa"}</span>
                 {d.pagine && <span className="dm-pages">{d.pagine} pag.</span>}
               </div>
 
-              <h3>{d.titolo}</h3>
+              <h3 className="dm-card-title">{d.titolo}</h3>
 
               {d.descrizione && <p className="dm-desc">{d.descrizione}</p>}
 
