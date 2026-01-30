@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, getToken, API_BASE, absUrl } from "../lib/api";
 
-const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
-
 async function uploadPdfToBackend(file) {
   const token = getToken(); // ✅ usa la chiave giusta: dm_admin_token
   const form = new FormData();
