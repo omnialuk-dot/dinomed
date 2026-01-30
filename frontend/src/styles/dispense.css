@@ -14,7 +14,7 @@
   grid-template-columns: 1.2fr 1fr;
   gap: 3rem;
   align-items: center;
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
 }
 
 .dm-kicker {
@@ -24,15 +24,11 @@
   color: var(--dm-muted, #6b7280);
 }
 
-.dm-header-text h1 {
-  font-size: 2.4rem;
-  margin: 0.6rem 0 1rem;
-}
-
 .dm-header-text p {
   font-size: 1.05rem;
   color: var(--dm-text-secondary, #555);
-  max-width: 42ch;
+  max-width: 48ch;
+  margin-top: 0.75rem;
 }
 
 .dm-header-image img {
@@ -40,6 +36,43 @@
   height: 260px;
   object-fit: cover;
   border-radius: 18px;
+}
+
+/* ===== GRADIENT TITLE (COME HOME) ===== */
+.dm-gradient-title {
+  font-size: 2.6rem;
+  line-height: 1.15;
+  font-weight: 700;
+  margin: 0.6rem 0 0.25rem;
+  background: linear-gradient(90deg, #22c55e, #3b82f6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* FILTERS */
+.dm-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.dm-filters input,
+.dm-filters select {
+  padding: 0.65rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  font-size: 0.9rem;
+  background: #fff;
+}
+
+.dm-filters input {
+  flex: 1;
+}
+
+.dm-filters input:focus,
+.dm-filters select:focus {
+  outline: none;
+  border-color: #3b82f6;
 }
 
 /* STATUS */
@@ -111,7 +144,7 @@
   color: #fff;
   text-decoration: none;
   padding: 0.55rem 1rem;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 0.85rem;
 }
 
@@ -135,42 +168,6 @@
   }
 }
 
-/* ACCENT TITLE */
-.dm-header-text h1 {
-  font-size: 2.6rem;
-  line-height: 1.15;
-}
-
-.dm-accent {
-  color: #2563eb;
-}
-
-/* FILTERS */
-.dm-filters {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 3rem;
-}
-
-.dm-filters input,
-.dm-filters select {
-  padding: 0.65rem 0.9rem;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  font-size: 0.9rem;
-}
-
-.dm-filters input {
-  flex: 1;
-}
-
-.dm-filters input:focus,
-.dm-filters select:focus {
-  outline: none;
-  border-color: #2563eb;
-}
-
-/* RESPONSIVE FILTERS */
 @media (max-width: 700px) {
   .dm-filters {
     flex-direction: column;

@@ -35,14 +35,11 @@ export default function Dispense() {
   }, [dispense]);
 
   const dispenseFiltrate = useMemo(() => {
+    const q = search.trim().toLowerCase();
     return dispense.filter((d) => {
-      const matchMateria =
-        materia === "Tutte" || d.materia === materia;
-
-      const matchSearch =
-        d.titolo?.toLowerCase().includes(search.toLowerCase()) ||
-        d.descrizione?.toLowerCase().includes(search.toLowerCase());
-
+      const matchMateria = materia === "Tutte" || d.materia === materia;
+      const hay = `${d.titolo || ""} ${d.descrizione || ""}`.toLowerCase();
+      const matchSearch = q === "" || hay.includes(q);
       return matchMateria && matchSearch;
     });
   }, [dispense, search, materia]);
@@ -52,13 +49,13 @@ export default function Dispense() {
       <header className="dm-header with-image">
         <div className="dm-header-text">
           <span className="dm-kicker">Dispense</span>
-          <h1>
+          <h1 className="dm-gradient-title">
             Studia meglio. <br />
-            <span className="dm-accent">Studia con metodo.</span>
+            Studia con metodo.
           </h1>
           <p>
-            Dispense selezionate, ordinate per argomento e pensate per aiutarti
-            a capire davvero, non solo a memorizzare.
+            Dispense selezionate, ordinate per argomento e pensate per aiutarti a capire davvero,
+            non solo a memorizzare.
           </p>
         </div>
 
@@ -67,7 +64,6 @@ export default function Dispense() {
         </div>
       </header>
 
-      {/* FILTRI */}
       {!loading && !error && (
         <div className="dm-filters">
           <input
@@ -77,10 +73,7 @@ export default function Dispense() {
             onChange={(e) => setSearch(e.target.value)}
           />
 
-          <select
-            value={materia}
-            onChange={(e) => setMateria(e.target.value)}
-          >
+          <select value={materia} onChange={(e) => setMateria(e.target.value)}>
             {materieDisponibili.map((m) => (
               <option key={m} value={m}>
                 {m}
@@ -108,9 +101,7 @@ export default function Dispense() {
 
               <h3>{d.titolo}</h3>
 
-              {d.descrizione && (
-                <p className="dm-desc">{d.descrizione}</p>
-              )}
+              {d.descrizione && <p className="dm-desc">{d.descrizione}</p>}
 
               <div className="dm-actions">
                 {d.file_url || d.link ? (
