@@ -33,7 +33,6 @@ export default function Dispense() {
 
     const filtered = dispense.filter((d) => {
       if (!d) return false;
-
       const matchMateria = materia === "Tutte" || d.materia === materia;
 
       const hay = `${d.titolo || ""} ${d.descrizione || ""} ${d.materia || ""}`.toLowerCase();
@@ -68,62 +67,34 @@ export default function Dispense() {
     <main className="d4">
       <style>{css}</style>
 
-      {/* HERO (stile Home) */}
+      {/* LABEL FUORI DAL RETTANGOLO */}
+      <div className="d4-topLabel">
+        <span className="d4-dot" aria-hidden="true" />
+        <span className="d4-brand">
+          <span className="d4-dino">Dino</span>
+          <span className="d4-med">Med</span>
+        </span>
+        <span className="d4-sep">•</span>
+        <span className="d4-tagline">Dispense</span>
+      </div>
+
+      {/* HERO (rettangolo) */}
       <section className="d4-hero">
         <div className="d4-heroGrid">
           <div className="d4-left">
-            <div className="d4-kicker">
-              <span className="d4-dot" aria-hidden="true" />
-              <span className="d4-brand">
-                <span className="d4-dino">Dino</span>
-                <span className="d4-med">Med</span>
-              </span>
-              <span className="d4-sep">•</span>
-              <span className="d4-tagline">Dispense</span>
-            </div>
-
             <h1 className="d4-title">
               Ripassa <span className="d4-grad">meglio</span>. <br className="d4-br" />
               Senza confusione.
             </h1>
 
             <p className="d4-sub">
-              Cerca, filtra e ordina in due click. PDF puliti, trovabili, pronti.
+              Materiale ordinato e trovabile. Filtra per materia, cerca al volo e scegli l’ordine che ti serve.
             </p>
 
-            {/* FILTRI */}
-            <div className="d4-filters">
-              <input
-                className="d4-input"
-                type="text"
-                placeholder="Cerca una dispensa…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-
-              <select className="d4-select" value={materia} onChange={(e) => setMateria(e.target.value)}>
-                {materieDisponibili.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-
-              <select className="d4-select" value={sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="AZ">Titolo: A → Z</option>
-                <option value="ZA">Titolo: Z → A</option>
-                <option value="PAGES_ASC">Pagine: poche → tante</option>
-                <option value="PAGES_DESC">Pagine: tante → poche</option>
-              </select>
-            </div>
-
-            {/* STATO */}
             {loading && <div className="d4-status">Caricamento…</div>}
             {error && <div className="d4-status isErr">{error}</div>}
             {!loading && !error && (
-              <div className="d4-status isOk">
-                {dispenseFiltrateOrdinate.length} dispense trovate
-              </div>
+              <div className="d4-status isOk">{dispenseFiltrateOrdinate.length} dispense trovate</div>
             )}
           </div>
 
@@ -131,42 +102,46 @@ export default function Dispense() {
             <div className="d4-visual">
               <img className="d4-img" src={heroImg} alt="" />
               <div className="d4-overlay" />
-
-              <div className="d4-float d4-floatTop">
-                <span className="d4-badge">
-                  <span className="d4-miniDot" aria-hidden="true" /> Filtra per materia
-                </span>
-                <span className="d4-badge">
-                  <span className="d4-miniDot" aria-hidden="true" /> Ordina in 1 click
-                </span>
-              </div>
-
-              <div className="d4-float d4-floatBottom">
-                <div className="d4-miniTitle">Dentro trovi</div>
-                <div className="d4-miniGrid">
-                  <div className="d4-miniItem">
-                    <span className="d4-miniDot" /> PDF ordinati
-                  </div>
-                  <div className="d4-miniItem">
-                    <span className="d4-miniDot" /> Descrizioni chiare
-                  </div>
-                  <div className="d4-miniItem">
-                    <span className="d4-miniDot" /> Ripasso guidato
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* FILTRI FUORI DAL RETTANGOLO */}
+      {!loading && !error && (
+        <section className="d4-filterBar">
+          <div className="d4-filters">
+            <input
+              className="d4-input"
+              type="text"
+              placeholder="Cerca una dispensa…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+            <select className="d4-select" value={materia} onChange={(e) => setMateria(e.target.value)}>
+              {materieDisponibili.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+
+            <select className="d4-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="AZ">Titolo: A → Z</option>
+              <option value="ZA">Titolo: Z → A</option>
+              <option value="PAGES_ASC">Pagine: poche → tante</option>
+              <option value="PAGES_DESC">Pagine: tante → poche</option>
+            </select>
+          </div>
+        </section>
+      )}
+
       {/* LISTA */}
       <section className="d4-section">
         <div className="d4-grid">
           {!loading && !error && dispenseFiltrateOrdinate.length === 0 && (
-            <div className="d4-empty">
-              Nessuna dispensa trovata. Prova a cambiare ricerca o materia.
-            </div>
+            <div className="d4-empty">Nessuna dispensa trovata. Prova a cambiare ricerca o materia.</div>
           )}
 
           {!loading &&
@@ -211,7 +186,7 @@ export default function Dispense() {
   );
 }
 
-/* ---------------- CSS (stile Home) ---------------- */
+/* ---------------- CSS ---------------- */
 const css = `
 :root{
   --dino:#22c55e; --dino2:#16a34a;
@@ -224,6 +199,31 @@ const css = `
 }
 
 .d4{ max-width: 1120px; margin: 0 auto; padding: 22px; }
+
+/* LABEL FUORI */
+.d4-topLabel{
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.78);
+  font-weight: 950;
+  color: rgba(15,23,42,0.82);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.08);
+  margin: 2px 0 12px 2px; /* più in alto/sinistra */
+}
+.d4-dot{
+  width: 10px; height: 10px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--dino), var(--med));
+  box-shadow: 0 10px 20px rgba(2,6,23,0.10);
+}
+.d4-brand{ display:inline-flex; gap: 0; }
+.d4-dino{ color: var(--dino2); font-weight: 1000; }
+.d4-med{ color: var(--med2); font-weight: 1000; }
+.d4-sep{ opacity:.55; }
+.d4-tagline{ font-weight: 950; }
 
 /* HERO */
 .d4-hero{
@@ -250,32 +250,9 @@ const css = `
   .d4-heroGrid{ grid-template-columns: 1fr; padding: 18px; gap: 18px; }
 }
 
-/* Kicker DinoMed • Dispense */
-.d4-kicker{
-  display:inline-flex;
-  align-items:center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.68);
-  font-weight: 950;
-  color: rgba(15,23,42,0.82);
-}
-.d4-dot{
-  width: 10px; height: 10px; border-radius: 999px;
-  background: linear-gradient(90deg, var(--dino), var(--med));
-  box-shadow: 0 10px 20px rgba(2,6,23,0.10);
-}
-.d4-brand{ display:inline-flex; gap: 0; }
-.d4-dino{ color: var(--dino2); font-weight: 1000; }
-.d4-med{ color: var(--med2); font-weight: 1000; }
-.d4-sep{ opacity:.55; }
-.d4-tagline{ font-weight: 950; }
-
 /* Title */
 .d4-title{
-  margin: 16px 0 10px;
+  margin: 0 0 10px;
   font-size: 46px;
   line-height: 1.02;
   letter-spacing: -0.035em;
@@ -295,41 +272,15 @@ const css = `
 }
 .d4-sub{ margin: 0; color: var(--ink2); font-weight: 850; max-width: 70ch; }
 
-/* Filters */
-.d4-filters{
-  margin-top: 16px;
-  display:grid;
-  grid-template-columns: 1.2fr .8fr .8fr;
-  gap: 10px;
-}
-@media (max-width: 980px){
-  .d4-filters{ grid-template-columns: 1fr; }
-}
-
-.d4-input, .d4-select{
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.72);
-  font-weight: 900;
-  color: rgba(15,23,42,0.86);
-  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
-}
-.d4-input:focus, .d4-select:focus{
-  outline: none;
-  border-color: rgba(14,165,233,0.40);
-}
-
 .d4-status{
-  margin-top: 12px;
+  margin-top: 14px;
   font-weight: 850;
   color: rgba(15,23,42,0.70);
 }
 .d4-status.isErr{ color: #b91c1c; }
 .d4-status.isOk{ color: rgba(15,23,42,0.72); }
 
-/* Visual (destra) */
+/* Visual (solo immagine pulita) */
 .d4-visual{
   position: relative;
   border-radius: 24px;
@@ -350,39 +301,34 @@ const css = `
 }
 .d4-overlay{
   position:absolute; inset:0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.30) 55%, rgba(255,255,255,0.88) 100%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.34) 55%, rgba(255,255,255,0.88) 100%);
 }
 
-.d4-float{
-  position:absolute;
-  left: 14px; right: 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.40);
-  background: rgba(255,255,255,0.78);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 18px 55px rgba(2,6,23,0.10);
-  padding: 12px;
-}
-.d4-floatTop{ top: 14px; display:flex; gap: 8px; flex-wrap: wrap; }
-.d4-floatBottom{ bottom: 14px; }
+/* FILTER BAR FUORI */
+.d4-filterBar{ margin-top: 14px; }
 
-.d4-badge{
-  display:inline-flex; align-items:center; gap: 8px;
-  padding: 8px 10px;
-  border-radius: 999px;
+.d4-filters{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr .8fr;
+  gap: 10px;
+}
+@media (max-width: 980px){
+  .d4-filters{ grid-template-columns: 1fr; }
+}
+
+.d4-input, .d4-select{
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
   border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.70);
-  font-weight: 950;
-  color: rgba(15,23,42,0.78);
+  background: rgba(255,255,255,0.86);
+  font-weight: 900;
+  color: rgba(15,23,42,0.86);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
 }
-
-.d4-miniTitle{ font-weight: 1000; color: rgba(15,23,42,0.90); }
-.d4-miniGrid{ margin-top: 10px; display:grid; gap: 8px; }
-.d4-miniItem{ display:flex; gap: 8px; align-items:center; font-weight: 900; color: rgba(15,23,42,0.76); }
-.d4-miniDot{
-  width: 10px; height: 10px; border-radius: 999px;
-  background: linear-gradient(90deg, var(--dino2), var(--med2));
+.d4-input:focus, .d4-select:focus{
+  outline: none;
+  border-color: rgba(14,165,233,0.40);
 }
 
 /* LIST */
