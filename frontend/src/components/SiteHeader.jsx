@@ -60,7 +60,7 @@ export default function SiteHeader() {
           <NavLink to="/chi-siamo" className="sh-mLink" onClick={close}>Chi siamo</NavLink>
           <NavLink to="/contatti" className="sh-mLink" onClick={close}>Contatti</NavLink>
 
-          <NavLink to="/simulazioni" className="sh-mLink sh-mCta" onClick={close}>
+          <NavLink to="/simulazioni/config" className="sh-mLink sh-mCta" onClick={close}>
             Inizia
             <span className="sh-ctaShine" aria-hidden="true" />
           </NavLink>
