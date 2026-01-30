@@ -11,6 +11,7 @@ export default function Dispense() {
   const [search, setSearch] = useState("");
   const [materia, setMateria] = useState("Tutte");
   const [sort, setSort] = useState("AZ"); // AZ | ZA | PAGES_ASC | PAGES_DESC
+  const [onlyPdf, setOnlyPdf] = useState(false);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/dispense`)
@@ -19,7 +20,7 @@ export default function Dispense() {
         return res.json();
       })
       .then((data) => setDispense(Array.isArray(data) ? data : []))
-      .catch(() => setError("Impossibile caricare le dispense."))
+      .catch(() => setError("Impossibile caricare le dispense. Riprova tra poco."))
       .finally(() => setLoading(false));
   }, [API_BASE]);
 
@@ -30,34 +31,26 @@ export default function Dispense() {
 
   const stats = useMemo(() => {
     const total = dispense.length;
-    const filteredCount = (() => {
-      const q = search.trim().toLowerCase();
-      return dispense.filter((d) => {
-        if (!d) return false;
-        const matchMateria = materia === "Tutte" || d.materia === materia;
-        const hay = `${d.titolo || ""} ${d.descrizione || ""} ${d.materia || ""}`.toLowerCase();
-        const matchSearch = q === "" || hay.includes(q);
-        return matchMateria && matchSearch;
-      }).length;
-    })();
-
+    const pdfCount = dispense.filter((d) => Boolean(d?.file_url || d?.link)).length;
     const materieCount = new Set(dispense.map((d) => d?.materia).filter(Boolean)).size;
 
     const pagesNums = dispense
       .map((d) => Number.parseInt(d?.pagine, 10))
       .filter((n) => Number.isFinite(n));
-
     const avgPages =
       pagesNums.length > 0 ? Math.round(pagesNums.reduce((a, b) => a + b, 0) / pagesNums.length) : null;
 
-    return { total, filteredCount, materieCount, avgPages };
-  }, [dispense, search, materia]);
+    return { total, pdfCount, materieCount, avgPages };
+  }, [dispense]);
 
   const dispenseFiltrateOrdinate = useMemo(() => {
     const q = search.trim().toLowerCase();
 
     const filtered = dispense.filter((d) => {
       if (!d) return false;
+
+      if (onlyPdf && !(d.file_url || d.link)) return false;
+
       const matchMateria = materia === "Tutte" || d.materia === materia;
 
       const hay = `${d.titolo || ""} ${d.descrizione || ""} ${d.materia || ""}`.toLowerCase();
@@ -86,125 +79,207 @@ export default function Dispense() {
       if (pb === null) return -1;
       return sort === "PAGES_ASC" ? pa - pb : pb - pa;
     });
-  }, [dispense, search, materia, sort]);
+  }, [dispense, search, materia, sort, onlyPdf]);
+
+  const visibleCount = dispenseFiltrateOrdinate.length;
 
   return (
-    <main className="d5">
+    <main className="dp">
       <style>{css}</style>
 
-      {/* HERO */}
-      <section className="d5-hero">
-        <div className="d5-heroGrid">
-          <div className="d5-left">
-            {/* KICKER DENTRO, IN ALTO A SINISTRA */}
-            <div className="d5-kicker">
-              <span className="d5-dot" aria-hidden="true" />
-              <span className="d5-brand">
-                <span className="d5-dino">Dino</span>
-                <span className="d5-med">Med</span>
-              </span>
-              <span className="d5-sep">•</span>
-              <span className="d5-tagline">Dispense</span>
-            </div>
-
-            <h1 className="d5-title">
-              Ripassa <span className="d5-grad">meglio</span>. <br className="d5-br" />
-              Con materiale ordinato.
-            </h1>
-
-            <p className="d5-sub">
-              Cerca, filtra e ordina in un attimo. PDF puliti, senza caos, pronti per il semestre filtro.
-            </p>
-
-            {/* MINI GERARCHIA / PROVA SOCIALE */}
-            <div className="d5-pills" aria-label="Panoramica">
-              <div className="d5-pill">
-                <div className="d5-pillTop">Totale</div>
-                <div className="d5-pillVal">{stats.total}</div>
-              </div>
-              <div className="d5-pill">
-                <div className="d5-pillTop">Materie</div>
-                <div className="d5-pillVal">{stats.materieCount}</div>
-              </div>
-              <div className="d5-pill">
-                <div className="d5-pillTop">Media pagine</div>
-                <div className="d5-pillVal">{stats.avgPages ?? "—"}</div>
-              </div>
-            </div>
-
-            {/* STATO */}
-            {loading && <div className="d5-status">Caricamento…</div>}
-            {error && <div className="d5-status isErr">{error}</div>}
-            {!loading && !error && (
-              <div className="d5-status isOk">
-                Stai vedendo <b>{stats.filteredCount}</b> dispense (su {stats.total})
-              </div>
-            )}
+      {/* TOP BAR (tool page, non home) */}
+      <section className="dp-top">
+        <div className="dp-topInner">
+          <div className="dp-kicker">
+            <span className="dp-dot" aria-hidden="true" />
+            <span className="dp-brand">
+              <span className="dp-dino">Dino</span>
+              <span className="dp-med">Med</span>
+            </span>
+            <span className="dp-sep">•</span>
+            <span className="dp-tagline">Dispense</span>
           </div>
 
-          <div className="d5-right" aria-hidden="true">
-            <div className="d5-visual">
-              <img className="d5-img" src={heroImg} alt="" />
-              <div className="d5-overlay" />
+          <div className="dp-help">
+            <span className="dp-helpIcon" aria-hidden="true">
+              <IconInfo />
+            </span>
+            <div className="dp-helpText">
+              <b>Cosa sono le dispense?</b> Sono PDF/appunti riassuntivi: spiegano i concetti chiave, con struttura
+              chiara, così puoi ripassare veloce e con metodo.
             </div>
           </div>
         </div>
       </section>
 
-      {/* FILTRI FUORI DAL RETTANGOLO */}
+      {/* HERO CARD (più bassa, più “pagina strumento”) */}
+      <section className="dp-hero">
+        <div className="dp-heroGrid">
+          <div className="dp-left">
+            <h1 className="dp-title">
+              Trova la dispensa giusta, <br className="dp-br" />
+              e ripassa <span className="dp-grad">meglio</span>.
+            </h1>
+
+            <p className="dp-sub">
+              Cerca per titolo/argomento, filtra per materia, e scegli l’ordine migliore per il tuo ripasso.
+            </p>
+
+            {/* MINI STATS (gerarchia) */}
+            <div className="dp-stats">
+              <div className="dp-stat">
+                <div className="dp-statIco" aria-hidden="true">
+                  <IconBook />
+                </div>
+                <div className="dp-statTxt">
+                  <div className="dp-statTop">Dispense</div>
+                  <div className="dp-statVal">{stats.total}</div>
+                </div>
+              </div>
+
+              <div className="dp-stat">
+                <div className="dp-statIco isPdf" aria-hidden="true">
+                  <IconFile />
+                </div>
+                <div className="dp-statTxt">
+                  <div className="dp-statTop">PDF disponibili</div>
+                  <div className="dp-statVal">{stats.pdfCount}</div>
+                </div>
+              </div>
+
+              <div className="dp-stat">
+                <div className="dp-statIco isTag" aria-hidden="true">
+                  <IconTag />
+                </div>
+                <div className="dp-statTxt">
+                  <div className="dp-statTop">Materie</div>
+                  <div className="dp-statVal">{stats.materieCount}</div>
+                </div>
+              </div>
+
+              <div className="dp-stat">
+                <div className="dp-statIco isClock" aria-hidden="true">
+                  <IconClock />
+                </div>
+                <div className="dp-statTxt">
+                  <div className="dp-statTop">Media pagine</div>
+                  <div className="dp-statVal">{stats.avgPages ?? "—"}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* STATUS */}
+            {loading && <div className="dp-status">Caricamento…</div>}
+            {error && <div className="dp-status isErr">{error}</div>}
+            {!loading && !error && (
+              <div className="dp-status isOk">
+                <b>{visibleCount}</b> risultati trovati
+              </div>
+            )}
+          </div>
+
+          <div className="dp-right" aria-hidden="true">
+            <div className="dp-visual">
+              <img className="dp-img" src={heroImg} alt="" />
+              <div className="dp-overlay" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FILTER BAR (fuori dalla hero) */}
       {!loading && !error && (
-        <section className="d5-filterBar">
-          <div className="d5-filters">
-            <input
-              className="d5-input"
-              type="text"
-              placeholder="Cerca una dispensa…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+        <section className="dp-fbar">
+          <div className="dp-frow">
+            <div className="dp-field">
+              <label className="dp-label">
+                <IconSearch /> Cerca
+              </label>
+              <input
+                className="dp-input"
+                type="text"
+                placeholder="Es. biochimica, membrane, metabolismo…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
 
-            <select className="d5-select" value={materia} onChange={(e) => setMateria(e.target.value)}>
-              {materieDisponibili.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
+            <div className="dp-field">
+              <label className="dp-label">
+                <IconTag /> Materia
+              </label>
+              <select className="dp-select" value={materia} onChange={(e) => setMateria(e.target.value)}>
+                {materieDisponibili.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <select className="d5-select" value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="AZ">Titolo: A → Z</option>
-              <option value="ZA">Titolo: Z → A</option>
-              <option value="PAGES_ASC">Pagine: poche → tante</option>
-              <option value="PAGES_DESC">Pagine: tante → poche</option>
-            </select>
+            <div className="dp-field">
+              <label className="dp-label">
+                <IconSort /> Ordina
+              </label>
+              <select className="dp-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+                <option value="AZ">Titolo: A → Z</option>
+                <option value="ZA">Titolo: Z → A</option>
+                <option value="PAGES_ASC">Pagine: poche → tante</option>
+                <option value="PAGES_DESC">Pagine: tante → poche</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="dp-toggles">
+            <button
+              type="button"
+              className={`dp-toggle ${onlyPdf ? "isOn" : ""}`}
+              onClick={() => setOnlyPdf((v) => !v)}
+            >
+              <span className="dp-toggleIco" aria-hidden="true">
+                <IconFile />
+              </span>
+              Solo PDF disponibili
+            </button>
+
+            <div className="dp-hint">
+              <span className="dp-hintDot" aria-hidden="true" />
+              Tip: usa la ricerca per trovare parole precise (es. “mitocondrio”, “DNA eucariotico”).
+            </div>
           </div>
         </section>
       )}
 
       {/* LISTA */}
-      <section className="d5-section">
-        <div className="d5-grid">
+      <section className="dp-section">
+        <div className="dp-grid">
           {!loading && !error && dispenseFiltrateOrdinate.length === 0 && (
-            <div className="d5-empty">Nessuna dispensa trovata. Prova a cambiare ricerca o materia.</div>
+            <div className="dp-empty">
+              Nessuna dispensa trovata. Prova a cambiare ricerca/materia o disattiva “Solo PDF”.
+            </div>
           )}
 
           {!loading &&
             !error &&
             dispenseFiltrateOrdinate.map((d) => (
-              <article key={d.id ?? `${d.titolo}-${d.materia}`} className="d5-card">
-                <div className="d5-cardTop">
-                  <span className="d5-tag">{d.materia || "Dispensa"}</span>
-                  {d.pagine && <span className="d5-pages">{d.pagine} pag.</span>}
+              <article key={d.id ?? `${d.titolo}-${d.materia}`} className="dp-card">
+                <div className="dp-cardTop">
+                  <span className="dp-badge">
+                    <IconTag /> {d.materia || "Dispensa"}
+                  </span>
+                  <span className="dp-meta">
+                    <IconPages /> {d.pagine ? `${d.pagine} pag.` : "pagine n/d"}
+                  </span>
                 </div>
 
-                <div className="d5-cardTitle">{d.titolo}</div>
+                <div className="dp-cardTitle">{d.titolo}</div>
 
-                {d.descrizione && <div className="d5-cardText">{d.descrizione}</div>}
+                {d.descrizione && <div className="dp-cardText">{d.descrizione}</div>}
 
-                <div className="d5-cardCtaRow">
+                <div className="dp-cardCtaRow">
                   {d.file_url || d.link ? (
                     <a
-                      className="d5-btn d5-primary"
+                      className="dp-btn dp-primary"
                       href={
                         d.file_url
                           ? d.file_url.startsWith("http")
@@ -216,10 +291,12 @@ export default function Dispense() {
                       rel="noreferrer"
                     >
                       Apri PDF <span aria-hidden="true">→</span>
-                      <span className="d5-shine" aria-hidden="true" />
+                      <span className="dp-shine" aria-hidden="true" />
                     </a>
                   ) : (
-                    <span className="d5-disabled">PDF non disponibile</span>
+                    <span className="dp-disabled">
+                      <IconWarn /> PDF non disponibile
+                    </span>
                   )}
                 </div>
               </article>
@@ -230,189 +307,406 @@ export default function Dispense() {
   );
 }
 
+/* ---------------- Icons (sobrie) ---------------- */
+function IconSearch() {
+  return (
+    <span className="dp-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M16.5 16.5 21 21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+function IconSort() {
+  return (
+    <span className="dp-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M8 7h10M8 12h7M8 17h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M6 6v12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+function IconTag() {
+  return (
+    <span className="dp-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path
+          d="M20 13l-7 7-10-10V3h7l10 10Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        <path d="M7.5 7.5h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+function IconBook() {
+  return (
+    <span className="dp-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path
+          d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2V5a2 2 0 0 1 2-2Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        <path d="M8 7h8M8 10h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+function IconFile() {
+  return (
+    <span className="dp-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path
+          d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-6Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        <path d="M14 2v6h6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M8 13h8M8 17h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+function IconClock() {
+  return (
+    <span className="dp-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10Z" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+function IconPages() {
+  return (
+    <span className="dp-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M7 7h10M7 11h10M7 15h7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path
+          d="M6 3h9l3 3v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
+function IconInfo() {
+  return (
+    <span className="dp-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10Z" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M12 10v6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M12 7h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+function IconWarn() {
+  return (
+    <span className="dp-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path
+          d="M12 9v4"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+        <path d="M12 17h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        <path
+          d="M10.3 4.6a2 2 0 0 1 3.4 0l8.2 14.2A2 2 0 0 1 20.2 22H3.8a2 2 0 0 1-1.7-3.2l8.2-14.2Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
+/* ---------------- CSS (tool page premium, non-home) ---------------- */
 const css = `
 :root{
-  --dino:#22c55e; --dino2:#16a34a;
-  --med:#38bdf8;  --med2:#0ea5e9;
+  --dino2:#16a34a;
+  --med2:#0ea5e9;
   --ink: rgba(15,23,42,0.92);
   --ink2: rgba(15,23,42,0.72);
   --bd: rgba(15,23,42,0.10);
   --shadow2: 0 12px 28px rgba(2,6,23,0.08);
 }
 
-.d5{ max-width: 1120px; margin: 0 auto; padding: 22px; }
+.dp{ max-width: 1120px; margin: 0 auto; padding: 22px; }
 
-/* HERO */
-.d5-hero{
-  border-radius: 28px;
-  border: 1px solid var(--bd);
-  background:
-    radial-gradient(900px 280px at 12% -25%, rgba(34,197,94,0.16), transparent 60%),
-    radial-gradient(900px 280px at 70% -30%, rgba(56,189,248,0.16), transparent 55%),
-    rgba(255,255,255,0.90);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: var(--shadow2);
-  overflow:hidden;
-}
-
-.d5-heroGrid{
-  display:grid;
-  grid-template-columns: 1.05fr .95fr;
-  gap: 28px;
-  padding: 28px;
-  align-items: center;
-}
-@media (max-width: 980px){
-  .d5-heroGrid{ grid-template-columns: 1fr; padding: 18px; gap: 18px; }
-}
-
-/* Kicker inside */
-.d5-kicker{
-  display:inline-flex;
-  align-items:center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.68);
-  font-weight: 950;
-  color: rgba(15,23,42,0.82);
-  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
-  margin-bottom: 14px;
-}
-.d5-dot{
-  width: 10px; height: 10px; border-radius: 999px;
-  background: linear-gradient(90deg, var(--dino), var(--med));
-  box-shadow: 0 10px 20px rgba(2,6,23,0.10);
-}
-.d5-brand{ display:inline-flex; gap: 0; }
-.d5-dino{ color: var(--dino2); font-weight: 1000; }
-.d5-med{ color: var(--med2); font-weight: 1000; }
-.d5-sep{ opacity:.55; }
-.d5-tagline{ font-weight: 950; }
-
-/* Title */
-.d5-title{
-  margin: 0 0 10px;
-  font-size: 46px;
-  line-height: 1.02;
-  letter-spacing: -0.035em;
-  color: var(--ink);
-  font-weight: 1000;
-}
-.d5-br{ display:none; }
-@media (max-width: 520px){
-  .d5-title{ font-size: 36px; }
-  .d5-br{ display:block; }
-}
-.d5-grad{
+.dp-ico{ width:18px; height:18px; display:inline-grid; place-items:center; }
+.dp-ico svg{ width:18px; height:18px; }
+.dp-grad{
   background: linear-gradient(90deg, var(--dino2), var(--med2));
   -webkit-background-clip:text;
   background-clip:text;
   color: transparent;
 }
-.d5-sub{ margin: 0; color: var(--ink2); font-weight: 850; max-width: 70ch; }
 
-/* Pills */
-.d5-pills{
-  margin-top: 14px;
+/* Top section */
+.dp-top{ margin-bottom: 14px; }
+.dp-topInner{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.dp-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--bd);
+  background: rgba(255,255,255,0.78);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+  font-weight: 950;
+  color: rgba(15,23,42,0.82);
+  width: fit-content;
+}
+.dp-dot{
+  width: 10px; height: 10px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+  box-shadow: 0 10px 20px rgba(2,6,23,0.10);
+}
+.dp-brand{ display:inline-flex; gap: 0; }
+.dp-dino{ color: var(--dino2); font-weight: 1000; }
+.dp-med{ color: var(--med2); font-weight: 1000; }
+.dp-sep{ opacity:.55; }
+.dp-tagline{ font-weight: 950; }
+
+.dp-help{
   display:flex;
   gap: 10px;
-  flex-wrap: wrap;
-}
-.d5-pill{
-  min-width: 120px;
-  padding: 10px 12px;
+  align-items:flex-start;
+  padding: 12px 14px;
   border-radius: 18px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.70);
+  border: 1px solid var(--bd);
+  background: rgba(255,255,255,0.86);
+  box-shadow: var(--shadow2);
+  color: rgba(15,23,42,0.78);
+  font-weight: 850;
+}
+.dp-helpIcon{ margin-top: 2px; color: rgba(14,165,233,0.9); }
+.dp-helpText b{ color: rgba(15,23,42,0.92); }
+
+/* Hero (tool, not landing) */
+.dp-hero{
+  border-radius: 28px;
+  border: 1px solid var(--bd);
+  background:
+    radial-gradient(700px 220px at 12% -25%, rgba(34,197,94,0.14), transparent 60%),
+    radial-gradient(700px 220px at 70% -30%, rgba(56,189,248,0.14), transparent 55%),
+    rgba(255,255,255,0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow2);
+  overflow:hidden;
+}
+.dp-heroGrid{
+  display:grid;
+  grid-template-columns: 1.12fr .88fr;
+  gap: 22px;
+  padding: 22px;
+  align-items: center;
+}
+@media (max-width: 980px){
+  .dp-heroGrid{ grid-template-columns: 1fr; }
+}
+
+.dp-title{
+  margin: 0 0 10px;
+  font-size: 38px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-weight: 1000;
+}
+.dp-br{ display:none; }
+@media (max-width: 520px){
+  .dp-title{ font-size: 32px; }
+  .dp-br{ display:block; }
+}
+.dp-sub{ margin: 0; color: var(--ink2); font-weight: 850; max-width: 72ch; }
+
+.dp-stats{
+  margin-top: 14px;
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 10px;
+}
+@media (max-width: 520px){
+  .dp-stats{ grid-template-columns: 1fr; }
+}
+.dp-stat{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  padding: 12px 12px;
+  border-radius: 18px;
+  border: 1px solid var(--bd);
+  background: rgba(255,255,255,0.76);
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
 }
-.d5-pillTop{ font-weight: 950; color: rgba(15,23,42,0.62); font-size: 0.82rem; }
-.d5-pillVal{ margin-top: 4px; font-weight: 1000; color: rgba(15,23,42,0.92); font-size: 1.05rem; }
+.dp-statIco{
+  width: 40px; height: 40px;
+  border-radius: 14px;
+  display:grid; place-items:center;
+  border: 1px solid rgba(15,23,42,0.08);
+  background: linear-gradient(135deg, rgba(56,189,248,0.16), rgba(56,189,248,0.06));
+  color: rgba(14,165,233,0.95);
+}
+.dp-statIco.isPdf{
+  background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(34,197,94,0.06));
+  color: rgba(22,163,74,0.95);
+}
+.dp-statIco.isTag{
+  background: linear-gradient(135deg, rgba(16,185,129,0.14), rgba(16,185,129,0.06));
+  color: rgba(5,150,105,0.95);
+}
+.dp-statIco.isClock{
+  background: linear-gradient(135deg, rgba(99,102,241,0.14), rgba(99,102,241,0.06));
+  color: rgba(79,70,229,0.95);
+}
+.dp-statTop{ font-weight: 900; color: rgba(15,23,42,0.62); font-size: 0.82rem; }
+.dp-statVal{ margin-top: 2px; font-weight: 1000; color: rgba(15,23,42,0.92); font-size: 1.1rem; }
 
-/* Status */
-.d5-status{
+.dp-status{
   margin-top: 12px;
   font-weight: 850;
   color: rgba(15,23,42,0.70);
 }
-.d5-status.isErr{ color: #b91c1c; }
-.d5-status.isOk b{ color: rgba(15,23,42,0.92); }
+.dp-status.isErr{ color: #b91c1c; }
+.dp-status.isOk b{ color: rgba(15,23,42,0.92); }
 
 /* Visual */
-.d5-visual{
+.dp-visual{
   position: relative;
-  border-radius: 24px;
+  border-radius: 22px;
   overflow:hidden;
-  border: 1px solid rgba(15,23,42,0.10);
+  border: 1px solid var(--bd);
   background: rgba(255,255,255,0.92);
   box-shadow: var(--shadow2);
-  height: 430px;
+  height: 320px;
 }
-@media (max-width: 980px){ .d5-visual{ height: 320px; } }
+@media (max-width: 980px){ .dp-visual{ height: 240px; } }
 
-.d5-img{
+.dp-img{
   width:100%; height:100%;
   object-fit: cover;
   display:block;
   transform: scale(1.02);
   filter: saturate(0.96) contrast(1.05);
 }
-.d5-overlay{
+.dp-overlay{
   position:absolute; inset:0;
   background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.34) 55%, rgba(255,255,255,0.88) 100%);
 }
 
 /* Filter bar */
-.d5-filterBar{ margin-top: 14px; }
-.d5-filters{
+.dp-fbar{ margin-top: 14px; }
+.dp-frow{
   display:grid;
   grid-template-columns: 1.2fr .8fr .8fr;
-  gap: 10px;
+  gap: 12px;
 }
 @media (max-width: 980px){
-  .d5-filters{ grid-template-columns: 1fr; }
+  .dp-frow{ grid-template-columns: 1fr; }
 }
-
-.d5-input, .d5-select{
+.dp-field{ display:flex; flex-direction:column; gap: 6px; }
+.dp-label{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  font-weight: 950;
+  color: rgba(15,23,42,0.76);
+}
+.dp-input, .dp-select{
   width: 100%;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.86);
+  border: 1px solid var(--bd);
+  background: rgba(255,255,255,0.92);
   font-weight: 900;
   color: rgba(15,23,42,0.86);
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
 }
-.d5-input:focus, .d5-select:focus{
+.dp-input:focus, .dp-select:focus{
   outline: none;
   border-color: rgba(14,165,233,0.40);
 }
 
+.dp-toggles{
+  margin-top: 10px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.dp-toggle{
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--bd);
+  background: rgba(255,255,255,0.86);
+  font-weight: 950;
+  color: rgba(15,23,42,0.82);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+  cursor:pointer;
+}
+.dp-toggle.isOn{
+  border-color: rgba(34,197,94,0.35);
+  background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(56,189,248,0.12));
+}
+.dp-toggleIco{ color: rgba(14,165,233,0.95); }
+
+.dp-hint{
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  font-weight: 900;
+  color: rgba(15,23,42,0.68);
+}
+.dp-hintDot{
+  width: 10px; height: 10px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+}
+
 /* Grid cards */
-.d5-section{ margin-top: 18px; padding-top: 6px; }
-.d5-grid{
+.dp-section{ margin-top: 16px; }
+.dp-grid{
   display:grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
-@media (max-width: 980px){ .d5-grid{ grid-template-columns: 1fr; } }
+@media (max-width: 980px){ .dp-grid{ grid-template-columns: 1fr; } }
 
-.d5-card{
+.dp-card{
   border-radius: 24px;
-  border: 1px solid rgba(15,23,42,0.10);
+  border: 1px solid var(--bd);
   background:
     radial-gradient(520px 220px at 30% -10%, rgba(34,197,94,0.10), transparent 60%),
     radial-gradient(520px 220px at 80% -10%, rgba(56,189,248,0.10), transparent 60%),
-    rgba(255,255,255,0.90);
+    rgba(255,255,255,0.92);
   box-shadow: 0 14px 52px rgba(2,6,23,0.08);
   padding: 18px;
   color: rgba(15,23,42,0.88);
 }
 
-.d5-cardTop{
+.dp-cardTop{
   display:flex;
   justify-content: space-between;
   align-items:center;
@@ -420,37 +714,43 @@ const css = `
   margin-bottom: 10px;
 }
 
-.d5-tag{
+.dp-badge{
   display:inline-flex;
+  align-items:center;
+  gap: 8px;
   padding: 8px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.70);
+  border: 1px solid var(--bd);
+  background: rgba(255,255,255,0.76);
   font-weight: 950;
   color: rgba(15,23,42,0.78);
 }
-.d5-pages{
+.dp-meta{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
   font-weight: 900;
   color: rgba(15,23,42,0.62);
   font-size: 0.9rem;
 }
 
-.d5-cardTitle{
+.dp-cardTitle{
   font-weight: 1000;
   color: rgba(15,23,42,0.92);
   letter-spacing: -0.01em;
   font-size: 1.05rem;
 }
-.d5-cardText{
+
+.dp-cardText{
   margin-top: 8px;
   font-weight: 850;
   color: rgba(15,23,42,0.72);
   line-height: 1.35;
 }
 
-.d5-cardCtaRow{ margin-top: 14px; display:flex; align-items:center; gap: 12px; flex-wrap: wrap; }
+.dp-cardCtaRow{ margin-top: 14px; display:flex; align-items:center; gap: 12px; flex-wrap: wrap; }
 
-.d5-btn{
+.dp-btn{
   position: relative;
   overflow: hidden;
   display:inline-flex;
@@ -460,42 +760,45 @@ const css = `
   border-radius: 999px;
   text-decoration:none;
   font-weight: 1000;
-  border: 1px solid rgba(15,23,42,0.10);
+  border: 1px solid var(--bd);
   box-shadow: 0 14px 30px rgba(2,6,23,0.10);
   transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
   color: rgba(15,23,42,0.86);
   background: rgba(255,255,255,0.72);
 }
-.d5-btn:hover{ transform: translateY(-1px); box-shadow: 0 18px 40px rgba(2,6,23,0.14); filter: saturate(1.03); }
+.dp-btn:hover{ transform: translateY(-1px); box-shadow: 0 18px 40px rgba(2,6,23,0.14); filter: saturate(1.03); }
 
-.d5-primary{
+.dp-primary{
   color:white;
   border: 1px solid rgba(255,255,255,0.18);
   background: linear-gradient(90deg, var(--dino2), var(--med2));
 }
 
-.d5-shine{
+.dp-shine{
   position:absolute; inset:0;
   background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.26) 25%, transparent 50%);
   transform: translateX(-120%);
-  animation: d5Shine 4.2s ease-in-out infinite;
+  animation: dpShine 4.2s ease-in-out infinite;
   pointer-events: none;
 }
-@keyframes d5Shine{
+@keyframes dpShine{
   0%, 58% { transform: translateX(-120%); }
   88%, 100% { transform: translateX(120%); }
 }
 
-.d5-disabled{
+.dp-disabled{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
   font-weight: 900;
-  color: rgba(15,23,42,0.55);
+  color: rgba(15,23,42,0.60);
 }
 
-.d5-empty{
+.dp-empty{
   grid-column: 1 / -1;
   border-radius: 24px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.86);
+  border: 1px solid var(--bd);
+  background: rgba(255,255,255,0.92);
   box-shadow: var(--shadow2);
   padding: 18px;
   font-weight: 900;
