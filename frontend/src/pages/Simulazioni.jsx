@@ -15,7 +15,7 @@ export default function Simulazioni() {
 
     let raf = 0;
 
-    // lento + pause chiare (leggibili)
+    // lento + pause chiare
     const T = {
       fadeIn: 450,
       move1: 2000,
@@ -35,7 +35,9 @@ export default function Simulazioni() {
     const layout = () => {
       const pad = 14;
       const w = storyEl.clientWidth;
-      const dW = 120; // scena più piccola (prima era gigante)
+
+      // scena PIÙ PICCOLA (prima era troppo grande)
+      const dW = 104;
       const inner = Math.max(0, w - pad * 2 - dW);
 
       return {
@@ -159,7 +161,7 @@ export default function Simulazioni() {
               </button>
             </div>
 
-            {/* STRIP: 3 scene CHIARE e CENTRATE */}
+            {/* STRIP: stickman + scene leggibili */}
             <div className="smx-story" ref={storyRef} data-phase="walk" aria-hidden="true">
               <div className="smx-storyGlow" />
 
@@ -170,89 +172,88 @@ export default function Simulazioni() {
               </div>
 
               <div className="smx-mover" ref={moverRef}>
-                <svg className="smx-scene" viewBox="0 0 120 72" aria-hidden="true">
-                  {/* soft shadow */}
-                  <ellipse cx="44" cy="64" rx="28" ry="6" fill="rgba(15,23,42,0.12)" />
+                <svg className="smx-scene" viewBox="0 0 104 64" aria-hidden="true">
+                  {/* shadow */}
+                  <ellipse cx="28" cy="58" rx="18" ry="4" fill="rgba(15,23,42,0.12)" />
 
-                  {/* ===== DINO (pulito, piccolo, riconoscibile) ===== */}
-                  <g className="d" transform="translate(6,8)">
-                    {/* tail */}
-                    <path d="M8 38c-10 3-12 12 2 12 7 0 12-3 16-8" fill="#16a34a" opacity="0.95" />
-
-                    {/* body */}
-                    <path
-                      d="M22 26c4-9 20-12 30-4 10 8 7 26-8 30-14 4-30-6-22-26Z"
-                      fill="#22c55e"
-                    />
-                    <path
-                      d="M30 30c10-5 18 2 18 11 0 9-8 15-17 11-8-3-10-16-1-22Z"
-                      fill="rgba(0,0,0,0.10)"
-                    />
-
-                    {/* neck */}
-                    <path d="M36 16c2-5 8-8 14-7l-2 9c-5-1-9 0-12 3Z" fill="#16a34a" />
-
+                  {/* ===== STICKMAN BASE (sempre uguale, piccolo) ===== */}
+                  <g className="man" transform="translate(6,6)">
                     {/* head */}
-                    <path
-                      d="M34 10c10-8 34-2 34 14 0 14-16 20-28 16-12-4-18-18-6-30Z"
-                      fill="#22c55e"
-                    />
-                    <path d="M42 16c10-6 20-3 20 6 0 8-10 11-18 8" fill="rgba(255,255,255,0.10)" />
-
-                    {/* spines ATTACCATE (dorso) */}
-                    <path d="M46 8l4-7 6 8" fill="#15803d" />
-                    <path d="M54 8l4-7 6 8" fill="#15803d" />
-                    <path d="M62 12l3-6 6 7" fill="#15803d" />
-                    <path d="M66 18l6-4 4 8" fill="#15803d" />
-
-                    {/* eye */}
-                    <circle cx="58" cy="22" r="2.4" fill="#0f172a" opacity="0.92" />
-
-                    {/* smile lines (bianco, stile reference) */}
-                    <path d="M40 28c8 6 18 6 26 2" stroke="#fff" strokeWidth="3.6" strokeLinecap="round" opacity=".9" />
-                    <path d="M38 36c7 6 15 7 22 4" stroke="#fff" strokeWidth="3.6" strokeLinecap="round" opacity=".9" />
-
-                    {/* arm */}
-                    <path className="arm" d="M50 40c8 0 12 4 16 8" stroke="#15803d" strokeWidth="7" strokeLinecap="round" fill="none" />
-
+                    <circle cx="20" cy="12" r="6" fill="rgba(15,23,42,0.82)" />
+                    {/* body */}
+                    <path d="M20 18v16" stroke="rgba(15,23,42,0.82)" strokeWidth="3.2" strokeLinecap="round" />
+                    {/* arms: mani fissate a (12,28) e (28,28) */}
+                    <path className="arm" d="M20 22L12 28" stroke="rgba(15,23,42,0.82)" strokeWidth="3" strokeLinecap="round" />
+                    <path className="arm" d="M20 22L28 28" stroke="rgba(15,23,42,0.82)" strokeWidth="3" strokeLinecap="round" />
                     {/* legs */}
-                    <path className="leg1" d="M26 50c-8 3-10 10 6 9 8-1 10-4 14-7" fill="#15803d" />
-                    <path className="leg2" d="M40 50c-8 3-10 10 6 9 8-1 10-4 14-7" fill="#15803d" opacity=".95" />
+                    <path className="leg" d="M20 34L14 46" stroke="rgba(15,23,42,0.82)" strokeWidth="3" strokeLinecap="round" />
+                    <path className="leg" d="M20 34L26 46" stroke="rgba(15,23,42,0.82)" strokeWidth="3" strokeLinecap="round" />
+                    {/* feet */}
+                    <path d="M12 46h8" stroke="rgba(15,23,42,0.55)" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M22 46h8" stroke="rgba(15,23,42,0.55)" strokeWidth="3" strokeLinecap="round" />
                   </g>
 
-                  {/* ===== SCENE READ (LIBRO ROSSO GRANDE, centrato sulle “mani”) ===== */}
+                  {/* ===== READ: libro VERO, aperto e attaccato alle mani ===== */}
                   <g className="scene scene-read">
-                    <path d="M74 46c14-6 30 2 30 16v4H66v-4c0-7 3-12 8-16Z" fill="#b91c1c" />
-                    <path d="M74 46c10-4 22 1 22 12v8h-8v-7c0-5-6-8-14-6Z" fill="#ef4444" />
-                    <path d="M70 52c10-6 22-1 24 10" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" opacity=".9" />
-                    <path d="M70 58c10-6 22-1 24 10" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" opacity=".9" />
+                    {/* book shadow */}
+                    <ellipse cx="46" cy="40" rx="16" ry="4" fill="rgba(15,23,42,0.08)" />
+                    {/* left cover */}
+                    <path d="M30 26c10-6 16-6 24 0v22c-8-6-14-6-24 0V26z" fill="#ef4444" />
+                    {/* right cover */}
+                    <path d="M54 26c10-6 16-6 24 0v22c-8-6-14-6-24 0V26z" fill="#b91c1c" />
+                    {/* pages */}
+                    <path d="M32 28c8-4 14-4 20 0v18c-6-3-12-3-20 0V28z" fill="#fde68a" />
+                    <path d="M56 28c8-4 14-4 20 0v18c-6-3-12-3-20 0V28z" fill="#fde68a" />
+                    {/* spine */}
+                    <path d="M52 26v22" stroke="rgba(15,23,42,0.22)" strokeWidth="2" strokeLinecap="round" />
+                    {/* page lines */}
+                    <path d="M36 34h12M36 38h10M36 42h8" stroke="rgba(15,23,42,0.22)" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M60 34h12M60 38h10M60 42h8" stroke="rgba(15,23,42,0.22)" strokeWidth="2" strokeLinecap="round" />
+
+                    {/* “aggancio” visivo alle mani (12,28) e (28,28) della base) */}
+                    <circle cx="18" cy="34" r="2.6" fill="#0ea5e9" opacity=".95" />
+                    <circle cx="34" cy="34" r="2.6" fill="#22c55e" opacity=".95" />
+                    <path d="M18 34L32 30" stroke="rgba(15,23,42,0.16)" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M34 34L52 30" stroke="rgba(15,23,42,0.16)" strokeWidth="2" strokeLinecap="round" />
                   </g>
 
-                  {/* ===== SCENE WRITE (BANCO + FOGLIO + PENNA, centrati) ===== */}
+                  {/* ===== WRITE: scrivania + foglio + penna in mano ===== */}
                   <g className="scene scene-write">
-                    <path d="M66 44h52v14H66z" fill="#f97316" />
-                    <path d="M70 58h8v10h-8zM106 58h8v10h-8z" fill="#ea580c" />
-                    <path d="M78 46h22v12H78z" fill="#fde68a" stroke="rgba(15,23,42,0.14)" strokeWidth="1.6" />
-                    <path d="M82 50h14" stroke="rgba(15,23,42,0.35)" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M82 54h12" stroke="rgba(15,23,42,0.28)" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M100 48l14 10" stroke="#0ea5e9" strokeWidth="5.4" strokeLinecap="round" />
-                    <path d="M112 56l6 4" stroke="#16a34a" strokeWidth="5.4" strokeLinecap="round" />
+                    {/* desk */}
+                    <path d="M44 30h56v12H44z" fill="#f97316" />
+                    <path d="M48 42h8v16h-8zM88 42h8v16h-8z" fill="#ea580c" />
+                    {/* paper */}
+                    <path d="M58 32h18v10H58z" fill="#fde68a" stroke="rgba(15,23,42,0.14)" strokeWidth="1.6" />
+                    <path d="M60 35h14M60 38h12M60 41h9" stroke="rgba(15,23,42,0.25)" strokeWidth="1.8" strokeLinecap="round" />
+                    {/* pen attached to right hand */}
+                    <path d="M28 34L58 40" stroke="#0ea5e9" strokeWidth="4.6" strokeLinecap="round" />
+                    <path d="M56 39l10 2" stroke="#16a34a" strokeWidth="4.6" strokeLinecap="round" />
+                    {/* small hand dots */}
+                    <circle cx="18" cy="34" r="2.6" fill="#0ea5e9" opacity=".95" />
+                    <circle cx="34" cy="34" r="2.6" fill="#22c55e" opacity=".95" />
                   </g>
 
-                  {/* ===== SCENE GRAD (CAP + DIPLOMA GRANDI) ===== */}
+                  {/* ===== GRAD: tocco + diploma in mano + stelline ===== */}
                   <g className="scene scene-grad">
-                    <path d="M78 6l26 8-26 8-26-8 26-8Z" fill="#0f172a" opacity=".92" />
-                    <path d="M70 18h16v5H70z" fill="#0f172a" opacity=".88" />
-                    <path d="M104 14v16" stroke="#fbbf24" strokeWidth="3.2" strokeLinecap="round" />
-                    <circle cx="104" cy="32" r="3.2" fill="#fbbf24" />
+                    {/* cap on head area */}
+                    <path d="M18 2l18 6-18 6-18-6 18-6Z" fill="#0f172a" opacity=".92" transform="translate(8,4)" />
+                    <path d="M18 10h12v4H18z" fill="#0f172a" opacity=".88" transform="translate(8,4)" />
+                    <path d="M36 8v12" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round" transform="translate(8,4)" />
+                    <circle cx="44" cy="24" r="3" fill="#fbbf24" />
 
-                    <path d="M86 40c10 0 18 8 18 18v8H58v-8c0-10 8-18 18-18h10Z" fill="#fbbf24" />
-                    <path d="M66 48c12-5 26-5 38 0" stroke="rgba(15,23,42,0.25)" strokeWidth="2.6" strokeLinecap="round" />
-                    <circle cx="96" cy="62" r="3.2" fill="#ef4444" />
+                    {/* diploma attached to right hand (28,28 -> area 52,36) */}
+                    <path d="M58 34c10 0 18 8 18 18v6H42v-6c0-10 8-18 18-18h-2Z" fill="#fbbf24" />
+                    <circle cx="70" cy="52" r="3" fill="#ef4444" />
+                    <path d="M50 42c10-4 20-4 28 0" stroke="rgba(15,23,42,0.22)" strokeWidth="2.6" strokeLinecap="round" />
 
-                    <path className="st s1" d="M108 24h10" stroke="#22c55e" strokeWidth="3.2" strokeLinecap="round" />
-                    <path className="st s2" d="M106 32h10" stroke="#0ea5e9" strokeWidth="3.2" strokeLinecap="round" />
-                    <path className="st s3" d="M104 18h10" stroke="#22c55e" strokeWidth="3.2" strokeLinecap="round" />
+                    {/* link from hand to diploma */}
+                    <circle cx="34" cy="34" r="2.6" fill="#22c55e" opacity=".95" />
+                    <path d="M34 34L50 38" stroke="rgba(15,23,42,0.16)" strokeWidth="2" strokeLinecap="round" />
+
+                    {/* stars */}
+                    <path className="st s1" d="M86 20h10" stroke="#22c55e" strokeWidth="3.2" strokeLinecap="round" />
+                    <path className="st s2" d="M84 28h10" stroke="#0ea5e9" strokeWidth="3.2" strokeLinecap="round" />
+                    <path className="st s3" d="M82 14h10" stroke="#22c55e" strokeWidth="3.2" strokeLinecap="round" />
                   </g>
                 </svg>
               </div>
@@ -359,6 +360,7 @@ const css = `
   background-clip:text;
   color: transparent;
 }
+
 .smx-lead{ margin: 10px 0 6px; font-weight: 950; color: rgba(15,23,42,0.80); }
 .smx-sub{ margin: 0; color: var(--ink2); font-weight: 850; max-width: 70ch; }
 
@@ -457,7 +459,7 @@ const css = `
 .smx-story{
   margin-top: 22px;
   max-width: 560px;
-  height: 92px;
+  height: 90px;
   border-radius: 18px;
   border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.72);
@@ -465,6 +467,7 @@ const css = `
   position: relative;
   overflow: hidden;
 }
+
 .smx-storyGlow{
   position:absolute; inset:-50px;
   background:
@@ -507,23 +510,29 @@ const css = `
 .smx-story[data-phase="write"] .smx-node.n2::after{ opacity:.95; }
 .smx-story[data-phase="grad"]  .smx-node.n3::after{ opacity:.95; }
 
-/* mover piccolo e centrato */
+/* mover: PIÙ PICCOLO */
 .smx-mover{
   position:absolute;
   left: 14px;
-  top: 8px;
-  width: 120px;
-  height: 72px;
+  top: 12px;
+  width: 104px;
+  height: 64px;
   z-index: 2;
   transform: translateX(0);
   opacity: 1;
   will-change: transform, opacity;
 }
-.smx-scene{ width:120px; height:72px; display:block; }
+.smx-scene{ width:104px; height:64px; display:block; }
 
 /* walk bob */
-.smx-story[data-phase="walk"] .d{ animation: bob .55s ease-in-out infinite; transform-origin: 50px 50px; }
-@keyframes bob{ 0%,100%{ transform: translate(6px,8px) translateY(0); } 50%{ transform: translate(6px,8px) translateY(-1.6px); } }
+.smx-story[data-phase="walk"] .man{
+  animation: bob .55s ease-in-out infinite;
+  transform-origin: 16px 40px;
+}
+@keyframes bob{
+  0%,100%{ transform: translate(6px,6px) translateY(0); }
+  50%{ transform: translate(6px,6px) translateY(-1.4px); }
+}
 
 /* scene switching */
 .scene{ opacity:0; transform: translateY(2px); transition: opacity .18s ease, transform .18s ease; }
