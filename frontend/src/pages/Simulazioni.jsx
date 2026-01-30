@@ -365,7 +365,7 @@ const css = `
 .smx-sub{ margin: 0; color: var(--ink2); font-weight: 850; max-width: 70ch; }
 
 .smx-flow{ margin-top:18px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-.smx-flowItem{ display:flex; align-items:center; gap:8px; font-weight:950; color: rgba(15,23,42,0.82); }
+.smx-flowItem{ display:flex; align-items:center; gap:8px; font-weight:950; clor: rgba(15,23,42,0.82); }
 .smx-flowNum{
   width:28px;height:28px;border-radius:999px;
   display:grid;place-items:center;
