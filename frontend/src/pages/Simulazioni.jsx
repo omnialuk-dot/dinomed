@@ -5,55 +5,89 @@ export default function Simulazioni() {
   const nav = useNavigate();
 
   return (
-    <main className="smx">
+    <main className="sx">
       <style>{css}</style>
 
-      <section className="smx-hero">
-        {/* Kicker “appiccicato” all’angolo */}
-        <div className="smx-kicker">
-          <span className="smx-dot" aria-hidden="true" />
-          <span className="smx-brand">
-            <span className="smx-dino">Dino</span>
-            <span className="smx-med">Med</span>
+      <section className="sx-hero">
+        {/* Kicker “appiccicato” dentro al rettangolo */}
+        <div className="sx-kicker">
+          <span className="sx-dot" aria-hidden="true" />
+          <span className="sx-brand">
+            <span className="sx-dino">Dino</span>
+            <span className="sx-med">Med</span>
           </span>
-          <span className="smx-sep">•</span>
-          <span className="smx-tagline">Simulazioni</span>
+          <span className="sx-sep">•</span>
+          <span className="sx-tagline">Simulazioni</span>
         </div>
 
-        <div className="smx-grid">
-          <div className="smx-left">
-            <h1 className="smx-title">
-              <span className="smx-titleTop">Allenati</span>
-              <span className="smx-titleBottom">come all’esame</span>
+        <div className="sx-grid">
+          <div className="sx-left">
+            <h1 className="sx-title">
+              Allenati <span className="sx-grad">come all’esame</span>.
+              <br className="sx-br" />
+              In modo semplice.
             </h1>
 
-            <p className="smx-sub">
-              Pochi click, zero confusione. Entri, scegli la simulazione e parti.
+            <p className="sx-sub">
+              Parti in pochi click: scegli le impostazioni, fai il test e ottieni una correzione chiara.
             </p>
 
-            <div className="smx-actions">
-              <button className="smx-btn smx-primary" onClick={() => nav("/simulazioni/config")}>
-                Continua <span aria-hidden="true">→</span>
-                <span className="smx-shine" aria-hidden="true" />
+            {/* Gerarchia: 3 step (non “Home-like”, ma tool premium) */}
+            <div className="sx-steps" aria-label="Come funziona">
+              <div className="sx-step">
+                <span className="sx-stepIco" aria-hidden="true"><IconSliders /></span>
+                <div className="sx-stepTxt">
+                  <div className="sx-stepTop">1) Configura</div>
+                  <div className="sx-stepSub">Materie, difficoltà, numero domande</div>
+                </div>
+              </div>
+
+              <div className="sx-step">
+                <span className="sx-stepIco isBlue" aria-hidden="true"><IconPen /></span>
+                <div className="sx-stepTxt">
+                  <div className="sx-stepTop">2) Rispondi</div>
+                  <div className="sx-stepSub">Timer opzionale, UI pulita</div>
+                </div>
+              </div>
+
+              <div className="sx-step">
+                <span className="sx-stepIco isGreen" aria-hidden="true"><IconCheck /></span>
+                <div className="sx-stepTxt">
+                  <div className="sx-stepTop">3) Correggi</div>
+                  <div className="sx-stepSub">Soluzione + spiegazione breve</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="sx-actions">
+              <button className="sx-btn sx-primary" onClick={() => nav("/simulazioni/config")}>
+                Inizia una simulazione <span aria-hidden="true">→</span>
+                <span className="sx-shine" aria-hidden="true" />
               </button>
 
-              <div className="smx-pills" aria-hidden="true">
-                <span className="smx-pill"><IconBolt /> Veloce</span>
-                <span className="smx-pill"><IconTarget /> Focus</span>
-                <span className="smx-pill"><IconCheck /> Chiaro</span>
-              </div>
+              <button className="sx-btn sx-soft" onClick={() => nav("/simulazioni/config")}>
+                Configura <span aria-hidden="true">⚙️</span>
+              </button>
+            </div>
+
+            {/* Micro-pills, ma sobrie */}
+            <div className="sx-pills" aria-label="Caratteristiche">
+              <span className="sx-pill"><IconBolt /> Veloce</span>
+              <span className="sx-pill"><IconTarget /> Mirata</span>
+              <span className="sx-pill"><IconEye /> Chiara</span>
             </div>
           </div>
 
-          <div className="smx-right" aria-hidden="true">
-            <div className="smx-visual">
-              <div className="smx-visualGlow" />
-              <img className="smx-img" src={heroImg} alt="" />
-              <div className="smx-overlay" />
+          <div className="sx-right" aria-hidden="true">
+            <div className="sx-visual">
+              <div className="sx-visualGlow" />
+              <img className="sx-img" src={heroImg} alt="" />
+              <div className="sx-overlay" />
 
-              <div className="smx-float">
-                <div className="smx-floatTitle">Modalità simulazione</div>
-                <div className="smx-floatSub">Scegli e vai dritto al punto.</div>
+              {/* micro label elegante (non troppo “home”) */}
+              <div className="sx-float">
+                <div className="sx-floatTitle">Modalità simulazione</div>
+                <div className="sx-floatSub">Imposta e vai dritto al punto.</div>
               </div>
             </div>
           </div>
@@ -66,7 +100,7 @@ export default function Simulazioni() {
 /* --- icons --- */
 function IconCheck() {
   return (
-    <span className="smx-ico" aria-hidden="true">
+    <span className="sx-ico" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
@@ -75,7 +109,7 @@ function IconCheck() {
 }
 function IconBolt() {
   return (
-    <span className="smx-ico" aria-hidden="true">
+    <span className="sx-ico" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
       </svg>
@@ -84,7 +118,7 @@ function IconBolt() {
 }
 function IconTarget() {
   return (
-    <span className="smx-ico" aria-hidden="true">
+    <span className="sx-ico" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10Z" stroke="currentColor" strokeWidth="1.8" />
         <path d="M12 16a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke="currentColor" strokeWidth="1.8" />
@@ -93,7 +127,64 @@ function IconTarget() {
     </span>
   );
 }
+function IconEye() {
+  return (
+    <span className="sx-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path
+          d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M12 15a3 3 0 1 0-3-3 3 3 0 0 0 3 3Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+        />
+      </svg>
+    </span>
+  );
+}
+function IconSliders() {
+  return (
+    <span className="sx-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M4 21V14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M4 10V3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M12 21V12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M12 8V3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M20 21V16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M20 12V3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M2 14h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M10 8h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M18 16h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+function IconPen() {
+  return (
+    <span className="sx-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path
+          d="M12 20h9"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+        <path
+          d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
 
+/* ---------------- CSS (coerente DinoMed, non “font diverso”) ---------------- */
 const css = `
 :root{
   --dino:#22c55e; --dino2:#16a34a;
@@ -105,35 +196,34 @@ const css = `
   --shadow: 0 16px 60px rgba(2,6,23,0.10);
 }
 
-/* pagina coerente col resto */
-.smx{
+.sx{
   max-width: 1120px;
   margin: 0 auto;
   padding: 22px;
 }
 
-/* rettangolone “glass” coerente Home/Contatti/ChiSiamo */
-.smx-hero{
+/* rettangolone glass coerente */
+.sx-hero{
   position: relative;
   border-radius: 28px;
   border: 1px solid var(--bd);
   background:
     radial-gradient(900px 320px at 12% -25%, rgba(34,197,94,0.16), transparent 60%),
     radial-gradient(900px 320px at 78% -30%, rgba(56,189,248,0.16), transparent 55%),
-    rgba(255,255,255,0.88);
+    rgba(255,255,255,0.90);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow: var(--shadow);
   overflow:hidden;
   padding: 30px;
-  min-height: 520px; /* più grande */
+  min-height: 540px;
 }
 @media (max-width: 980px){
-  .smx-hero{ padding: 18px; min-height: auto; }
+  .sx-hero{ padding: 18px; min-height: auto; }
 }
 
-/* kicker all’angolo alto-sinistra */
-.smx-kicker{
+/* kicker */
+.sx-kicker{
   position:absolute;
   top: 14px;
   left: 14px;
@@ -143,79 +233,113 @@ const css = `
   padding: 10px 14px;
   border-radius: 999px;
   border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.70);
+  background: rgba(255,255,255,0.72);
   font-weight: 950;
   color: rgba(15,23,42,0.82);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
 }
 @media (max-width: 980px){
-  .smx-kicker{ position: static; margin-bottom: 10px; }
+  .sx-kicker{ position: static; margin-bottom: 10px; }
 }
 
-.smx-dot{
+.sx-dot{
   width: 10px; height: 10px; border-radius: 999px;
   background: linear-gradient(90deg, var(--dino), var(--med));
   box-shadow: 0 10px 20px rgba(2,6,23,0.10);
 }
-.smx-brand{ display:inline-flex; gap:0; }
-.smx-dino{ color: var(--dino2); font-weight: 1000; }
-.smx-med{ color: var(--med2); font-weight: 1000; }
-.smx-sep{ opacity:.55; }
+.sx-brand{ display:inline-flex; gap:0; }
+.sx-dino{ color: var(--dino2); font-weight: 1000; }
+.sx-med{ color: var(--med2); font-weight: 1000; }
+.sx-sep{ opacity:.55; }
 
-/* layout interno: spazio sopra al kicker */
-.smx-grid{
+/* layout */
+.sx-grid{
   display:grid;
   grid-template-columns: 1.05fr .95fr;
   gap: 26px;
   align-items:center;
-  padding-top: 34px; /* lascia aria al kicker in alto */
+  padding-top: 34px;
 }
 @media (max-width: 980px){
-  .smx-grid{ grid-template-columns: 1fr; padding-top: 0; }
+  .sx-grid{ grid-template-columns: 1fr; padding-top: 0; }
 }
 
-/* titolo “slide” grosso e bold */
-.smx-title{
+/* titolo coerente (niente pesi strani) */
+.sx-title{
   margin: 6px 0 10px;
-  line-height: 1.02;
-  letter-spacing: -0.04em;
+  font-size: 44px;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  font-weight: 1000;
 }
-.smx-titleTop{
-  display:block;
-  font-size: 52px;
-  font-weight: 1100;
-  color: rgba(15,23,42,0.92);
+.sx-br{ display:none; }
+@media (max-width: 520px){
+  .sx-title{ font-size: 34px; }
+  .sx-br{ display:block; }
 }
-.smx-titleBottom{
-  display:block;
-  font-size: 52px;
-  font-weight: 1100;
-  padding-right: 2px; /* evita tagli lettera finale */
+.sx-grad{
   background: linear-gradient(90deg, var(--dino2), var(--med2));
   -webkit-background-clip:text;
   background-clip:text;
   color: transparent;
 }
-@media (max-width: 520px){
-  .smx-titleTop, .smx-titleBottom{ font-size: 40px; }
+
+.sx-sub{
+  margin: 0;
+  color: var(--ink2);
+  font-weight: 850;
+  max-width: 72ch;
 }
 
-.smx-sub{
-  margin: 0;
-  color: rgba(15,23,42,0.72);
-  font-weight: 850;
-  max-width: 70ch;
+/* steps */
+.sx-steps{
+  margin-top: 14px;
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 10px;
 }
+@media (max-width: 980px){
+  .sx-steps{ grid-template-columns: 1fr; }
+}
+.sx-step{
+  display:flex;
+  gap: 10px;
+  align-items:flex-start;
+  padding: 12px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.76);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+}
+.sx-stepIco{
+  width: 40px; height: 40px;
+  border-radius: 14px;
+  display:grid; place-items:center;
+  border: 1px solid rgba(15,23,42,0.08);
+  background: linear-gradient(135deg, rgba(56,189,248,0.16), rgba(56,189,248,0.06));
+  color: rgba(14,165,233,0.95);
+}
+.sx-stepIco.isBlue{
+  background: linear-gradient(135deg, rgba(99,102,241,0.14), rgba(99,102,241,0.06));
+  color: rgba(79,70,229,0.95);
+}
+.sx-stepIco.isGreen{
+  background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(34,197,94,0.06));
+  color: rgba(22,163,74,0.95);
+}
+.sx-stepTop{ font-weight: 1000; color: rgba(15,23,42,0.90); }
+.sx-stepSub{ margin-top: 4px; font-weight: 850; color: rgba(15,23,42,0.68); line-height: 1.25; }
 
 /* CTA */
-.smx-actions{
-  margin-top: 18px;
+.sx-actions{
+  margin-top: 16px;
   display:flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   align-items:center;
 }
-
-.smx-btn{
+.sx-btn{
   position: relative;
   overflow:hidden;
   display:inline-flex;
@@ -228,28 +352,40 @@ const css = `
   box-shadow: 0 14px 30px rgba(2,6,23,0.10);
   transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
   cursor:pointer;
+  background: rgba(255,255,255,0.72);
+  color: rgba(15,23,42,0.86);
 }
-.smx-btn:hover{ transform: translateY(-1px); box-shadow: 0 18px 40px rgba(2,6,23,0.14); filter: saturate(1.03); }
+.sx-btn:hover{ transform: translateY(-1px); box-shadow: 0 18px 40px rgba(2,6,23,0.14); filter: saturate(1.03); }
 
-.smx-primary{
+.sx-primary{
   color: white;
   border: 1px solid rgba(255,255,255,0.22);
   background: linear-gradient(90deg, var(--dino2), var(--med2));
 }
-.smx-shine{
+.sx-soft{
+  background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(56,189,248,0.10));
+}
+
+.sx-shine{
   position:absolute; inset:0;
   background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.26) 25%, transparent 50%);
   transform: translateX(-120%);
-  animation: smxShine 4.2s ease-in-out infinite;
+  animation: sxShine 4.2s ease-in-out infinite;
   pointer-events: none;
 }
-@keyframes smxShine{
+@keyframes sxShine{
   0%, 58% { transform: translateX(-120%); }
   88%, 100% { transform: translateX(120%); }
 }
 
-.smx-pills{ display:flex; gap: 10px; flex-wrap: wrap; }
-.smx-pill{
+/* pills */
+.sx-pills{
+  margin-top: 12px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sx-pill{
   display:inline-flex;
   align-items:center;
   gap: 8px;
@@ -261,19 +397,19 @@ const css = `
   color: rgba(15,23,42,0.78);
 }
 
-/* immagine */
-.smx-visual{
+/* visual */
+.sx-visual{
   position: relative;
   border-radius: 24px;
   overflow:hidden;
   border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.92);
   box-shadow: 0 18px 60px rgba(2,6,23,0.10);
-  height: 420px; /* più grande e premium */
+  height: 420px;
 }
-@media (max-width: 980px){ .smx-visual{ height: 300px; } }
+@media (max-width: 980px){ .sx-visual{ height: 300px; } }
 
-.smx-visualGlow{
+.sx-visualGlow{
   position:absolute;
   inset:-60px;
   background:
@@ -284,8 +420,7 @@ const css = `
   pointer-events:none;
   z-index: 0;
 }
-
-.smx-img{
+.sx-img{
   position: relative;
   z-index: 1;
   width:100%; height:100%;
@@ -294,13 +429,12 @@ const css = `
   transform: scale(1.02);
   filter: saturate(0.96) contrast(1.06);
 }
-.smx-overlay{
+.sx-overlay{
   position:absolute; inset:0;
   z-index: 2;
-  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.20) 55%, rgba(255,255,255,0.86) 100%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0.86) 100%);
 }
-
-.smx-float{
+.sx-float{
   position:absolute;
   left: 14px; right: 14px;
   bottom: 14px;
@@ -313,10 +447,10 @@ const css = `
   box-shadow: 0 18px 55px rgba(2,6,23,0.10);
   padding: 12px;
 }
-.smx-floatTitle{ font-weight: 1000; color: rgba(15,23,42,0.90); }
-.smx-floatSub{ margin-top: 6px; font-weight: 850; color: rgba(15,23,42,0.70); }
+.sx-floatTitle{ font-weight: 1000; color: rgba(15,23,42,0.90); }
+.sx-floatSub{ margin-top: 6px; font-weight: 850; color: rgba(15,23,42,0.70); }
 
 /* icons */
-.smx-ico{ width: 18px; height: 18px; display:inline-grid; place-items:center; }
-.smx-ico svg{ width: 18px; height: 18px; }
+.sx-ico{ width: 18px; height: 18px; display:inline-grid; place-items:center; }
+.sx-ico svg{ width: 18px; height: 18px; }
 `;
