@@ -6,65 +6,58 @@ export default function Simulazioni() {
   const nav = useNavigate();
 
   const storyRef = useRef(null);
-  const dinoRef = useRef(null);
+  const mascotWrapRef = useRef(null);
 
   useEffect(() => {
     const storyEl = storyRef.current;
-    const dinoEl = dinoRef.current;
-    if (!storyEl || !dinoEl) return;
+    const mascotEl = mascotWrapRef.current;
+    if (!storyEl || !mascotEl) return;
 
     let rafId = 0;
 
-    // timeline (ms) — lento + pause
+    // timeline (ms) — lento + pause (come volevi)
     const T = {
-      fadeIn: 500,
+      fadeIn: 450,
       move1: 2200,
-      stop1: 1800, // book
+      stop1: 1700, // read
       move2: 2200,
-      stop2: 1800, // desk
+      stop2: 1700, // write
       move3: 2200,
-      stop3: 1600, // cap
+      stop3: 1600, // graduate
       exit: 900,
     };
-    const total =
-      T.fadeIn + T.move1 + T.stop1 + T.move2 + T.stop2 + T.move3 + T.stop3 + T.exit;
+    const total = Object.values(T).reduce((a, b) => a + b, 0);
 
     const clamp01 = (v) => Math.max(0, Math.min(1, v));
     const lerp = (a, b, t) => a + (b - a) * t;
-    const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
-    const getLayout = () => {
-      const pad = 14; // track padding
-      const dinoW = 46; // match CSS
+    const layout = () => {
+      const pad = 14;
       const w = storyEl.clientWidth;
-      const inner = Math.max(0, w - pad * 2 - dinoW);
+      const dW = 64; // width mascot wrap
+      const inner = Math.max(0, w - pad * 2 - dW);
 
       const x0 = 0;
       const x1 = inner * 0.18;
       const x2 = inner * 0.50;
       const x3 = inner * 0.82;
-      const xEnd = inner; // exit to the end
+      const xEnd = inner;
 
-      return { pad, x0, x1, x2, x3, xEnd };
+      return { x0, x1, x2, x3, xEnd };
     };
 
-    const setPhase = (phase) => {
-      // phases: walk, read, write, grad, exit
-      storyEl.dataset.phase = phase;
+    const setPhase = (p) => {
+      storyEl.dataset.phase = p;
     };
 
     const start = performance.now();
 
     const tick = (now) => {
-      const { x0, x1, x2, x3, xEnd } = getLayout();
-
+      const { x0, x1, x2, x3, xEnd } = layout();
       let t = (now - start) % total;
 
-      // default
-      let x = x0;
-      let opacity = 1;
-
-      // segments
+      // segment borders
       const s0 = 0;
       const s1 = s0 + T.fadeIn;
       const s2 = s1 + T.move1;
@@ -75,41 +68,32 @@ export default function Simulazioni() {
       const s7 = s6 + T.stop3;
       const s8 = s7 + T.exit;
 
+      let x = x0;
+      let opacity = 1;
+
       if (t < s1) {
-        // fade in at start
         setPhase("walk");
-        const k = clamp01(t / T.fadeIn);
-        opacity = k;
+        opacity = clamp01(t / T.fadeIn);
         x = x0;
       } else if (t < s2) {
-        // move to node 1
         setPhase("walk");
-        const k = ease(clamp01((t - s1) / T.move1));
-        x = lerp(x0, x1, k);
+        x = lerp(x0, x1, ease(clamp01((t - s1) / T.move1)));
       } else if (t < s3) {
-        // stop 1: read
         setPhase("read");
         x = x1;
       } else if (t < s4) {
-        // move to node 2
         setPhase("walk");
-        const k = ease(clamp01((t - s3) / T.move2));
-        x = lerp(x1, x2, k);
+        x = lerp(x1, x2, ease(clamp01((t - s3) / T.move2)));
       } else if (t < s5) {
-        // stop 2: write
         setPhase("write");
         x = x2;
       } else if (t < s6) {
-        // move to node 3
         setPhase("walk");
-        const k = ease(clamp01((t - s5) / T.move3));
-        x = lerp(x2, x3, k);
+        x = lerp(x2, x3, ease(clamp01((t - s5) / T.move3)));
       } else if (t < s7) {
-        // stop 3: graduation
         setPhase("grad");
         x = x3;
       } else if (t < s8) {
-        // exit to end + fade out
         setPhase("exit");
         const k = clamp01((t - s7) / T.exit);
         x = lerp(x3, xEnd, ease(k));
@@ -118,15 +102,13 @@ export default function Simulazioni() {
         setPhase("walk");
       }
 
-      // apply transform (super robust)
-      dinoEl.style.transform = `translateX(${x}px)`;
-      dinoEl.style.opacity = String(opacity);
+      mascotEl.style.transform = `translateX(${x}px)`;
+      mascotEl.style.opacity = String(opacity);
 
       rafId = requestAnimationFrame(tick);
     };
 
     rafId = requestAnimationFrame(tick);
-
     return () => cancelAnimationFrame(rafId);
   }, []);
 
@@ -182,7 +164,7 @@ export default function Simulazioni() {
               </button>
             </div>
 
-            {/* STORY STRIP — animazione GARANTITA */}
+            {/* STRIP ANIMATA */}
             <div className="sx-story" ref={storyRef} data-phase="walk" aria-hidden="true">
               <div className="sx-storyGlow" />
 
@@ -193,19 +175,22 @@ export default function Simulazioni() {
                 <span className="sx-finish" />
               </div>
 
-              <div className="sx-dinoWrap" ref={dinoRef}>
-                <div className="sx-dinoChar">
-                  <span className="d-body" />
-                  <span className="d-belly" />
-                  <span className="d-head" />
-                  <span className="d-eye" />
-                  <span className="d-mouth" />
-                  <span className="d-arm" />
-                  <span className="d-leg l1" />
-                  <span className="d-leg l2" />
-                  <span className="d-tail" />
+              <div className="sx-mascotWrap" ref={mascotWrapRef}>
+                <div className="sx-mascot">
+                  {/* “SIMILE” al tuo (testa grande, spine, mascherina) */}
+                  <span className="m-spines" />
+                  <span className="m-head" />
+                  <span className="m-face" />
+                  <span className="m-eye" />
+                  <span className="m-mask" />
+                  <span className="m-neck" />
+                  <span className="m-body" />
+                  <span className="m-tail" />
+                  <span className="m-arm" />
+                  <span className="m-leg l1" />
+                  <span className="m-leg l2" />
 
-                  {/* props (attivi per phase via data-phase su .sx-story) */}
+                  {/* props per fasi */}
                   <span className="p-book" />
                   <span className="p-desk" />
                   <span className="p-pen" />
@@ -248,13 +233,8 @@ const css = `
   --shadow: 0 16px 60px rgba(2,6,23,0.10);
 }
 
-.sx{
-  max-width:1120px;
-  margin:0 auto;
-  padding:22px;
-}
+.sx{ max-width:1120px; margin:0 auto; padding:22px; }
 
-/* HERO */
 .sx-hero{
   position:relative;
   border-radius:28px;
@@ -263,371 +243,108 @@ const css = `
     radial-gradient(900px 320px at 15% -25%, rgba(34,197,94,.18), transparent 60%),
     radial-gradient(900px 320px at 80% -30%, rgba(56,189,248,.18), transparent 55%),
     rgba(255,255,255,.92);
-  backdrop-filter:blur(14px);
-  box-shadow:var(--shadow);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
   padding:30px;
   overflow:hidden;
 }
 
-/* KICKER */
 .sx-kicker{
   position:absolute;
-  top:14px;
-  left:14px;
-  display:flex;
-  align-items:center;
-  gap:10px;
+  top:14px; left:14px;
+  display:flex; align-items:center; gap:10px;
   padding:10px 14px;
   border-radius:999px;
   border:1px solid var(--bd);
-  background:rgba(255,255,255,.75);
-  font-weight:900;
+  background:rgba(255,255,255,.76);
+  font-weight:950;
+  color: rgba(15,23,42,.82);
 }
-.sx-dot{
-  width:10px;
-  height:10px;
-  border-radius:999px;
-  background:linear-gradient(90deg,var(--dino),var(--med));
+@media (max-width: 980px){
+  .sx-kicker{ position: static; margin-bottom: 10px; display:inline-flex; }
 }
-.sx-dino{color:var(--dino2);font-weight:1000}
-.sx-med{color:var(--med2);font-weight:1000}
-.sx-sep{opacity:.5}
+.sx-dot{ width:10px; height:10px; border-radius:999px; background:linear-gradient(90deg,var(--dino),var(--med)); box-shadow:0 10px 20px rgba(2,6,23,.08); }
+.sx-brand{ display:flex; }
+.sx-dino{ color:var(--dino2); font-weight:1000; }
+.sx-med{ color:var(--med2); font-weight:1000; }
+.sx-sep{ opacity:.55; }
 
-/* GRID */
 .sx-grid{
   display:grid;
   grid-template-columns:1.05fr .95fr;
   gap:28px;
   padding-top:40px;
+  align-items:center;
 }
 @media(max-width:900px){
-  .sx-grid{grid-template-columns:1fr}
+  .sx-grid{ grid-template-columns:1fr; padding-top:0; }
 }
 
-/* TEXT */
 .sx-title{
+  margin:0;
   font-size:44px;
   font-weight:1000;
   letter-spacing:-0.035em;
-  margin:0;
-  color:var(--ink);
+  color: var(--ink);
+  line-height:1.05;
 }
+@media (max-width:520px){ .sx-title{ font-size:34px; } }
+
 .sx-grad{
   background:linear-gradient(90deg,var(--dino2),var(--med2));
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
 }
+
 .sx-lead{
   margin:8px 0 6px;
   font-weight:950;
-  color:rgba(15,23,42,.82);
+  color: rgba(15,23,42,.80);
 }
+
 .sx-sub{
   margin:0;
   max-width:70ch;
-  color:var(--ink2);
+  color: var(--ink2);
   font-weight:850;
 }
 
-/* CTA */
-.sx-actions{
-  margin-top:22px;
-  display:flex;
-  gap:14px;
-  align-items:center;
-  flex-wrap:wrap;
+/* Flow */
+.sx-flow{ margin-top:18px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.sx-flowItem{ display:flex; align-items:center; gap:8px; font-weight:950; color: rgba(15,23,42,.82); }
+.sx-flowNum{
+  width:28px;height:28px;border-radius:999px;
+  display:grid;place-items:center;
+  background:linear-gradient(90deg,var(--dino2),var(--med2));
+  color:white;font-size:14px;
 }
+.sx-flowSep{ width:22px; height:1px; background: rgba(15,23,42,.20); }
+
+/* CTA */
+.sx-actions{ margin-top:22px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
 .sx-btn{
   position:relative;
+  overflow:hidden;
   border-radius:999px;
   padding:13px 18px;
   font-weight:1000;
   border:1px solid var(--bd);
   cursor:pointer;
-  background:#fff;
+  box-shadow:0 14px 30px rgba(2,6,23,.10);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
 }
-.sx-primary{
-  background:linear-gradient(90deg,var(--dino2),var(--med2));
-  color:white;
-}
+.sx-btn:hover{ transform: translateY(-1px); box-shadow:0 18px 40px rgba(2,6,23,.14); filter:saturate(1.03); }
+.sx-primary{ background:linear-gradient(90deg,var(--dino2),var(--med2)); color:white; border:1px solid rgba(255,255,255,.22); }
 .sx-shine{
-  position:absolute;
-  inset:0;
+  position:absolute; inset:0;
   background:linear-gradient(115deg,transparent,rgba(255,255,255,.25),transparent);
   transform:translateX(-120%);
   animation:sxShine 4s infinite;
+  pointer-events:none;
 }
-@keyframes sxShine{
-  0%,60%{transform:translateX(-120%)}
-  100%{transform:translateX(120%)}
-}
-
-/* VISUAL */
-.sx-visual{
-  position:relative;
-  height:420px;
-  border-radius:24px;
-  overflow:hidden;
-  border:1px solid var(--bd);
-  box-shadow:var(--shadow);
-}
-.sx-visualGlow{
-  position:absolute;
-  inset:-60px;
-  background:
-    radial-gradient(420px 240px at 30% 20%, rgba(34,197,94,.25), transparent),
-    radial-gradient(420px 240px at 70% 20%, rgba(56,189,248,.25), transparent);
-  filter:blur(30px);
-}
-.sx-img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  position:relative;
-  z-index:1;
-}
-.sx-overlay{
-  position:absolute;
-  inset:0;
-  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.85));
-}
-
-/* =========================
-   STORY STRIP + ANIMATION
-   ========================= */
-
-.sx-story{
-  position:absolute;
-  left:14px;
-  right:14px;
-  bottom:18px;
-  height:70px;
-  border-radius:18px;
-  background:rgba(255,255,255,.82);
-  backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,.4);
-  box-shadow:0 18px 55px rgba(2,6,23,.10);
-  overflow:hidden;
-}
-
-.sx-track{
-  position:absolute;
-  left:18px;
-  right:18px;
-  top:50%;
-  height:2px;
-  background:linear-gradient(90deg,
-    rgba(22,163,74,.25),
-    rgba(14,165,233,.25));
-  transform:translateY(-50%);
-}
-
-/* =========================
-   DINO MASCOT
-   ========================= */
-
-.sx-mascotWrap{
-  position:absolute;
-  top:10px;
-  left:18px;
-  width:64px;
-  height:64px;
-  animation:sxWalk 10s linear infinite;
-}
-
-@keyframes sxWalk{
-  0%{left:18px}
-  50%{left:calc(50% - 32px)}
-  100%{left:calc(100% - 82px)}
-}
-
-.sx-mascot{
-  position:relative;
-  width:64px;
-  height:64px;
-}
-
-/* HEAD */
-.m-head{
-  position:absolute;
-  left:22px;
-  top:6px;
-  width:34px;
-  height:26px;
-  border-radius:18px 22px 18px 18px;
-  background:linear-gradient(135deg,#22c55e,#16a34a);
-}
-
-/* SNOUT */
-.m-snout{
-  position:absolute;
-  left:46px;
-  top:12px;
-  width:18px;
-  height:16px;
-  border-radius:14px;
-  background:#4ade80;
-}
-
-/* MASK */
-.m-mask{
-  position:absolute;
-  left:44px;
-  top:16px;
-  width:20px;
-  height:12px;
-  border-radius:6px;
-  background:#7dd3fc;
-}
-
-/* EYE */
-.m-eye{
-  position:absolute;
-  left:42px;
-  top:12px;
-  width:5px;
-  height:5px;
-  border-radius:50%;
-  background:#0f172a;
-}
-
-/* BODY */
-.m-body{
-  position:absolute;
-  left:24px;
-  top:28px;
-  width:26px;
-  height:22px;
-  border-radius:14px;
-  background:linear-gradient(180deg,#22c55e,#16a34a);
-}
-
-/* ARM */
-.m-arm{
-  position:absolute;
-  left:38px;
-  top:34px;
-  width:14px;
-  height:6px;
-  border-radius:6px;
-  background:#15803d;
-  animation:mArm .8s ease-in-out infinite;
-}
-
-/* LEGS */
-.m-leg{
-  position:absolute;
-  top:48px;
-  width:16px;
-  height:6px;
-  border-radius:6px;
-  background:#15803d;
-  animation:mLeg .8s ease-in-out infinite;
-}
-.m-leg.l1{left:24px}
-.m-leg.l2{left:36px;animation-delay:.4s}
-
-/* TAIL */
-.m-tail{
-  position:absolute;
-  left:8px;
-  top:36px;
-  width:20px;
-  height:8px;
-  border-radius:999px;
-  background:#16a34a;
-  animation:mTail 1s ease-in-out infinite;
-}
-
-/* BOOK (NOT WHITE) */
-.m-book{
-  position:absolute;
-  left:50px;
-  top:36px;
-  width:12px;
-  height:14px;
-  border-radius:3px;
-  background:#38bdf8;
-}
-
-/* ANIMS */
-@keyframes mLeg{
-  0%,100%{transform:rotate(18deg)}
-  50%{transform:rotate(-18deg)}
-}
-@keyframes mArm{
-  0%,100%{transform:rotate(-12deg)}
-  50%{transform:rotate(12deg)}
-}
-@keyframes mTail{
-  0%,100%{transform:rotate(12deg)}
-  50%{transform:rotate(-12deg)}
-}
-
-/* PROPS controlled by phase */
-.p-book,.p-desk,.p-pen,.p-cap,.p-star{ opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; }
-
-.sx-story[data-phase="read"] .p-book{ opacity:1; transform: translateY(-1px) rotate(-4deg); }
-.sx-story[data-phase="write"] .p-desk,
-.sx-story[data-phase="write"] .p-pen{ opacity:1; transform: translateY(0); }
-.sx-story[data-phase="grad"] .p-cap{ opacity:1; transform: translateY(0); }
-.sx-story[data-phase="grad"] .p-star{ opacity:1; animation: sxStarsPop 0.9s ease-in-out infinite; }
-
-.p-book{
-  position:absolute; left: 30px; top: 30px;
-  width: 14px; height: 10px;
-  border-radius: 3px;
-  border: 1px solid rgba(15,23,42,0.12);
-  background: rgba(255,255,255,0.82);
-}
-.p-book::after{
-  content:"";
-  position:absolute; left: 6px; top: 1px; bottom: 1px;
-  width: 1px; background: rgba(15,23,42,0.10);
-}
-
-.p-desk{
-  position:absolute; left: 2px; top: 44px;
-  width: 42px; height: 6px;
-  border-radius: 999px;
-  background: rgba(15,23,42,0.10);
-}
-.p-pen{
-  position:absolute; left: 30px; top: 36px;
-  width: 10px; height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--dino2), var(--med2));
-}
-
-.p-cap{
-  position:absolute; left: 24px; top: 6px;
-  width: 16px; height: 6px;
-  border-radius: 4px 4px 2px 2px;
-  background: rgba(15,23,42,0.28);
-}
-.p-cap::after{
-  content:"";
-  position:absolute; left: 7px; top: 5px;
-  width: 2px; height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--dino2), var(--med2));
-  opacity: .9;
-}
-.p-star{
-  position:absolute;
-  width: 6px; height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--dino2), var(--med2));
-}
-.p-star.s1{ left: 44px; top: 10px; transform: rotate(22deg); }
-.p-star.s2{ left: 42px; top: 18px; transform: rotate(-18deg); }
-.p-star.s3{ left: 38px; top: 6px; transform: rotate(78deg); }
-
-@keyframes sxStarsPop{
-  0%,100%{ transform: translateX(0) scaleX(1); opacity: .70; }
-  50%{ transform: translateX(4px) scaleX(1.25); opacity: 1; }
-}
+@keyframes sxShine{ 0%,60%{transform:translateX(-120%)} 100%{transform:translateX(120%)} }
 
 /* RIGHT VISUAL */
 .sx-visual{
@@ -636,45 +353,357 @@ const css = `
   border-radius:24px;
   overflow:hidden;
   border:1px solid var(--bd);
-  box-shadow:var(--shadow);
-  background: rgba(255,255,255,0.92);
+  box-shadow: var(--shadow);
+  background: rgba(255,255,255,.92);
 }
-@media (max-width: 900px){ .sx-visual{ height: 300px; } }
+@media(max-width:900px){ .sx-visual{ height:300px; } }
 .sx-visualGlow{
   position:absolute;
   inset:-60px;
   background:
-    radial-gradient(420px 240px at 30% 20%, rgba(34,197,94,0.25), transparent),
-    radial-gradient(420px 240px at 70% 20%, rgba(56,189,248,0.25), transparent);
-  filter:blur(30px);
-  opacity: .55;
+    radial-gradient(420px 240px at 30% 20%, rgba(34,197,94,.25), transparent),
+    radial-gradient(420px 240px at 70% 20%, rgba(56,189,248,.25), transparent);
+  filter: blur(30px);
+  opacity:.55;
   pointer-events:none;
   z-index:0;
 }
 .sx-img{
-  width:100%;height:100%;
+  position:relative; z-index:1;
+  width:100%; height:100%;
   object-fit:cover;
-  position:relative;
-  z-index:1;
   transform: scale(1.02);
-  filter: saturate(0.96) contrast(1.06);
+  filter: saturate(.96) contrast(1.06);
 }
 .sx-overlay{
-  position:absolute;inset:0;
-  z-index:2;
-  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.85));
+  position:absolute; inset:0; z-index:2;
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.86));
 }
 .sx-float{
   position:absolute;
-  bottom:14px;left:14px;right:14px;
-  padding:12px;
-  border-radius:18px;
-  background:rgba(255,255,255,0.80);
-  backdrop-filter:blur(12px);
+  left:14px; right:14px; bottom:14px;
   z-index:3;
-  border: 1px solid rgba(255,255,255,0.40);
-  box-shadow: 0 18px 55px rgba(2,6,23,0.10);
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.40);
+  background: rgba(255,255,255,.80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 18px 55px rgba(2,6,23,.10);
+  padding:12px;
 }
-.sx-floatTitle{font-weight:1000;color: rgba(15,23,42,0.90);}
-.sx-floatSub{margin-top:6px;font-weight:850;color:var(--ink2);}
+.sx-floatTitle{ font-weight:1000; color: rgba(15,23,42,.90); }
+.sx-floatSub{ margin-top:6px; font-weight:850; color: rgba(15,23,42,.70); }
+
+/* ===========================
+   STORY STRIP (sotto al bottone)
+   =========================== */
+.sx-story{
+  margin-top:22px;
+  max-width:520px;
+  height:84px;
+  border-radius:18px;
+  border:1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.74);
+  box-shadow: 0 14px 30px rgba(2,6,23,.06);
+  position:relative;
+  overflow:hidden;
+}
+.sx-storyGlow{
+  position:absolute;
+  inset:-50px;
+  background:
+    radial-gradient(320px 160px at 18% 70%, rgba(34,197,94,.18), transparent 60%),
+    radial-gradient(320px 160px at 82% 40%, rgba(56,189,248,.18), transparent 60%);
+  filter: blur(24px);
+  opacity:.95;
+  pointer-events:none;
+}
+.sx-track{
+  position:absolute;
+  left:14px; right:14px;
+  top:48px;
+  height:2px;
+  border-radius:999px;
+  background: rgba(15,23,42,.08);
+  z-index:1;
+}
+.sx-node{
+  position:absolute;
+  top:-6px;
+  width:14px; height:14px;
+  border-radius:999px;
+  border:1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 10px 22px rgba(2,6,23,.06);
+}
+.sx-node.n1{ left:18%; }
+.sx-node.n2{ left:50%; }
+.sx-node.n3{ left:82%; }
+.sx-finish{
+  position:absolute;
+  right:-2px;
+  top:-10px;
+  width:30px; height:30px;
+  border-radius:14px;
+  border:1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.68);
+  box-shadow: 0 18px 40px rgba(2,6,23,.08);
+}
+
+/* ===========================
+   MASCOT (SIMILE ALL'IMMAGINE)
+   - rivolto a destra
+   - corpo tutto verde
+   =========================== */
+.sx-mascotWrap{
+  position:absolute;
+  left:14px;
+  top:10px;
+  width:64px;
+  height:64px;
+  z-index:2;
+  transform: translateX(0);
+  opacity:1;
+  will-change: transform, opacity;
+}
+
+.sx-mascot{ position:relative; width:64px; height:64px; }
+
+/* spines */
+.m-spines{
+  position:absolute;
+  left:22px;
+  top:1px;
+  width:38px;
+  height:28px;
+  background:
+    radial-gradient(10px 10px at 8% 70%, rgba(22,163,74,.95) 0 60%, transparent 62%),
+    radial-gradient(10px 10px at 30% 30%, rgba(22,163,74,.95) 0 60%, transparent 62%),
+    radial-gradient(10px 10px at 55% 22%, rgba(22,163,74,.95) 0 60%, transparent 62%),
+    radial-gradient(10px 10px at 78% 40%, rgba(22,163,74,.95) 0 60%, transparent 62%),
+    radial-gradient(10px 10px at 92% 70%, rgba(22,163,74,.95) 0 60%, transparent 62%);
+  opacity:.95;
+}
+
+/* head */
+.m-head{
+  position:absolute;
+  left:16px;
+  top:8px;
+  width:40px;
+  height:28px;
+  border-radius:22px 26px 20px 18px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 10px 22px rgba(2,6,23,.10);
+}
+
+/* face highlight */
+.m-face{
+  position:absolute;
+  left:24px;
+  top:14px;
+  width:28px;
+  height:18px;
+  border-radius:18px;
+  background: rgba(255,255,255,.14);
+  transform: skewX(-10deg);
+  opacity:.9;
+}
+
+/* eye */
+.m-eye{
+  position:absolute;
+  left:44px;
+  top:16px;
+  width:6px;
+  height:6px;
+  border-radius:999px;
+  background:#0f172a;
+}
+
+/* mask */
+.m-mask{
+  position:absolute;
+  left:44px;
+  top:22px;
+  width:18px;
+  height:12px;
+  border-radius:7px;
+  background: linear-gradient(180deg, #93c5fd, #38bdf8);
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,.10);
+}
+
+/* neck */
+.m-neck{
+  position:absolute;
+  left:26px;
+  top:30px;
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background: #16a34a;
+}
+
+/* body */
+.m-body{
+  position:absolute;
+  left:18px;
+  top:34px;
+  width:30px;
+  height:22px;
+  border-radius:16px;
+  background: linear-gradient(180deg, #22c55e, #16a34a);
+}
+
+/* tail */
+.m-tail{
+  position:absolute;
+  left:2px;
+  top:42px;
+  width:22px;
+  height:10px;
+  border-radius:999px;
+  background:#16a34a;
+  transform-origin:right center;
+  animation: mTail .9s ease-in-out infinite;
+}
+@keyframes mTail{
+  0%,100%{ transform: rotate(10deg); }
+  50%{ transform: rotate(-12deg); }
+}
+
+/* arm */
+.m-arm{
+  position:absolute;
+  left:40px;
+  top:42px;
+  width:16px;
+  height:7px;
+  border-radius:999px;
+  background:#15803d;
+  transform-origin: 3px 3px;
+  animation: mArm .55s ease-in-out infinite;
+}
+@keyframes mArm{
+  0%,100%{ transform: rotate(-10deg); }
+  50%{ transform: rotate(10deg); }
+}
+
+/* legs */
+.m-leg{
+  position:absolute;
+  top:54px;
+  width:18px;
+  height:7px;
+  border-radius:999px;
+  background:#15803d;
+  transform-origin: 3px 3px;
+  animation: mLeg .55s ease-in-out infinite;
+}
+.m-leg.l1{ left:16px; }
+.m-leg.l2{ left:32px; animation-delay:.275s; }
+@keyframes mLeg{
+  0%,100%{ transform: rotate(12deg); }
+  50%{ transform: rotate(-12deg); }
+}
+
+/* pause legs/arm when not walking */
+.sx-story[data-phase="walk"] .m-leg,
+.sx-story[data-phase="walk"] .m-arm{ animation-play-state: running; }
+.sx-story:not([data-phase="walk"]) .m-leg,
+.sx-story:not([data-phase="walk"]) .m-arm{ animation-play-state: paused; }
+
+/* ===========================
+   PROPS (NON bianchi)
+   =========================== */
+.p-book,.p-desk,.p-pen,.p-cap,.p-star{
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+/* BOOK (azzurro, visibile) */
+.p-book{
+  position:absolute;
+  left:52px;
+  top:42px;
+  width:12px;
+  height:14px;
+  border-radius:3px;
+  background: linear-gradient(180deg, #60a5fa, #38bdf8);
+  box-shadow: 0 10px 20px rgba(2,6,23,.10);
+}
+.p-book::after{
+  content:"";
+  position:absolute;
+  left:5px; top:2px; bottom:2px;
+  width:1px;
+  background: rgba(255,255,255,.35);
+}
+
+/* DESK + PEN */
+.p-desk{
+  position:absolute;
+  left:8px;
+  top:60px;
+  width:48px;
+  height:6px;
+  border-radius:999px;
+  background: rgba(15,23,42,.10);
+}
+.p-pen{
+  position:absolute;
+  left:46px;
+  top:54px;
+  width:12px;
+  height:3px;
+  border-radius:999px;
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+  transform: rotate(-10deg);
+}
+
+/* GRAD CAP + STARS */
+.p-cap{
+  position:absolute;
+  left:40px;
+  top:8px;
+  width:18px;
+  height:6px;
+  border-radius:4px 4px 2px 2px;
+  background: rgba(15,23,42,.30);
+}
+.p-cap::after{
+  content:"";
+  position:absolute;
+  left:8px;
+  top:5px;
+  width:2px;
+  height:8px;
+  border-radius:999px;
+  background: linear-gradient(180deg, var(--dino2), var(--med2));
+  opacity:.9;
+}
+
+.p-star{
+  position:absolute;
+  width:6px;
+  height:2px;
+  border-radius:999px;
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+}
+.p-star.s1{ left:62px; top:10px; transform: rotate(22deg); }
+.p-star.s2{ left:60px; top:18px; transform: rotate(-18deg); }
+.p-star.s3{ left:56px; top:6px;  transform: rotate(78deg); }
+
+@keyframes starPop{
+  0%,100%{ transform: translateX(0) scaleX(1); opacity:.70; }
+  50%{ transform: translateX(4px) scaleX(1.25); opacity:1; }
+}
+
+/* phases */
+.sx-story[data-phase="read"] .p-book{ opacity:1; transform: translateY(-1px); }
+.sx-story[data-phase="write"] .p-desk,
+.sx-story[data-phase="write"] .p-pen{ opacity:1; }
+.sx-story[data-phase="grad"] .p-cap{ opacity:1; }
+.sx-story[data-phase="grad"] .p-star{ opacity:1; animation: starPop .9s ease-in-out infinite; }
 `;
