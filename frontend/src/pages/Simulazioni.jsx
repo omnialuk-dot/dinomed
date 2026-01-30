@@ -536,9 +536,13 @@ const css = `
 .sx-floatTitle{font-weight:1000;color: rgba(15,23,42,0.90);}
 .sx-floatSub{margin-top:6px;font-weight:850;color:var(--ink2);}
 
-/* If reduced motion: hide strip to avoid “stuck” pieces */
 @media (prefers-reduced-motion: reduce){
-  .sx-story{ display:none !important; }
-  .sx-shine{ animation: none !important; }
+  /* non nascondere niente: semplicemente ferma le animazioni */
+  .sx-dinoWrap,
+  .d-leg, .d-arm, .d-tail,
+  .p-book, .p-desk, .p-pen, .p-cap, .p-star,
+  .sx-node.n1::after, .sx-node.n2::after, .sx-node.n3::after,
+  .sx-shine{
+    animation: none !important;
+  }
 }
-`;
