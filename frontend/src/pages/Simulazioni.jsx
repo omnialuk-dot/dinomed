@@ -15,7 +15,7 @@ export default function Simulazioni() {
 
     let raf = 0;
 
-    // tempi: più lenti + soste leggibili
+    // tempi: lenti + soste leggibili (come ti piace)
     const T = {
       fadeIn: 350,
       move1: 2200,
@@ -36,7 +36,7 @@ export default function Simulazioni() {
       const pad = 14;
       const w = storyEl.clientWidth;
 
-      // scena più piccola (come volevi)
+      // scena compatta (resta come base “2”)
       const dW = 110;
       const inner = Math.max(0, w - pad * 2 - dW);
 
@@ -50,7 +50,6 @@ export default function Simulazioni() {
     };
 
     const setPhase = (p) => (storyEl.dataset.phase = p);
-
     const start = performance.now();
 
     const tick = (now) => {
@@ -183,48 +182,65 @@ export default function Simulazioni() {
                     <path d="M20 18v18" className="mStroke" />
                     <path d="M20 24L12 32" className="mStroke" />
                     <path d="M20 24L28 32" className="mStroke" />
-                    <path d="M20 36L14 52" className="mStroke leg leg1" />
-                    <path d="M20 36L26 52" className="mStroke leg leg2" />
+                    <path className="mStroke leg leg1" d="M20 36L14 52" />
+                    <path className="mStroke leg leg2" d="M20 36L26 52" />
                     <path d="M12 52h8" className="mFoot" />
                     <path d="M22 52h8" className="mFoot" />
                   </g>
 
-                  {/* ===== READ (libro profilo, NON doppia pagina) ===== */}
+                  {/* ===== READ (FIX: libro più piccolo + più vicino alle mani) ===== */}
                   <g className="scene scene-read">
-                    {/* book body */}
-                    <path d="M48 26l18-6c3-1 6 1 6 4v24c0 3-3 5-6 4l-18-6V26z" fill="#ef4444" />
-                    {/* pages edge */}
-                    <path d="M50 25l14-5" stroke="#fde68a" strokeWidth="4" strokeLinecap="round" />
-                    <path d="M50 47l14 5" stroke="#fde68a" strokeWidth="4" strokeLinecap="round" />
-                    {/* page lines */}
-                    <path d="M56 30h10M56 34h9M56 38h8" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" />
-                    {/* small “hand link” */}
-                    <path d="M34 40L48 32" stroke="rgba(15,23,42,0.14)" strokeWidth="2" strokeLinecap="round" />
+                    {/* libro di profilo, più piccolo e più “in mano” */}
+                    <path
+                      d="M38 31l12-4c2-1 4 1 4 3v17c0 2-2 4-4 3l-12-4V31z"
+                      fill="#ef4444"
+                    />
+                    {/* bordo pagine */}
+                    <path d="M40 31l9-3" stroke="#fde68a" strokeWidth="2.6" strokeLinecap="round" />
+                    <path d="M40 44l9 3" stroke="#fde68a" strokeWidth="2.6" strokeLinecap="round" />
+                    {/* righe */}
+                    <path
+                      d="M43 35h6M43 38h5.2M43 41h4.6"
+                      stroke="rgba(255,255,255,0.78)"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                    />
+                    {/* aggancio mano → libro (più corto e credibile) */}
+                    <path d="M32 38L38 34" stroke="rgba(15,23,42,0.14)" strokeWidth="2" strokeLinecap="round" />
                   </g>
 
-                  {/* ===== WRITE (scrivania carina con gambette + foglio + penna) ===== */}
+                  {/* ===== WRITE (FIX: scrivania più pulita + gambette + penna più piccola) ===== */}
                   <g className="scene scene-write">
-                    {/* desk top */}
-                    <path d="M50 40h52c2 0 4 2 4 4v8H46v-8c0-2 2-4 4-4Z" fill="#f97316" />
-                    {/* desk lip */}
-                    <path d="M46 48h64" stroke="rgba(255,255,255,0.45)" strokeWidth="2" strokeLinecap="round" />
-                    {/* legs */}
-                    <path d="M54 52v14" stroke="#ea580c" strokeWidth="6" strokeLinecap="round" />
-                    <path d="M96 52v14" stroke="#ea580c" strokeWidth="6" strokeLinecap="round" />
-                    {/* feet */}
-                    <path d="M48 66h12" stroke="rgba(15,23,42,0.18)" strokeWidth="4" strokeLinecap="round" />
-                    <path d="M90 66h12" stroke="rgba(15,23,42,0.18)" strokeWidth="4" strokeLinecap="round" />
+                    {/* piano tavolo (più piccolo e leggero) */}
+                    <path
+                      d="M52 41h44c2 0 3.6 1.6 3.6 3.6v5.8H48.4v-5.8c0-2 1.6-3.6 3.6-3.6Z"
+                      fill="#f97316"
+                    />
+                    {/* bordino */}
+                    <path d="M48.4 47.2h51.2" stroke="rgba(255,255,255,0.40)" strokeWidth="2" strokeLinecap="round" />
 
-                    {/* paper */}
-                    <path d="M62 42h18v12H62z" fill="#fde68a" stroke="rgba(15,23,42,0.12)" strokeWidth="1.6" />
-                    <path d="M64 46h14M64 49h12M64 52h8" stroke="rgba(15,23,42,0.25)" strokeWidth="1.8" strokeLinecap="round" />
+                    {/* gambette (più fini) */}
+                    <path d="M56 50.4v13" stroke="#ea580c" strokeWidth="5" strokeLinecap="round" />
+                    <path d="M92 50.4v13" stroke="#ea580c" strokeWidth="5" strokeLinecap="round" />
+                    {/* piedini */}
+                    <path d="M50 63.5h12" stroke="rgba(15,23,42,0.16)" strokeWidth="3.8" strokeLinecap="round" />
+                    <path d="M86 63.5h12" stroke="rgba(15,23,42,0.16)" strokeWidth="3.8" strokeLinecap="round" />
 
-                    {/* pen (blue) */}
-                    <path d="M36 40L60 48" stroke="#0ea5e9" strokeWidth="5" strokeLinecap="round" />
-                    <path d="M58 47l10 3" stroke="#16a34a" strokeWidth="5" strokeLinecap="round" />
+                    {/* foglio (ridotto) */}
+                    <path d="M64 42.2h14.5v9.3H64z" fill="#fde68a" stroke="rgba(15,23,42,0.12)" strokeWidth="1.4" />
+                    <path
+                      d="M66 45.2h10.5M66 47.8h9.2M66 50.4h6.8"
+                      stroke="rgba(15,23,42,0.22)"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                    />
+
+                    {/* penna (più piccola, mano → foglio) */}
+                    <path d="M34 38L60 46" stroke="#0ea5e9" strokeWidth="3.6" strokeLinecap="round" />
+                    <path d="M58.5 45.6l7.2 2.2" stroke="#16a34a" strokeWidth="3.6" strokeLinecap="round" />
                   </g>
 
-                  {/* ===== GRAD (tocco + diploma arrotolato) ===== */}
+                  {/* ===== GRAD (NON TOCCATA: diploma + camminata ti piacciono) ===== */}
                   <g className="scene scene-grad">
                     {/* cap */}
                     <path d="M20 2l18 6-18 6-18-6 18-6Z" fill="#0f172a" opacity=".9" transform="translate(6,6)" />
@@ -233,7 +249,6 @@ export default function Simulazioni() {
                     <circle cx="44" cy="28" r="3" fill="#fbbf24" />
 
                     {/* diploma roll */}
-                    <path d="M58 44c10 0 18 6 18 14v6H46v-6c0-8 8-14 18-14Z" fill="#fbbf24" opacity=".18" />
                     <path
                       d="M50 44h22c3 0 6 3 6 6v10c0 3-3 6-6 6H50c-3 0-6-3-6-6V50c0-3 3-6 6-6Z"
                       fill="#fde68a"
@@ -274,10 +289,12 @@ export default function Simulazioni() {
   );
 }
 
+/* ---------------- CSS premium ---------------- */
 const css = `
 :root{
-  --dino2:#16a34a;
-  --med2:#0ea5e9;
+  --dino:#22c55e; --dino2:#16a34a;
+  --med:#38bdf8;  --med2:#0ea5e9;
+
   --stick:#16a34a;
 
   --ink: rgba(15,23,42,0.92);
@@ -323,7 +340,7 @@ const css = `
 }
 .smx-dot{
   width: 10px; height: 10px; border-radius: 999px;
-  background: linear-gradient(90deg, var(--dino2), var(--med2));
+  background: linear-gradient(90deg, var(--dino), var(--med));
   box-shadow: 0 10px 20px rgba(2,6,23,0.10);
 }
 .smx-brand{ display:inline-flex; gap:0; }
@@ -527,7 +544,7 @@ const css = `
 .mFill{ fill: var(--stick); }
 .mFoot{ stroke: rgba(15,23,42,0.18); stroke-width: 3.2; stroke-linecap: round; fill:none; }
 
-/* camminata */
+/* camminata (uguale a prima) */
 .smx-story[data-phase="walk"] .man{
   animation: bob .58s ease-in-out infinite;
   transform-origin: 20px 40px;
