@@ -30,11 +30,11 @@ export default function Simulazioni() {
             <p className="sx-lead">In modo semplice.</p>
 
             <p className="sx-sub">
-              Simulazioni pensate per farti concentrare solo su ciò che conta,
-              senza perdere tempo in configurazioni inutili.
+              Simulazioni pensate per farti concentrare su ciò che conta,
+              con un’interfaccia pulita e una correzione immediata.
             </p>
 
-            {/* COME FUNZIONA — flow line */}
+            {/* FLOW LINE */}
             <div className="sx-flow" aria-label="Come funziona">
               <div className="sx-flowItem">
                 <span className="sx-flowNum">1</span>
@@ -57,45 +57,31 @@ export default function Simulazioni() {
                 Inizia una simulazione <span aria-hidden="true">→</span>
                 <span className="sx-shine" aria-hidden="true" />
               </button>
+            </div>
 
-              {/* SOSTITUTO “utile” delle pills */}
-              <div className="sx-mini">
-                <div className="sx-miniCard">
-                  <div className="sx-miniTop">
-                    <span className="sx-miniIco" aria-hidden="true">
-                      <IconTip />
-                    </span>
-                    Consiglio rapido
-                  </div>
-                  <div className="sx-miniText">
-                    Se sei in ripasso: fai <b>15 domande</b> e ordina per <b>argomento</b>.
-                    Se sei vicino all’esame: fai <b>30 domande</b> con <b>timer</b>.
-                  </div>
-                </div>
+            {/* ANIMAZIONE PREMIUM (zero papiro) */}
+            <div className="sx-live" aria-hidden="true">
+              <div className="sx-liveTop">
+                <span className="sx-liveDot" />
+                <span className="sx-liveLabel">Pronto in pochi secondi</span>
+              </div>
 
-                <div className="sx-miniCard">
-                  <div className="sx-miniTop">
-                    <span className="sx-miniIco isBlue" aria-hidden="true">
-                      <IconList />
-                    </span>
-                    Cosa ottieni
-                  </div>
+              <div className="sx-liveRail">
+                <span className="sx-liveBar is1" />
+                <span className="sx-liveBar is2" />
+                <span className="sx-liveBar is3" />
+              </div>
 
-                  <div className="sx-miniList" role="list">
-                    <div className="sx-miniItem" role="listitem">
-                      <span className="sx-miniDot" aria-hidden="true" />
-                      Correzione immediata, senza giri.
-                    </div>
-                    <div className="sx-miniItem" role="listitem">
-                      <span className="sx-miniDot" aria-hidden="true" />
-                      Spiegazione breve per fissare il concetto.
-                    </div>
-                    <div className="sx-miniItem" role="listitem">
-                      <span className="sx-miniDot" aria-hidden="true" />
-                      Allenamento “da esame”: ritmo e focus.
-                    </div>
-                  </div>
-                </div>
+              <div className="sx-liveCaps">
+                <span className="sx-cap">
+                  <span className="sx-capDot" /> Setup rapido
+                </span>
+                <span className="sx-cap">
+                  <span className="sx-capDot" /> Interfaccia pulita
+                </span>
+                <span className="sx-cap">
+                  <span className="sx-capDot" /> Correzione chiara
+                </span>
               </div>
             </div>
           </div>
@@ -119,52 +105,7 @@ export default function Simulazioni() {
   );
 }
 
-/* ================= Icons ================= */
-
-function IconTip() {
-  return (
-    <span className="sx-ico" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path
-          d="M9 18h6"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-        <path
-          d="M10 22h4"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-        <path
-          d="M8.5 14.5c-1.5-1.2-2.5-3-2.5-5a6 6 0 1 1 12 0c0 2-1 3.8-2.5 5-.7.6-1.2 1.3-1.5 2.1H10c-.3-.8-.8-1.5-1.5-2.1Z"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </span>
-  );
-}
-
-function IconList() {
-  return (
-    <span className="sx-ico" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M9 6h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        <path d="M9 12h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        <path d="M9 18h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        <path d="M4 6h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-        <path d="M4 12h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-        <path d="M4 18h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-      </svg>
-    </span>
-  );
-}
-
 /* ================= CSS ================= */
-
 const css = `
 :root{
   --dino2:#16a34a;
@@ -335,70 +276,83 @@ const css = `
   100%{transform:translateX(120%)}
 }
 
-/* MINI (sostituto delle pills) */
-.sx-mini{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  align-items: stretch;
-  flex: 1;
-  min-width: 280px;
-}
-@media (max-width: 900px){
-  .sx-mini{ grid-template-columns: 1fr; min-width: 100%; }
-}
-
-.sx-miniCard{
+/* LIVE STRIP (animata) */
+.sx-live{
+  margin-top: 14px;
   border-radius: 18px;
-  border: 1px solid var(--bd);
-  background: rgba(255,255,255,0.74);
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.72);
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
   padding: 12px;
+  max-width: 520px;
 }
 
-.sx-miniTop{
+.sx-liveTop{
   display:flex;
   align-items:center;
-  gap: 8px;
-  font-weight: 1000;
-  color: rgba(15,23,42,0.88);
-  margin-bottom: 8px;
+  gap:10px;
+  font-weight: 950;
+  color: rgba(15,23,42,0.78);
 }
-.sx-miniIco{
-  width: 34px; height: 34px;
-  border-radius: 14px;
-  display:grid; place-items:center;
-  border: 1px solid rgba(15,23,42,0.08);
-  background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(34,197,94,0.06));
-  color: rgba(22,163,74,0.95);
-}
-.sx-miniIco.isBlue{
-  background: linear-gradient(135deg, rgba(56,189,248,0.16), rgba(56,189,248,0.06));
-  color: rgba(14,165,233,0.95);
+.sx-liveDot{
+  width:10px;height:10px;border-radius:999px;
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+  box-shadow: 0 10px 20px rgba(2,6,23,0.10);
 }
 
-.sx-miniText{
-  font-weight: 850;
-  color: rgba(15,23,42,0.72);
-  line-height: 1.35;
-}
-.sx-miniText b{ color: rgba(15,23,42,0.92); }
-
-.sx-miniList{ display:grid; gap: 8px; }
-.sx-miniItem{
-  display:flex;
+.sx-liveRail{
+  margin-top: 10px;
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  align-items:flex-start;
-  font-weight: 850;
-  color: rgba(15,23,42,0.72);
-  line-height: 1.28;
 }
-.sx-miniDot{
+.sx-liveBar{
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(15,23,42,0.06);
+  position: relative;
+  overflow: hidden;
+}
+.sx-liveBar::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  transform: translateX(-120%);
+  background: linear-gradient(90deg, rgba(34,197,94,0.0), rgba(34,197,94,0.35), rgba(56,189,248,0.35), rgba(56,189,248,0.0));
+  animation: sxPulse 3.2s ease-in-out infinite;
+}
+.sx-liveBar.is2::after{ animation-delay: .35s; }
+.sx-liveBar.is3::after{ animation-delay: .70s; }
+
+@keyframes sxPulse{
+  0%{ transform: translateX(-120%); opacity: .15; }
+  40%{ opacity: .85; }
+  70%{ opacity: .45; }
+  100%{ transform: translateX(120%); opacity: .15; }
+}
+
+.sx-liveCaps{
+  margin-top: 10px;
+  display:flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sx-cap{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.70);
+  font-weight: 900;
+  color: rgba(15,23,42,0.76);
+}
+.sx-capDot{
   width: 10px; height: 10px;
   border-radius: 999px;
-  margin-top: 4px;
   background: linear-gradient(90deg, var(--dino2), var(--med2));
-  flex: 0 0 auto;
 }
 
 /* VISUAL */
@@ -452,8 +406,4 @@ const css = `
 }
 .sx-floatTitle{font-weight:1000;color: rgba(15,23,42,0.90);}
 .sx-floatSub{margin-top:6px;font-weight:850;color:var(--ink2);}
-
-/* ICON BASE */
-.sx-ico{ width: 18px; height: 18px; display:inline-grid; place-items:center; }
-.sx-ico svg{ width: 18px; height: 18px; }
 `;
