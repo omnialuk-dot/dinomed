@@ -291,26 +291,34 @@ const css = `
 /* Dino movement (slow, with pauses) */
 .sx-dinoWrap{
   position:absolute;
-  left: 14px;
   top: 14px;
+  left: 14px;          /* start */
   width: 46px;
   height: 56px;
   z-index: 2;
-  animation: sxTravel 8.6s ease-in-out infinite;
-  will-change: transform;
+  animation: sxTravel 10.5s ease-in-out infinite; /* più lento */
+  will-change: left, opacity;
 }
 
-/* 0-18% move to node1, 18-34% stop, 34-52% move to node2, 52-68% stop, 68-82% move to node3, 82-100% celebrate+fade */
+/* 100% responsive: usa LEFT in percentuale (si adatta sempre) */
 @keyframes sxTravel{
-  0%   { transform: translateX(0); opacity: 0; }
-  4%   { opacity: 1; }
-  18%  { transform: translateX(85px); }
-  34%  { transform: translateX(85px); }
-  52%  { transform: translateX(238px); }
-  68%  { transform: translateX(238px); }
-  82%  { transform: translateX(392px); }
-  92%  { transform: translateX(392px); opacity: 1; }
-  100% { transform: translateX(442px); opacity: 0; }
+  0%   { left: 14px; opacity: 0; }
+  6%   { opacity: 1; }
+
+  /* vai al nodo 1 (18%) */
+  20%  { left: calc(18% - 23px); }  /* - metà dinosauro */
+  34%  { left: calc(18% - 23px); }  /* pausa: “legge” */
+
+  /* vai al nodo 2 (50%) */
+  52%  { left: calc(50% - 23px); }
+  66%  { left: calc(50% - 23px); }  /* pausa: “scrive” */
+
+  /* vai al nodo 3 (82%) */
+  84%  { left: calc(82% - 23px); }
+  94%  { left: calc(82% - 23px); opacity: 1; } /* pausa: “graduation” */
+
+  /* esci verso fine */
+  100% { left: calc(100% - 46px - 14px); opacity: 0; }
 }
 
 /* Dino character */
@@ -562,3 +570,7 @@ const css = `
   }
 }
 `;
+
+@media (prefers-reduced-motion: reduce){
+  .sx-story{ display:none !important; }
+}
