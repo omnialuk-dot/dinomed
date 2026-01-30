@@ -54,9 +54,9 @@ export default function Dispense() {
       {/* GRID */}
       <section className="dsp-grid">
         {filtrate.map((d) => (
-         <a
+    <a
   key={d.id}
-  href={`${import.meta.env.VITE_API_BASE}${d.path}`}
+  href={d.url}
   target="_blank"
   rel="noopener noreferrer"
   className="dsp-card"
