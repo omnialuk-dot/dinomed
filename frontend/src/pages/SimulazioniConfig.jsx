@@ -46,10 +46,13 @@ const TOPICS = {
     "Basi chimiche della vita (polare/non polare)",
     "Macromolecole: zuccheri, lipidi, proteine, nucleotidi",
     "Metabolismo: anabolismo/catabolismo, condensazione/idrolisi",
-    "Nucleo e cromosomi eucariotici",
-    "Cromatina e nucleosomi",
-    "Genoma umano (organizzazione)",
-    "DNA→RNA→Proteina (concetto)",
+    "Enzimi: sito attivo, specificità, denaturazione",
+    "Membrana: mosaico fluido, trasporti",
+    "ATP e catene di trasporto elettroni (concetto)",
+    "DNA/RNA: struttura, replicazione, trascrizione",
+    "Codice genetico e traduzione (concetto)",
+    "Mutazioni e riparazione DNA",
+    "Genetica mendeliana e non-mendeliana",
     "Divisione cellulare (concetto)",
   ],
 };
@@ -69,55 +72,42 @@ function uniq(arr) {
 
 function pill(text) {
   return (
-    <span
-      key={text}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        padding: "6px 10px",
-        borderRadius: 999,
-        border: "1px solid rgba(15,23,42,0.12)",
-        background: "rgba(15,23,42,0.03)",
-        fontWeight: 900,
-        color: "rgba(15,23,42,0.78)",
-        fontSize: 12,
-      }}
-    >
+    <span className="dmPill" key={text}>
       {text}
     </span>
   );
 }
 
-/* =========================
-   PAGE
-   ========================= */
 export default function SimulazioniConfig() {
   const nav = useNavigate();
-  const loc = useLocation();
-  const preset = loc.state?.preset;
+  const location = useLocation();
+
+  // preset (se arrivi qui da link con stato)
+  const preset = location?.state?.preset || null;
 
   const [err, setErr] = useState("");
   const [starting, setStarting] = useState(false);
 
-  // Materie selezionate
+  // Materie (SEMESTRE FILTRO: una prova = una materia)
   const [subjects, setSubjects] = useState(() => {
     if (preset?.sections?.length) {
-      return uniq(preset.sections.map((s) => s.materia)).filter((m) => ALL_SUBJECTS.includes(m));
+      const first = uniq(preset.sections.map((s) => s.materia)).filter((m) => ALL_SUBJECTS.includes(m))[0];
+      return [first || "Chimica"];
     }
     return ["Chimica"];
   });
 
-  // Durata
-  const [timedMode, setTimedMode] = useState(true); // true => timer, false => no timer
-  const [durationMin, setDurationMin] = useState(30);
+  // Durata (Formato MUR)
+  const [timedMode] = useState(true); // Formato MUR: timer sempre attivo
+  const [durationMin, setDurationMin] = useState(45);
 
-  // Ordine materie
-  const [orderMode, setOrderMode] = useState("default"); // default | custom
-  const [customOrder, setCustomOrder] = useState(DEFAULT_ORDER);
+  // Ordine materie (non serve più ma lasciamo variabili per compatibilità)
+  const [orderMode] = useState("default"); // default | custom
+  const [customOrder] = useState(DEFAULT_ORDER);
 
-  // Parametri domande
-  const [sceltaCount, setSceltaCount] = useState(20);
-  const [compCount, setCompCount] = useState(10);
+  // Parametri domande (Formato MUR 2025/26)
+  const [sceltaCount, setSceltaCount] = useState(15);
+  const [compCount, setCompCount] = useState(16);
 
   // Argomenti per materia
   const [topicMode, setTopicMode] = useState(() => {
@@ -132,59 +122,32 @@ export default function SimulazioniConfig() {
     return o;
   });
 
-  // Ordine effettivo
+  function toggleSubject(m) {
+    // Semestre filtro: UNA prova = UNA materia
+    setSubjects([m]);
+  }
+
+  // Ordine effettivo (UNA sola materia)
   const effectiveOrder = useMemo(() => {
-    const base = orderMode === "custom" ? customOrder : DEFAULT_ORDER;
-    return base.filter((m) => subjects.includes(m));
-  }, [orderMode, customOrder, subjects]);
+    return [subjects[0] || "Chimica"];
+  }, [subjects]);
 
   // Topics effettivi (recap)
   const effectiveTopics = useMemo(() => {
     const out = {};
     for (const m of effectiveOrder) {
-      if (topicMode[m] === "all") out[m] = "Tutti";
-      else out[m] = (pickedTopics[m] || []).length ? pickedTopics[m] : "Nessuno (seleziona)";
+      if (topicMode[m] === "all") out[m] = [];
+      else out[m] = pickedTopics[m] || [];
     }
     return out;
   }, [effectiveOrder, topicMode, pickedTopics]);
 
-  function toggleSubject(m) {
-    setSubjects((prev) => {
-      if (prev.includes(m)) {
-        const next = prev.filter((x) => x !== m);
-        return next.length ? next : ["Chimica"];
-      }
-      return [...prev, m];
-    });
-  }
+  // recap
+  const totalQuestions = useMemo(() => {
+    return effectiveOrder.reduce((acc) => acc + clampInt(sceltaCount, 0, 200, 15) + clampInt(compCount, 0, 200, 16), 0);
+  }, [effectiveOrder, sceltaCount, compCount]);
 
-  function moveOrder(m, dir) {
-    setCustomOrder((prev) => {
-      const arr = prev.slice();
-      const i = arr.indexOf(m);
-      if (i === -1) return arr;
-      const j = dir === "up" ? i - 1 : i + 1;
-      if (j < 0 || j >= arr.length) return arr;
-      const tmp = arr[i];
-      arr[i] = arr[j];
-      arr[j] = tmp;
-      return arr;
-    });
-  }
-
-  function setTopicAll(m, isAll) {
-    setTopicMode((prev) => ({ ...prev, [m]: isAll ? "all" : "pick" }));
-    if (isAll) setPickedTopics((prev) => ({ ...prev, [m]: [] }));
-  }
-
-  function toggleTopic(m, t) {
-    setPickedTopics((prev) => {
-      const cur = new Set(prev[m] || []);
-      if (cur.has(t)) cur.delete(t);
-      else cur.add(t);
-      return { ...prev, [m]: Array.from(cur) };
-    });
-  }
+  const totalSubjects = effectiveOrder.length;
 
   async function startExam() {
     if (starting) return;
@@ -192,13 +155,13 @@ export default function SimulazioniConfig() {
     setErr("");
     setStarting(true);
 
-    const duration_min = timedMode ? clampInt(durationMin, 5, 240, 30) : 0;
+    const duration_min = timedMode ? clampInt(durationMin, 5, 240, 45) : 0;
 
     const sections = effectiveOrder.map((materia) => ({
       materia,
-      scelta: clampInt(sceltaCount, 0, 200, 20),
-      completamento: clampInt(compCount, 0, 200, 10),
-      tag: topicMode[materia] === "all" ? [] : (pickedTopics[materia] || []),
+      scelta: clampInt(sceltaCount, 0, 200, 15),
+      completamento: clampInt(compCount, 0, 200, 16),
+      tag: topicMode[materia] === "all" ? [] : pickedTopics[materia] || [],
       difficolta: "Base",
     }));
 
@@ -208,15 +171,7 @@ export default function SimulazioniConfig() {
       order: effectiveOrder,
     };
 
-    // IMPORTANT: qui stai chiamando endpoint start.
-    // Se uno risponde 405 (Method Not Allowed), significa che quell’endpoint esiste ma NON è POST.
-    // Noi proviamo comunque tutti e ti mostriamo la risposta per capire qual è quello giusto.
-    const candidates = [
-      "/api/sim/start",
-      "/api/sim/start/",
-      "/api/simulazioni/start",
-      "/api/simulazioni/start/",
-    ];
+    const candidates = ["/api/sim/start", "/api/sim/start/", "/api/simulazioni/start", "/api/simulazioni/start/"];
 
     let lastInfo = "";
 
@@ -233,453 +188,463 @@ export default function SimulazioniConfig() {
           lastInfo = `[${res.status}] ${path}\n${txt || "(empty)"}`;
 
           if (!res.ok) {
-            // 404: prova prossimo
             if (res.status === 404) continue;
-
-            // altri errori: fermati (perché endpoint c’è ma payload/method non va)
             throw new Error(lastInfo);
           }
 
-          // ok
-          let data = null;
+          let data;
           try {
-            data = txt ? JSON.parse(txt) : null;
+            data = JSON.parse(txt);
           } catch {
             data = null;
           }
 
-          if (!data || !data.session_id) {
-            throw new Error(
-              `Risposta OK ma non valida.\nMi aspettavo { session_id, ... }\n\n${lastInfo}`
-            );
+          // session id da backend
+          const sessionId = data?.session_id || data?.id || data?.sessionId;
+          if (!sessionId) {
+            throw new Error("Risposta OK ma manca session_id.\n" + lastInfo);
           }
 
-          nav("/simulazioni/run", { state: { session: data } });
+          nav("/simulazioni/prova", { state: { sessionId, config: body } });
           return;
-        } catch (inner) {
-          // se non è 404, l’errore è “utile”: lo mostriamo e stoppiamo
-          // perché vuol dire che abbiamo trovato l’endpoint ma c’è un mismatch (payload o method)
-          const msg = inner?.message || String(inner);
-          if (msg.includes("[404]")) continue;
-          throw inner;
+        } catch (e) {
+          if (String(e?.message || "").includes("[404]")) continue;
+          throw e;
         }
       }
 
-      // se arrivi qui, TUTTI 404
-      setErr(
-        "Endpoint start non trovato (404 su tutti).\n\n" +
-          candidates.map((x) => `- ${x}`).join("\n") +
-          "\n\nVerifica che in backend esista una route POST per avviare la sessione."
-      );
+      throw new Error("Nessun endpoint start trovato.\nUltimo tentativo:\n" + lastInfo);
     } catch (e) {
-      setErr(e?.message || "Errore avvio prova");
+      setErr(String(e?.message || e || "Errore sconosciuto"));
     } finally {
       setStarting(false);
     }
   }
 
-  const title = preset?.title || "Personalizza la prova";
+  const onlySubject = subjects[0] || "Chimica";
+  const availableTopics = TOPICS[onlySubject] || [];
 
   return (
-    <main style={{ padding: 18, maxWidth: 1100, margin: "0 auto" }}>
+    <main className="dmCfg">
       <style>{css}</style>
 
-      <section className="dmBox">
-        <div className="dmTop">
-          <div>
-            <div className="dmKicker">DinoMed • Simulazioni</div>
-            <h1 className="dmH1">{title}</h1>
-            <p className="dmP">Imposta materie, tempo e argomenti. Poi avvia: timer (se vuoi), correzione e spiegazioni.</p>
-          </div>
-
-          <div className="dmTopActions">
-            <button className="dmBtn dmBtnGhost" onClick={() => nav("/simulazioni")} type="button">
-              ← Indietro
-            </button>
-            <button className="dmBtn dmBtnPrimary" onClick={startExam} type="button" disabled={starting}>
-              {starting ? "Avvio..." : "Avvia prova →"}
-            </button>
-          </div>
+      <div className="dmHead">
+        <div className="dmKicker">
+          <span className="dmDot" aria-hidden="true" />
+          <span className="dmBrand">
+            <span className="dmDino">Dino</span>
+            <span className="dmMed">Med</span>
+          </span>
+          <span className="dmSep">•</span>
+          <span className="dmTag">Configura simulazione</span>
         </div>
 
-        {err ? <div className="dmErr">⚠️ {err}</div> : null}
+        <h1 className="dmTitle">
+          Imposta la prova in <span className="dmGrad">modo semplice</span>.
+        </h1>
 
-        <div className="dmGrid">
-          {/* LEFT */}
-          <div className="dmCard">
-            <div className="dmCardTitle">Materie</div>
-            <div className="dmCardHint">Seleziona 1 o più materie.</div>
+        <p className="dmSub">
+          Formato <b>Semestre Filtro (MUR)</b>: una materia alla volta, 31 domande, 45 minuti.
+        </p>
+      </div>
 
-            <div className="dmChips">
-              {ALL_SUBJECTS.map((m) => (
-                <button
-                  key={m}
-                  className={`dmChip ${subjects.includes(m) ? "dmChipOn" : ""}`}
-                  onClick={() => toggleSubject(m)}
-                  type="button"
-                >
-                  {m}
+      <div className="dmGrid">
+        {/* LEFT */}
+        <div className="dmCard">
+          {err ? <div className="dmErr">{err}</div> : null}
+
+          <div className="dmCardTitle">Materie</div>
+          <div className="dmCardHint">Seleziona 1 materia (una prova = una materia).</div>
+
+          <div className="dmChips">
+            {ALL_SUBJECTS.map((m) => (
+              <button
+                key={m}
+                className={`dmChip ${(subjects[0] === m) ? "dmChipOn" : ""}`}
+                onClick={() => toggleSubject(m)}
+                type="button"
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+
+          <div className="dmDivider" />
+
+          <div className="dmRow2">
+            <div>
+              <div className="dmCardTitle">Crocette</div>
+              <div className="dmCardHint">Formato MUR: fisso</div>
+              <input
+                className="dmInput"
+                type="number"
+                min="0"
+                max="200"
+                value={sceltaCount}
+                disabled
+                title="Formato MUR 2025/26: 15 crocette + 16 completamento"
+              />
+            </div>
+
+            <div>
+              <div className="dmCardTitle">Completamento</div>
+              <div className="dmCardHint">Formato MUR: fisso</div>
+              <input
+                className="dmInput"
+                type="number"
+                min="0"
+                max="200"
+                value={compCount}
+                disabled
+                title="Formato MUR 2025/26: 15 crocette + 16 completamento"
+              />
+            </div>
+          </div>
+
+          <div className="dmDivider" />
+
+          <div className="dmRow2">
+            <div>
+              <div className="dmCardTitle">Tempo</div>
+              <div className="dmCardHint">Formato MUR: 45 minuti (timer fisso).</div>
+
+              <div className="dmToggleRow">
+                <button className={`dmMini ${true ? "dmMiniOn" : ""}`} type="button" disabled>
+                  Con timer
                 </button>
-              ))}
-            </div>
+                <button className={`dmMini ${false ? "dmMiniOn" : ""}`} type="button" disabled>
+                  Senza timer
+                </button>
+              </div>
 
-            <div className="dmDivider" />
-
-            <div className="dmRow2">
-              <div>
-                <div className="dmCardTitle">Crocette</div>
-                <div className="dmCardHint">Totali per materia</div>
+              <div style={{ marginTop: 10 }}>
                 <input
                   className="dmInput"
                   type="number"
-                  min="0"
-                  max="200"
-                  value={sceltaCount}
-                  onChange={(e) => setSceltaCount(e.target.value)}
+                  min="5"
+                  max="240"
+                  value={durationMin}
+                  disabled
+                  title="Formato MUR 2025/26: 45 minuti"
                 />
-              </div>
-
-              <div>
-                <div className="dmCardTitle">Completamento</div>
-                <div className="dmCardHint">Totali per materia</div>
-                <input
-                  className="dmInput"
-                  type="number"
-                  min="0"
-                  max="200"
-                  value={compCount}
-                  onChange={(e) => setCompCount(e.target.value)}
-                />
+                <div className="dmTiny">Minuti (5–240)</div>
               </div>
             </div>
 
-            <div className="dmDivider" />
+            <div>
+              <div className="dmCardTitle">Formato prova</div>
+              <div className="dmCardHint">Una sola materia per volta • 31 domande • 45 minuti</div>
 
-            <div className="dmRow2">
-              <div>
-                <div className="dmCardTitle">Tempo</div>
-                <div className="dmCardHint">Timer reale oppure allenamento libero.</div>
-
-                <div className="dmToggleRow">
-                  <button className={`dmMini ${timedMode ? "dmMiniOn" : ""}`} onClick={() => setTimedMode(true)} type="button">
-                    Con timer
-                  </button>
-                  <button className={`dmMini ${!timedMode ? "dmMiniOn" : ""}`} onClick={() => setTimedMode(false)} type="button">
-                    Senza timer
-                  </button>
-                </div>
-
-                {timedMode ? (
-                  <div style={{ marginTop: 10 }}>
-                    <input
-                      className="dmInput"
-                      type="number"
-                      min="5"
-                      max="240"
-                      value={durationMin}
-                      onChange={(e) => setDurationMin(e.target.value)}
-                    />
-                    <div className="dmTiny">Minuti (5–240)</div>
-                  </div>
-                ) : (
-                  <div className="dmTiny" style={{ marginTop: 10 }}>
-                    Nessun countdown: prova senza tempo.
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <div className="dmCardTitle">Ordine materie</div>
-                <div className="dmCardHint">Default: Chimica → Fisica → Biologia</div>
-
-                <div className="dmToggleRow">
-                  <button
-                    className={`dmMini ${orderMode === "default" ? "dmMiniOn" : ""}`}
-                    onClick={() => setOrderMode("default")}
-                    type="button"
-                  >
-                    Default
-                  </button>
-                  <button
-                    className={`dmMini ${orderMode === "custom" ? "dmMiniOn" : ""}`}
-                    onClick={() => setOrderMode("custom")}
-                    type="button"
-                  >
-                    Scelgo io
-                  </button>
-                </div>
-
-                {orderMode === "custom" ? (
-                  <div className="dmOrderBox">
-                    {/* ✅ FIX: qui ora usa customOrder davvero */}
-                    {customOrder.filter((m) => subjects.includes(m)).map((m) => (
-                      <div key={m} className="dmOrderRow">
-                        <b>{m}</b>
-                        <div className="dmOrderBtns">
-                          <button className="dmOrderBtn" onClick={() => moveOrder(m, "up")} type="button">
-                            ↑
-                          </button>
-                          <button className="dmOrderBtn" onClick={() => moveOrder(m, "down")} type="button">
-                            ↓
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                    <div className="dmTiny">Ordine finale nel recap a destra.</div>
-                  </div>
-                ) : null}
+              <div className="dmPills" aria-hidden="true">
+                <span className="dmPillMini">15 crocette</span>
+                <span className="dmPillMini">16 completamento</span>
+                <span className="dmPillMini">+1 / −0,1 / 0</span>
               </div>
             </div>
           </div>
 
-          {/* RIGHT */}
-          <div className="dmCard dmSoft">
-            <div className="dmCardTitle">Argomenti (per materia)</div>
-            <div className="dmCardHint">Tutti oppure selezione manuale.</div>
+          <div className="dmDivider" />
 
-            <div className="dmTopics">
-              {effectiveOrder.map((m) => (
-                <div key={m} className="dmTopicBlock">
-                  <div className="dmTopicHead">
-                    <b>{m}</b>
-                    <div className="dmToggleRow">
-                      <button
-                        className={`dmMini ${topicMode[m] === "all" ? "dmMiniOn" : ""}`}
-                        onClick={() => setTopicAll(m, true)}
-                        type="button"
-                      >
-                        Tutti
-                      </button>
-                      <button
-                        className={`dmMini ${topicMode[m] === "pick" ? "dmMiniOn" : ""}`}
-                        onClick={() => setTopicAll(m, false)}
-                        type="button"
-                      >
-                        Scelgo io
-                      </button>
-                    </div>
-                  </div>
+          <div className="dmCardTitle">Argomenti</div>
+          <div className="dmCardHint">
+            Filtra gli argomenti per la <b>{onlySubject}</b>. Se lasci “Tutti”, prende domande di tutta la materia.
+          </div>
 
-                  {topicMode[m] === "pick" ? (
-                    <div className="dmTopicList">
-                      {(TOPICS[m] || []).map((t) => {
-                        const on = (pickedTopics[m] || []).includes(t);
-                        return (
-                          <button
-                            key={t}
-                            className={`dmTopicItem ${on ? "dmTopicOn" : ""}`}
-                            onClick={() => toggleTopic(m, t)}
-                            type="button"
-                          >
-                            {t}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="dmTiny" style={{ marginTop: 8 }}>
-                      Include tutti gli argomenti per {m}.
-                    </div>
-                  )}
-                </div>
-              ))}
+          <div className="dmTopicBox">
+            <div className="dmToggleRow">
+              <button
+                className={`dmMini ${topicMode[onlySubject] === "all" ? "dmMiniOn" : ""}`}
+                onClick={() => setTopicMode((prev) => ({ ...prev, [onlySubject]: "all" }))}
+                type="button"
+              >
+                Tutti
+              </button>
+              <button
+                className={`dmMini ${topicMode[onlySubject] === "pick" ? "dmMiniOn" : ""}`}
+                onClick={() => setTopicMode((prev) => ({ ...prev, [onlySubject]: "pick" }))}
+                type="button"
+              >
+                Scelgo io
+              </button>
             </div>
 
-            <div className="dmDivider" />
-
-            <div className="dmCardTitle">Recap</div>
-            <div className="dmRecap">
-              <div className="dmRecapRow">
-                <span className="dmRecapLbl">Tempo</span>
-                <span className="dmRecapVal">{timedMode ? `${clampInt(durationMin, 5, 240, 30)} min` : "Senza timer"}</span>
+            {topicMode[onlySubject] === "pick" ? (
+              <div className="dmTopicList">
+                {availableTopics.map((t) => {
+                  const on = (pickedTopics[onlySubject] || []).includes(t);
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      className={`dmTopic ${on ? "dmTopicOn" : ""}`}
+                      onClick={() =>
+                        setPickedTopics((prev) => {
+                          const cur = prev[onlySubject] || [];
+                          const next = on ? cur.filter((x) => x !== t) : [...cur, t];
+                          return { ...prev, [onlySubject]: next };
+                        })
+                      }
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
               </div>
-              <div className="dmRecapRow">
-                <span className="dmRecapLbl">Ordine</span>
-                <span className="dmRecapVal">{effectiveOrder.join(" → ")}</span>
-              </div>
-              <div className="dmRecapRow">
-                <span className="dmRecapLbl">Per materia</span>
-                <span className="dmRecapVal">
-                  {sceltaCount} crocette + {compCount} completamento
-                </span>
-              </div>
+            ) : (
+              <div className="dmTiny">✔ Nessun filtro: userai tutte le domande di {onlySubject}.</div>
+            )}
+          </div>
 
-              <div className="dmDivider" />
+          <div className="dmActions">
+            <button className="dmBtn dmBtnPrimary" onClick={startExam} disabled={starting}>
+              {starting ? "Avvio…" : "Avvia prova"}
+            </button>
 
-              {effectiveOrder.map((m) => (
-                <div key={`rec-${m}`} style={{ marginTop: 10 }}>
-                  <div className="dmRecapLbl" style={{ marginBottom: 6 }}>
-                    {m} • Argomenti
-                  </div>
-                  <div className="dmPills">
-                    {effectiveTopics[m] === "Tutti"
-                      ? pill("Tutti")
-                      : Array.isArray(effectiveTopics[m])
-                      ? effectiveTopics[m].slice(0, 10).map((t) => pill(t))
-                      : pill(String(effectiveTopics[m]))}
-                    {Array.isArray(effectiveTopics[m]) && effectiveTopics[m].length > 10 ? pill(`+${effectiveTopics[m].length - 10}`) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="dmDivider" />
-
-            <button className="dmBtn dmBtnPrimary dmFull" onClick={startExam} type="button" disabled={starting}>
-              {starting ? "Avvio..." : "Avvia prova →"}
+            <button className="dmBtn dmBtnSoft" type="button" onClick={() => nav("/simulazioni")}>
+              Indietro
             </button>
           </div>
         </div>
-      </section>
+
+        {/* RIGHT */}
+        <div className="dmCard dmSoft">
+          <div className="dmCardTitle">Riepilogo</div>
+
+          <div className="dmRecap">
+            <div className="dmRecapRow">
+              <div className="dmRecapLbl">Materia</div>
+              <div className="dmRecapVal">{onlySubject}</div>
+            </div>
+            <div className="dmRecapRow">
+              <div className="dmRecapLbl">Domande totali</div>
+              <div className="dmRecapVal">{totalQuestions}</div>
+            </div>
+            <div className="dmRecapRow">
+              <div className="dmRecapLbl">Timer</div>
+              <div className="dmRecapVal">45 min</div>
+            </div>
+          </div>
+
+          <div className="dmDivider" />
+
+          <div className="dmCardTitle">Filtri attivi</div>
+          <div className="dmCardHint">Quello che selezioni qui deve combaciare con i tag delle domande.</div>
+
+          <div className="dmRecapTopics">
+            {effectiveTopics[onlySubject]?.length ? (
+              <>
+                <div className="dmTiny">Tag selezionati:</div>
+                <div className="dmPills">{effectiveTopics[onlySubject].map((t) => pill(t))}</div>
+              </>
+            ) : (
+              <div className="dmTiny">Nessun filtro tag (tutta la materia).</div>
+            )}
+          </div>
+
+          <div className="dmDivider" />
+
+          <div className="dmCardTitle">Formato scoring</div>
+          <div className="dmCardHint">Come nelle prove nazionali.</div>
+          <div className="dmPills" aria-hidden="true">
+            <span className="dmPillMini">+1 corretta</span>
+            <span className="dmPillMini">−0,1 errata</span>
+            <span className="dmPillMini">0 omessa</span>
+            <span className="dmPillMini">18/30 minimo</span>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
 
-/* =========================
-   CSS
-   ========================= */
+/* ---------------- CSS ---------------- */
 const css = `
-.dmBox{
-  border:1px solid rgba(15,23,42,0.10);
-  background:rgba(255,255,255,0.92);
-  border-radius:22px;
-  padding:18px;
-  box-shadow:0 18px 55px rgba(15,23,42,0.06);
-  position:relative;
-  overflow:hidden;
+:root{
+  --dino:#22c55e; --dino2:#16a34a;
+  --med:#38bdf8;  --med2:#0ea5e9;
+  --ink: rgba(15,23,42,0.92);
+  --ink2: rgba(15,23,42,0.72);
+  --bd: rgba(15,23,42,0.10);
+  --shadow: 0 18px 60px rgba(2,6,23,0.10);
 }
-.dmBox:before{
-  content:"";
-  position:absolute;
-  inset:-140px -160px auto auto;
-  width:460px; height:460px;
-  background: radial-gradient(circle at 30% 30%, rgba(16,185,129,0.18), rgba(37,99,235,0.14), rgba(255,255,255,0));
-  transform: rotate(12deg);
-  pointer-events:none;            /* ✅ FIX CLICK */
-  z-index:0;                      /* ✅ overlay dietro */
+
+.dmCfg{ max-width:1120px; margin:0 auto; padding:22px; }
+
+.dmHead{ margin: 6px 4px 14px; }
+.dmKicker{
+  display:inline-flex; align-items:center; gap:10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.80);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+  font-weight: 950;
+  color: rgba(15,23,42,0.82);
 }
-.dmTop, .dmGrid, .dmCard, .dmErr{ position:relative; z-index:1; } /* ✅ contenuto sopra */
+.dmDot{
+  width:10px; height:10px; border-radius:999px;
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+  box-shadow: 0 10px 20px rgba(2,6,23,0.10);
+}
+.dmBrand{ display:inline-flex; gap:0; }
+.dmDino{ color: var(--dino2); font-weight: 1000; }
+.dmMed{ color: var(--med2); font-weight: 1000; }
+.dmSep{ opacity:.55; }
+.dmTag{ font-weight: 950; }
+
+.dmTitle{
+  margin: 12px 0 6px;
+  font-size: 34px;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-weight: 1100;
+}
+.dmGrad{
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color: transparent;
+}
+.dmSub{ margin:0; color: var(--ink2); font-weight: 850; max-width: 80ch; }
+
+.dmGrid{
+  display:grid;
+  grid-template-columns: 1.25fr .75fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+@media (max-width: 980px){
+  .dmGrid{ grid-template-columns: 1fr; }
+}
+
+.dmCard{
+  border-radius: 24px;
+  border: 1px solid var(--bd);
+  background:
+    radial-gradient(520px 220px at 30% -10%, rgba(34,197,94,0.10), transparent 60%),
+    radial-gradient(520px 220px at 80% -10%, rgba(56,189,248,0.10), transparent 60%),
+    rgba(255,255,255,0.92);
+  box-shadow: 0 14px 52px rgba(2,6,23,0.08);
+  padding: 18px;
+  color: rgba(15,23,42,0.88);
+}
+.dmSoft{
+  background:
+    radial-gradient(520px 220px at 20% -10%, rgba(56,189,248,0.10), transparent 60%),
+    radial-gradient(520px 220px at 80% -10%, rgba(34,197,94,0.10), transparent 60%),
+    rgba(255,255,255,0.92);
+}
+
+.dmCardTitle{ font-weight: 1100; color: rgba(15,23,42,0.92); letter-spacing:-0.01em; }
+.dmCardHint{ margin-top:6px; font-weight: 850; color: rgba(15,23,42,0.70); line-height: 1.35; }
 
 .dmErr{
-  margin-top:12px;
-  padding:12px;
-  border-radius:16px;
-  border:1px solid rgba(239,68,68,0.35);
-  background: rgba(239,68,68,0.08);
-  font-weight:800;
+  margin-bottom: 12px;
+  padding: 12px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(185,28,28,0.22);
+  background: rgba(185,28,28,0.06);
+  color: #b91c1c;
+  font-weight: 900;
   white-space: pre-wrap;
 }
 
-.dmTop{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-end; }
-.dmKicker{
-  display:inline-flex; font-weight:950;
-  padding:6px 10px; border-radius:999px;
-  background:rgba(16,185,129,0.08);
-  border:1px solid rgba(16,185,129,0.18);
-}
-.dmH1{ margin:10px 0 6px; font-size:34px; line-height:1.06; }
-.dmP{ margin:0; color:rgba(15,23,42,0.68); font-weight:750; max-width:80ch; }
-.dmTopActions{ display:flex; gap:10px; flex-wrap:wrap; }
-
-.dmGrid{ margin-top:14px; display:grid; grid-template-columns: 1.15fr .85fr; gap:12px; }
-@media(max-width:980px){ .dmGrid{ grid-template-columns:1fr; } .dmH1{ font-size:30px; } }
-
-.dmCard{
-  border-radius:18px;
-  border:1px solid rgba(15,23,42,0.10);
-  background:rgba(255,255,255,0.92);
-  box-shadow:0 14px 40px rgba(15,23,42,0.06);
-  padding:14px;
-}
-.dmSoft{ background: linear-gradient(180deg, rgba(37,99,235,0.05), rgba(255,255,255,0.92)); }
-.dmCardTitle{ font-weight:950; font-size:16px; }
-.dmCardHint{ margin-top:4px; color:rgba(15,23,42,0.60); font-weight:750; }
-
-.dmDivider{ margin:14px 0; height:1px; background: rgba(15,23,42,0.08); }
-
-.dmChips{ margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; }
+.dmChips{ margin-top: 10px; display:flex; gap:10px; flex-wrap:wrap; }
 .dmChip{
-  padding:10px 12px; border-radius:999px;
-  border:1px solid rgba(15,23,42,0.14);
-  background:white; font-weight:950; cursor:pointer;
-  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
-}
-.dmChip:hover{ transform: translateY(-1px); box-shadow:0 12px 30px rgba(15,23,42,0.10); border-color: rgba(37,99,235,0.22); }
-.dmChipOn{ background: rgba(16,185,129,0.10); border-color: rgba(16,185,129,0.30); }
-
-.dmRow2{ margin-top:10px; display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; }
-@media(max-width:560px){ .dmRow2{ grid-template-columns:1fr; } }
-.dmInput{
-  width:100%;
-  margin-top:8px;
-  padding:12px;
-  border-radius:14px;
-  border:1px solid rgba(15,23,42,0.14);
-  background:white;
-  font-weight:900;
-  outline:none;
-}
-
-.dmToggleRow{ margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
-.dmMini{
-  padding:8px 10px; border-radius:12px;
-  border:1px solid rgba(15,23,42,0.14);
-  background:white; font-weight:950; cursor:pointer;
-}
-.dmMiniOn{ background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.24); }
-
-.dmOrderBox{
-  margin-top:10px;
-  border-radius:16px;
-  border:1px solid rgba(15,23,42,0.10);
-  background:white;
-  padding:10px;
-}
-.dmOrderRow{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 6px; }
-.dmOrderBtns{ display:flex; gap:8px; }
-.dmOrderBtn{
-  width:36px; height:32px;
-  border-radius:10px;
-  border:1px solid rgba(15,23,42,0.14);
-  background: rgba(15,23,42,0.03);
-  font-weight:1000;
-  cursor:pointer;
-}
-
-.dmTopics{ margin-top:12px; display:grid; gap:12px; }
-.dmTopicBlock{
-  border-radius:16px;
-  border:1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.92);
-  padding:10px;
-}
-.dmTopicHead{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center; }
-.dmTopicList{
-  margin-top:10px;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-.dmTopicItem{
-  padding:8px 10px;
-  border-radius:999px;
-  border:1px solid rgba(15,23,42,0.12);
-  background:white;
-  font-weight:900;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.80);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+  font-weight: 950;
   color: rgba(15,23,42,0.82);
   cursor:pointer;
   transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
 }
-.dmTopicItem:hover{ transform: translateY(-1px); box-shadow:0 12px 30px rgba(15,23,42,0.10); border-color: rgba(16,185,129,0.22); }
-.dmTopicOn{ background: rgba(16,185,129,0.10); border-color: rgba(16,185,129,0.30); }
+.dmChip:hover{ transform: translateY(-1px); box-shadow: 0 18px 40px rgba(2,6,23,0.10); }
+.dmChipOn{
+  border-color: rgba(14,165,233,0.35);
+  background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(56,189,248,0.12));
+}
 
-.dmRecap{ margin-top:10px; }
+.dmDivider{ height:1px; background: rgba(15,23,42,0.10); margin: 14px 0; }
+
+.dmRow2{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top: 10px; }
+@media (max-width: 720px){ .dmRow2{ grid-template-columns: 1fr; } }
+
+.dmInput{
+  width:100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--bd);
+  background: rgba(255,255,255,0.92);
+  font-weight: 950;
+  color: rgba(15,23,42,0.86);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+}
+.dmInput:disabled{ opacity: .85; cursor: not-allowed; }
+
+.dmToggleRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
+.dmMini{
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.80);
+  font-weight: 950;
+  color: rgba(15,23,42,0.78);
+  cursor:pointer;
+}
+.dmMini:disabled{ opacity:.8; cursor:not-allowed; }
+.dmMiniOn{
+  border-color: rgba(34,197,94,0.35);
+  background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(56,189,248,0.12));
+  color: rgba(15,23,42,0.84);
+}
+
+.dmTopicBox{ margin-top: 10px; }
+.dmTopicList{
+  margin-top: 10px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.dmTopic{
+  padding: 9px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.76);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+  font-weight: 900;
+  color: rgba(15,23,42,0.76);
+  cursor:pointer;
+}
+.dmTopicOn{
+  border-color: rgba(14,165,233,0.35);
+  background: linear-gradient(135deg, rgba(56,189,248,0.14), rgba(56,189,248,0.06));
+  color: rgba(14,165,233,0.95);
+}
+
+.dmRecap{ margin-top: 12px; display:grid; gap: 10px; }
 .dmRecapRow{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:8px 0; }
 .dmRecapLbl{ font-size:12px; font-weight:950; color: rgba(15,23,42,0.60); }
 .dmRecapVal{ font-weight:950; color: rgba(15,23,42,0.86); }
 
 .dmPills{ display:flex; gap:8px; flex-wrap:wrap; }
+.dmPillMini{ display:inline-flex; align-items:center; padding:8px 10px; border-radius:999px; border:1px solid rgba(15,23,42,0.10); background: rgba(255,255,255,0.70); font-weight:950; color: rgba(15,23,42,0.78); }
 .dmTiny{ margin-top:6px; font-size:12px; color: rgba(15,23,42,0.55); font-weight:800; }
+
+.dmPill{
+  display:inline-flex; align-items:center;
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.70);
+  font-weight:950;
+  color: rgba(15,23,42,0.78);
+}
+
+.dmActions{ margin-top: 14px; display:flex; gap:10px; flex-wrap:wrap; }
 
 .dmBtn{
   padding:12px 14px; border-radius:14px;
@@ -692,13 +657,10 @@ const css = `
 .dmBtnPrimary{
   background:rgba(15,23,42,0.92);
   color:white;
-  box-shadow:0 12px 30px rgba(15,23,42,0.12);
-  transition: transform .18s ease, box-shadow .18s ease;
+  box-shadow:0 12px 30px rgba(15,23,42,0.18);
 }
-.dmBtnPrimary:hover{ transform: translateY(-1px); box-shadow:0 18px 45px rgba(15,23,42,0.18); }
-.dmBtnGhost{
-  background: white;
-  border:1px solid rgba(15,23,42,0.14);
+.dmBtnSoft{
+  background: rgba(255,255,255,0.86);
+  border:1px solid rgba(15,23,42,0.10);
 }
-.dmFull{ width:100%; }
 `;
