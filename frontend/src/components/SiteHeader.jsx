@@ -21,12 +21,11 @@ export default function SiteHeader() {
           <span className="sh-text" aria-label="DinoMed">
             <span className="sh-dinom">DinoMed</span>
             {/* glow SUPER soft */}
-            <span className="sh-brandGlow" ari
-        {/* User email (logged) */}
-        {user?.email ? (
-          <div className="sh-user" title={user.email}>{user.email}</div>
-        ) : null}
-a-hidden="true" />
+            <span className="sh-brandGlow" aria-hidden="true" />
+            {/* User email (logged) */}
+            {user?.email ? (
+              <div className="sh-user" title={user.email}>{user.email}</div>
+            ) : null}
           </span>
         </Link>
 
