@@ -83,7 +83,7 @@ export default function SimulazioniConfig() {
   const [err, setErr] = useState("");
   const [starting, setStarting] = useState(false);
 
-  // Stato preset MUR (deve "rimanere selezionato")
+  // Preset MUR (toggle)
   const [murActive, setMurActive] = useState(false);
 
   // Materie (multi)
@@ -95,7 +95,7 @@ export default function SimulazioniConfig() {
     return ["Chimica"];
   });
 
-  // Ordine materie (modificabile se >1)
+  // Ordine materie
   const [order, setOrder] = useState(() => normalizeOrder(subjects, ["Chimica", "Fisica", "Biologia"]));
 
   // Timer (universale)
@@ -121,17 +121,17 @@ export default function SimulazioniConfig() {
     return o;
   });
 
-  // ✅ errori per materia (mostrati dentro la card giusta)
-  const [topicErrors, setTopicErrors] = useState(() => {
+  // Errori per materia sugli argomenti
+  const [topicErr, setTopicErr] = useState(() => {
     const o = {};
     for (const m of ALL_SUBJECTS) o[m] = "";
     return o;
   });
 
-  // refs per scroll “forzato” sulla card
-  const topicCardRefs = useRef({});
+  // refs per scroll sulle card argomenti
+  const topicRefs = useRef({});
 
-  // UI helper: modifica formato per "tutte" o per una materia
+  // UI helper: modifica formato per tutte o singola materia
   const [formatScope, setFormatScope] = useState("Tutte"); // Tutte | Chimica | Fisica | Biologia
 
   const activeSubjects = useMemo(() => {
@@ -139,13 +139,10 @@ export default function SimulazioniConfig() {
     return s.length ? s : ["Chimica"];
   }, [subjects]);
 
-  // Mantieni order sempre coerente con subjects
-  const activeOrder = useMemo(() => {
-    return normalizeOrder(activeSubjects, order);
-  }, [activeSubjects, order]);
+  const activeOrder = useMemo(() => normalizeOrder(activeSubjects, order), [activeSubjects, order]);
 
   function toggleSubject(m) {
-    if (murActive) return;
+    if (murActive) return; // con MUR attivo: non tocchi materie
     setSubjects((prev) => {
       const on = prev.includes(m);
       const next = on ? prev.filter((x) => x !== m) : [...prev, m];
@@ -153,12 +150,13 @@ export default function SimulazioniConfig() {
     });
   }
 
-  // ✅ MUR toggle vero
-  function toggleMUR() {
+  function applyMurToggle() {
+    // Toggle vero: se attivo -> disattivo, se no -> attivo
     setMurActive((prev) => {
       const next = !prev;
 
       if (next) {
+        // attivo MUR
         const murSubjects = ["Chimica", "Fisica", "Biologia"];
         setSubjects(murSubjects);
         setOrder(murSubjects);
@@ -171,9 +169,10 @@ export default function SimulazioniConfig() {
 
         setTimedMode(true);
         setDurationMin(45);
-        // argomenti restano liberi
       }
 
+      // se disattivo MUR: non ti resetto tutto a caso.
+      // semplicemente sblocca, lasciando le scelte correnti (materie/contatori/timer/argomenti).
       return next;
     });
   }
@@ -212,7 +211,6 @@ export default function SimulazioniConfig() {
     setCountsBySubject((prev) => {
       const next = { ...prev };
       const targets = scope === "Tutte" ? activeSubjects : [scope];
-
       for (const m of targets) {
         const cur = next[m] || { scelta: 15, completamento: 16 };
         next[m] = { ...cur, ...patch };
@@ -221,28 +219,19 @@ export default function SimulazioniConfig() {
     });
   }
 
-  // per UI: valori mostrati negli input quando scope è “Tutte”
-  const scopeKey = formatScope === "Tutte" ? activeOrder[0] : formatScope;
-
-  // ✅ helper: imposta mode e pulisci errori
-  function setModeFor(m, mode) {
-    setTopicMode((p) => ({ ...p, [m]: mode }));
-    setTopicErrors((p) => ({ ...p, [m]: "" })); // quando cambi, sparisce
+  function clearTopicError(m) {
+    setTopicErr((p) => (p[m] ? { ...p, [m]: "" } : p));
   }
 
-  // ✅ helper: toggle topic e pulisci errore se ora >=1
-  function toggleTopic(m, t) {
-    setPickedTopics((prev) => {
-      const cur = prev[m] || [];
-      const on = cur.includes(t);
-      const next = on ? cur.filter((x) => x !== t) : [...cur, t];
-
-      // pulisci errore se ha almeno 1 argomento selezionato
-      if (next.length > 0) {
-        setTopicErrors((p) => ({ ...p, [m]: "" }));
-      }
-      return { ...prev, [m]: next };
-    });
+  function scrollToTopicCard(m) {
+    const el = topicRefs.current?.[m];
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    // mini highlight
+    el.classList.remove("scx-shake");
+    // force reflow
+    void el.offsetWidth;
+    el.classList.add("scx-shake");
   }
 
   async function startExam() {
@@ -254,34 +243,7 @@ export default function SimulazioniConfig() {
       return;
     }
 
-    // ✅ Regola: se “Scelgo io” deve selezionare almeno 1 argomento (per materia)
-    const newTopicErrors = { ...topicErrors };
-    let firstBad = null;
-
-    for (const m of activeOrder) {
-      if (topicMode[m] === "pick" && (pickedTopics[m] || []).length === 0) {
-        newTopicErrors[m] = "Hai scelto “Scelgo io” ma non hai selezionato argomenti.";
-        if (!firstBad) firstBad = m;
-      } else {
-        newTopicErrors[m] = "";
-      }
-    }
-
-    if (firstBad) {
-      setTopicErrors(newTopicErrors);
-      // scroll forzato sulla materia “colpevole”
-      const el = topicCardRefs.current?.[firstBad];
-      if (el?.scrollIntoView) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        // focus “soft” per evidenziare su mobile
-        try {
-          el.focus?.();
-        } catch {}
-      }
-      return;
-    }
-
-    // valida: ogni materia deve avere almeno 1 domanda
+    // valida: per ogni materia almeno 1 domanda
     for (const m of activeOrder) {
       const sc = clampInt(countsBySubject[m]?.scelta ?? 0, 0, 200, 15);
       const co = clampInt(countsBySubject[m]?.completamento ?? 0, 0, 200, 16);
@@ -289,6 +251,28 @@ export default function SimulazioniConfig() {
         setErr(`In ${m} metti almeno 1 domanda (crocette o completamento).`);
         return;
       }
+    }
+
+    // valida: se "Scelgo io" allora devi aver selezionato almeno 1 argomento (per quella materia)
+    const newTopicErr = { Chimica: "", Fisica: "", Biologia: "" };
+    let firstBad = null;
+
+    for (const m of activeOrder) {
+      if (topicMode[m] === "pick") {
+        const picked = pickedTopics[m] || [];
+        if (picked.length === 0) {
+          newTopicErr[m] = `Hai scelto “Scelgo io” ma non hai selezionato nessun argomento in ${m}.`;
+          if (!firstBad) firstBad = m;
+        }
+      }
+    }
+
+    setTopicErr(newTopicErr);
+
+    if (firstBad) {
+      setErr("Completa gli argomenti selezionati prima di avviare la prova.");
+      scrollToTopicCard(firstBad);
+      return;
     }
 
     const duration_min = timedMode ? clampInt(durationMin, 5, 240, 45) : 0;
@@ -392,8 +376,7 @@ export default function SimulazioniConfig() {
               <button
                 className={`scx-btn scx-soft ${murActive ? "isActive" : ""}`}
                 type="button"
-                onClick={toggleMUR}
-                title={murActive ? "Clicca per disattivare" : "Clicca per attivare"}
+                onClick={applyMurToggle}
               >
                 Formato MUR 2025/26 {murActive ? "✓" : ""}
               </button>
@@ -406,7 +389,7 @@ export default function SimulazioniConfig() {
             <div className="scx-mini">
               <div className="scx-miniTitle">Suggerimento</div>
               <div className="scx-miniText">
-                Se vuoi allenarti “come all’esame”, premi <b>Formato MUR</b> e vai. Timer e argomenti li puoi comunque cambiare.
+                Se vuoi allenarti “come all’esame”, premi <b>Formato MUR</b>. Timer e argomenti restano modificabili.
               </div>
             </div>
           </div>
@@ -422,7 +405,9 @@ export default function SimulazioniConfig() {
             <div>
               <div className="scx-cardTitle">Scegli le materie</div>
               <div className="scx-cardSub">
-                {murActive ? "Formato MUR attivo: materie bloccate (timer e argomenti restano liberi)." : "Puoi selezionarne anche 2 o 3."}
+                {murActive
+                  ? "Formato MUR attivo: materie bloccate (timer e argomenti restano liberi)."
+                  : "Puoi selezionarne anche 2 o 3."}
               </div>
             </div>
           </div>
@@ -490,7 +475,7 @@ export default function SimulazioniConfig() {
             <div>
               <div className="scx-cardTitle">Imposta il formato</div>
               <div className="scx-cardSub">
-                {murActive ? "Formato MUR: domande bloccate a 15+16. Timer modificabile." : "Timer e numero domande (anche per singola materia)."}
+                {murActive ? "Formato MUR: 15+16 bloccato. Timer modificabile." : "Timer e numero domande (anche per singola materia)."}
               </div>
             </div>
           </div>
@@ -522,7 +507,7 @@ export default function SimulazioniConfig() {
                 type="number"
                 min="0"
                 max="200"
-                value={countsBySubject[scopeKey]?.scelta ?? 15}
+                value={countsBySubject[formatScope === "Tutte" ? activeOrder[0] : formatScope]?.scelta ?? 15}
                 onChange={(e) => setCounts(formatScope, { scelta: clampInt(e.target.value, 0, 200, 15) })}
                 disabled={murActive}
               />
@@ -535,7 +520,7 @@ export default function SimulazioniConfig() {
                 type="number"
                 min="0"
                 max="200"
-                value={countsBySubject[scopeKey]?.completamento ?? 16}
+                value={countsBySubject[formatScope === "Tutte" ? activeOrder[0] : formatScope]?.completamento ?? 16}
                 onChange={(e) => setCounts(formatScope, { completamento: clampInt(e.target.value, 0, 200, 16) })}
                 disabled={murActive}
               />
@@ -544,10 +529,18 @@ export default function SimulazioniConfig() {
             <div className="scx-field">
               <div className="scx-label">Timer</div>
               <div className="scx-toggleRow">
-                <button type="button" className={`scx-miniBtn ${timedMode ? "isOn" : ""}`} onClick={() => setTimedMode(true)}>
+                <button
+                  type="button"
+                  className={`scx-miniBtn ${timedMode ? "isOn" : ""}`}
+                  onClick={() => setTimedMode(true)}
+                >
                   On
                 </button>
-                <button type="button" className={`scx-miniBtn ${!timedMode ? "isOn" : ""}`} onClick={() => setTimedMode(false)}>
+                <button
+                  type="button"
+                  className={`scx-miniBtn ${!timedMode ? "isOn" : ""}`}
+                  onClick={() => setTimedMode(false)}
+                >
                   Off
                 </button>
               </div>
@@ -569,7 +562,7 @@ export default function SimulazioniConfig() {
             </div>
           </div>
 
-          {/* Riassunto mini per materia */}
+          {/* Riassunto per materia */}
           {activeOrder.length > 1 && (
             <div className="scx-summary">
               {activeOrder.map((m) => {
@@ -598,21 +591,19 @@ export default function SimulazioniConfig() {
             </div>
           </div>
 
-          {/* ✅ Materie in colonna (3 colonne desktop), argomenti orizzontali compatti */}
           <div className="scx-topicWrap">
             {activeOrder.map((m) => {
               const mode = topicMode[m];
               const topics = TOPICS[m] || [];
               const picked = pickedTopics[m] || [];
               const pickedCount = picked.length;
-              const inlineErr = topicErrors[m];
+              const hasErr = Boolean(topicErr[m]);
 
               return (
                 <div
-                  className={`scx-topicCard ${inlineErr ? "isErr" : ""}`}
+                  className={`scx-topicCard ${hasErr ? "isBad" : ""}`}
                   key={m}
-                  ref={(el) => (topicCardRefs.current[m] = el)}
-                  tabIndex={-1}
+                  ref={(el) => (topicRefs.current[m] = el)}
                 >
                   <div className="scx-topicHead">
                     <div className="scx-topicName">{m}</div>
@@ -621,7 +612,10 @@ export default function SimulazioniConfig() {
                       <button
                         type="button"
                         className={`scx-miniBtn ${mode === "all" ? "isOn" : ""}`}
-                        onClick={() => setModeFor(m, "all")}
+                        onClick={() => {
+                          clearTopicError(m);
+                          setTopicMode((p) => ({ ...p, [m]: "all" }));
+                        }}
                       >
                         Tutti
                       </button>
@@ -629,7 +623,10 @@ export default function SimulazioniConfig() {
                       <button
                         type="button"
                         className={`scx-miniBtn ${mode === "pick" ? "isOn" : ""}`}
-                        onClick={() => setModeFor(m, "pick")}
+                        onClick={() => {
+                          clearTopicError(m);
+                          setTopicMode((p) => ({ ...p, [m]: "pick" }));
+                        }}
                       >
                         Scelgo io
                       </button>
@@ -642,15 +639,27 @@ export default function SimulazioniConfig() {
                     </div>
                   </div>
 
-                  {/* ✅ errore visibile dentro la materia */}
-                  {inlineErr ? <div className="scx-inlineErr">{inlineErr}</div> : null}
+                  {hasErr && <div className="scx-topicErr">{topicErr[m]}</div>}
 
                   {mode === "pick" ? (
                     <div className="scx-topicList">
                       {topics.map((t) => {
                         const on = picked.includes(t);
                         return (
-                          <button key={t} type="button" className={`scx-topic ${on ? "isOn" : ""}`} onClick={() => toggleTopic(m, t)}>
+                          <button
+                            key={t}
+                            type="button"
+                            className={`scx-topic ${on ? "isOn" : ""}`}
+                            title={t}
+                            onClick={() => {
+                              setPickedTopics((prev) => {
+                                const cur = prev[m] || [];
+                                const next = on ? cur.filter((x) => x !== t) : [...cur, t];
+                                return { ...prev, [m]: next };
+                              });
+                              clearTopicError(m);
+                            }}
+                          >
                             {t}
                           </button>
                         );
@@ -789,7 +798,9 @@ const css = `
   border: 1px solid rgba(255,255,255,0.18);
   background: linear-gradient(90deg, var(--dino2), var(--med2));
 }
-.scx-soft{ background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(56,189,248,0.10)); }
+.scx-soft{
+  background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(56,189,248,0.10));
+}
 .scx-soft.isActive{
   border-color: rgba(34,197,94,0.30);
   box-shadow: 0 16px 44px rgba(2,6,23,0.12);
@@ -873,7 +884,9 @@ const css = `
   border-color: rgba(34,197,94,0.35);
   background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(56,189,248,0.14));
 }
-.scx-pill.isLock{ opacity: .92; }
+.scx-pill.isLock{
+  opacity: .92;
+}
 
 /* ORDER BOX */
 .scx-orderBox{
@@ -925,7 +938,10 @@ const css = `
   gap: 10px;
   flex-wrap: wrap;
 }
-.scx-scopeLabel{ font-weight: 950; color: rgba(15,23,42,0.78); }
+.scx-scopeLabel{
+  font-weight: 950;
+  color: rgba(15,23,42,0.78);
+}
 .scx-select{
   padding: 10px 12px;
   border-radius: 14px;
@@ -959,7 +975,10 @@ const css = `
   color: rgba(15,23,42,0.86);
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
 }
-.scx-input:disabled{ background: rgba(255,255,255,0.60); color: rgba(15,23,42,0.55); }
+.scx-input:disabled{
+  background: rgba(255,255,255,0.60);
+  color: rgba(15,23,42,0.55);
+}
 .scx-hint{ font-weight: 850; color: rgba(15,23,42,0.62); }
 
 .scx-toggleRow{ display:flex; gap: 8px; }
@@ -1001,26 +1020,26 @@ const css = `
 .scx-sumName{ font-weight: 1000; color: rgba(15,23,42,0.88); }
 .scx-sumVal{ font-weight: 900; color: rgba(15,23,42,0.70); }
 
-/* TOPICS */
+/* TOPICS — FULL WIDTH */
 .scx-topicWrap{
   margin-top: 12px;
   display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
+  grid-template-columns: 1fr;  /* ✅ una colonna = tutta larghezza */
   gap: 12px;
 }
-@media (max-width: 980px){ .scx-topicWrap{ grid-template-columns: 1fr; } }
 
 .scx-topicCard{
+  width: 100%;
   border-radius: 18px;
   border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.76);
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
   padding: 12px;
-  outline: none;
 }
-.scx-topicCard.isErr{
-  border-color: rgba(185,28,28,0.25);
-  box-shadow: 0 18px 46px rgba(185,28,28,0.08);
+
+.scx-topicCard.isBad{
+  border-color: rgba(185,28,28,0.28);
+  background: rgba(185,28,28,0.05);
 }
 
 .scx-topicHead{
@@ -1042,72 +1061,53 @@ const css = `
   color: rgba(15,23,42,0.70);
 }
 
-/* ✅ errore per materia (super visibile) */
-.scx-inlineErr{
+.scx-topicErr{
   margin-top: 10px;
-  padding: 10px 10px;
+  padding: 10px 12px;
   border-radius: 14px;
   border: 1px solid rgba(185,28,28,0.22);
   background: rgba(185,28,28,0.06);
   color: #b91c1c;
-  font-weight: 950;
-  line-height: 1.25;
+  font-weight: 900;
 }
 
-/* ✅ LISTA ARGOMENTI: ORIZZONTALE + COMPATTA */
 .scx-topicList{
   margin-top: 10px;
   display:flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap;   /* ✅ va fino in fondo e poi a capo */
   gap: 8px;
-  align-items: flex-start;
 }
 
-/* 2 per riga + testo leggibile (ellipsis a DESTRA) */
 .scx-topic{
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;   /* <<< NON più center (tagliava a sinistra) */
-
-  /* <<< CHIAVE: 2 chip per riga >>> */
-  flex: 0 1 calc(50% - 8px);
-
-  padding: 10px 12px;
+  padding: 10px 10px;
   border-radius: 999px;
   border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.86);
-
   font-weight: 900;
-  font-size: 0.86rem;
-  line-height: 1;
-
   color: rgba(15,23,42,0.78);
   cursor:pointer;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;      /* <<< … a DESTRA */
+  max-width: 100%;
 }
-
-/* su schermi molto larghi: 3 per riga (più “premium”) */
-@media (min-width: 1100px){
-  .scx-topic{ flex-basis: calc(33.333% - 8px); }
-}
-
-/* su mobile: 1 per riga (sennò diventano troppo stretti) */
-@media (max-width: 520px){
-  .scx-topic{ flex-basis: 100%; }
-}
-
 .scx-topic.isOn{
   border-color: rgba(34,197,94,0.35);
   background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(56,189,248,0.14));
   color: rgba(15,23,42,0.88);
 }
+
 .scx-topicFoot{
   margin-top: 10px;
   font-weight: 900;
   color: rgba(15,23,42,0.70);
+}
+
+/* highlight */
+.scx-shake{
+  animation: scxPulse .55s ease;
+}
+@keyframes scxPulse{
+  0%{ transform: scale(1); }
+  30%{ transform: scale(1.01); }
+  100%{ transform: scale(1); }
 }
 
 /* Bottom CTA */
