@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 /* =========================
-   ARGOMENTI (da sillabo)
+   TOPICS (filtri argomenti)
    ========================= */
 const TOPICS = {
   Chimica: [
@@ -57,12 +57,11 @@ const TOPICS = {
   ],
 };
 
-const DEFAULT_ORDER = ["Chimica", "Fisica", "Biologia"];
-const ALL_SUBJECTS = DEFAULT_ORDER;
+const ALL_SUBJECTS = ["Chimica", "Fisica", "Biologia"];
 
 function clampInt(v, min, max, fallback) {
   const n = parseInt(String(v), 10);
-  if (Number.isNaN(n)) return fallback;
+  if (!Number.isFinite(n)) return fallback;
   return Math.max(min, Math.min(max, n));
 }
 
@@ -70,97 +69,107 @@ function uniq(arr) {
   return Array.from(new Set(arr));
 }
 
-function pill(text) {
-  return (
-    <span className="dmPill" key={text}>
-      {text}
-    </span>
-  );
-}
-
 export default function SimulazioniConfig() {
   const nav = useNavigate();
   const location = useLocation();
-
-  // preset (se arrivi qui da link con stato)
   const preset = location?.state?.preset || null;
 
   const [err, setErr] = useState("");
   const [starting, setStarting] = useState(false);
 
-  // Materie (SEMESTRE FILTRO: una prova = una materia)
+  // Materie (multi)
   const [subjects, setSubjects] = useState(() => {
     if (preset?.sections?.length) {
-      const first = uniq(preset.sections.map((s) => s.materia)).filter((m) => ALL_SUBJECTS.includes(m))[0];
-      return [first || "Chimica"];
+      const picked = uniq(preset.sections.map((s) => s.materia)).filter((m) => ALL_SUBJECTS.includes(m));
+      return picked.length ? picked : ["Chimica"];
     }
     return ["Chimica"];
   });
 
-  // Durata (Formato MUR)
-  const [timedMode] = useState(true); // Formato MUR: timer sempre attivo
+  // Formato (tutto selezionabile)
+  const [timedMode, setTimedMode] = useState(true);
   const [durationMin, setDurationMin] = useState(45);
 
-  // Ordine materie (non serve più ma lasciamo variabili per compatibilità)
-  const [orderMode] = useState("default"); // default | custom
-  const [customOrder] = useState(DEFAULT_ORDER);
-
-  // Parametri domande (Formato MUR 2025/26)
   const [sceltaCount, setSceltaCount] = useState(15);
   const [compCount, setCompCount] = useState(16);
 
-  // Argomenti per materia
+  // Argomenti
   const [topicMode, setTopicMode] = useState(() => {
     const o = {};
     for (const m of ALL_SUBJECTS) o[m] = "all"; // all | pick
     return o;
   });
-
   const [pickedTopics, setPickedTopics] = useState(() => {
     const o = {};
     for (const m of ALL_SUBJECTS) o[m] = [];
     return o;
   });
 
+  // UI helpers
+  const [openTopicsFor, setOpenTopicsFor] = useState(null); // materia | null
+
   function toggleSubject(m) {
-    // Semestre filtro: UNA prova = UNA materia
-    setSubjects([m]);
+    setSubjects((prev) => {
+      const on = prev.includes(m);
+      const next = on ? prev.filter((x) => x !== m) : [...prev, m];
+      // evita zero materie (a prova di scemo)
+      return next.length ? next : prev;
+    });
   }
 
-  // Ordine effettivo (UNA sola materia)
-  const effectiveOrder = useMemo(() => {
-    return [subjects[0] || "Chimica"];
+  function applyMUR() {
+    setTimedMode(true);
+    setDurationMin(45);
+    setSceltaCount(15);
+    setCompCount(16);
+  }
+
+  const order = useMemo(() => {
+    const base = ["Chimica", "Fisica", "Biologia"];
+    return base.filter((m) => subjects.includes(m));
   }, [subjects]);
 
-  // Topics effettivi (recap)
+  const totalQuestions = useMemo(() => {
+    const scelta = clampInt(sceltaCount, 0, 200, 15);
+    const comp = clampInt(compCount, 0, 200, 16);
+    return (scelta + comp) * order.length;
+  }, [sceltaCount, compCount, order]);
+
+  const formatChip = useMemo(() => {
+    const s = clampInt(sceltaCount, 0, 200, 15);
+    const c = clampInt(compCount, 0, 200, 16);
+    const t = timedMode ? `${clampInt(durationMin, 5, 240, 45)} min` : "senza timer";
+    return `${s} crocette • ${c} completamento • ${t}`;
+  }, [sceltaCount, compCount, timedMode, durationMin]);
+
   const effectiveTopics = useMemo(() => {
     const out = {};
-    for (const m of effectiveOrder) {
-      if (topicMode[m] === "all") out[m] = [];
-      else out[m] = pickedTopics[m] || [];
-    }
+    for (const m of order) out[m] = topicMode[m] === "all" ? [] : pickedTopics[m] || [];
     return out;
-  }, [effectiveOrder, topicMode, pickedTopics]);
-
-  // recap
-  const totalQuestions = useMemo(() => {
-    return effectiveOrder.reduce((acc) => acc + clampInt(sceltaCount, 0, 200, 15) + clampInt(compCount, 0, 200, 16), 0);
-  }, [effectiveOrder, sceltaCount, compCount]);
-
-  const totalSubjects = effectiveOrder.length;
+  }, [order, topicMode, pickedTopics]);
 
   async function startExam() {
     if (starting) return;
-
     setErr("");
-    setStarting(true);
+
+    if (!order.length) {
+      setErr("Seleziona almeno 1 materia.");
+      return;
+    }
+
+    const scelta = clampInt(sceltaCount, 0, 200, 15);
+    const comp = clampInt(compCount, 0, 200, 16);
+    if (scelta + comp <= 0) {
+      setErr("Metti almeno 1 domanda.");
+      return;
+    }
 
     const duration_min = timedMode ? clampInt(durationMin, 5, 240, 45) : 0;
 
-    const sections = effectiveOrder.map((materia) => ({
+    const sections = order.map((materia) => ({
       materia,
-      scelta: clampInt(sceltaCount, 0, 200, 15),
-      completamento: clampInt(compCount, 0, 200, 16),
+      scelta,
+      completamento: comp,
       tag: topicMode[materia] === "all" ? [] : pickedTopics[materia] || [],
       difficolta: "Base",
     }));
@@ -168,13 +177,13 @@ export default function SimulazioniConfig() {
     const body = {
       duration_min,
       sections,
-      order: effectiveOrder,
+      order,
     };
 
     const candidates = ["/api/sim/start", "/api/sim/start/", "/api/simulazioni/start", "/api/simulazioni/start/"];
-
     let lastInfo = "";
 
+    setStarting(true);
     try {
       for (const path of candidates) {
         try {
@@ -192,27 +201,24 @@ export default function SimulazioniConfig() {
             throw new Error(lastInfo);
           }
 
-          let data;
+          let data = null;
           try {
             data = JSON.parse(txt);
           } catch {
             data = null;
           }
 
-          // session id da backend
           const sessionId = data?.session_id || data?.id || data?.sessionId;
-          if (!sessionId) {
-            throw new Error("Risposta OK ma manca session_id.\n" + lastInfo);
-          }
+          if (!sessionId) throw new Error("Risposta OK ma manca session_id.\n" + lastInfo);
 
           nav("/simulazioni/prova", { state: { sessionId, config: body } });
           return;
         } catch (e) {
+          // continua solo se 404 endpoint
           if (String(e?.message || "").includes("[404]")) continue;
           throw e;
         }
       }
-
       throw new Error("Nessun endpoint start trovato.\nUltimo tentativo:\n" + lastInfo);
     } catch (e) {
       setErr(String(e?.message || e || "Errore sconosciuto"));
@@ -221,238 +227,235 @@ export default function SimulazioniConfig() {
     }
   }
 
-  const onlySubject = subjects[0] || "Chimica";
-  const availableTopics = TOPICS[onlySubject] || [];
-
   return (
-    <main className="dmCfg">
+    <main className="scx">
       <style>{css}</style>
 
-      <div className="dmHead">
-        <div className="dmKicker">
-          <span className="dmDot" aria-hidden="true" />
-          <span className="dmBrand">
-            <span className="dmDino">Dino</span>
-            <span className="dmMed">Med</span>
+      {/* HEADER */}
+      <section className="scx-hero">
+        <div className="scx-kicker">
+          <span className="scx-dot" aria-hidden="true" />
+          <span className="scx-brand">
+            <span className="scx-dino">Dino</span>
+            <span className="scx-med">Med</span>
           </span>
-          <span className="dmSep">•</span>
-          <span className="dmTag">Configura simulazione</span>
+          <span className="scx-sep">•</span>
+          <span className="scx-tag">Configura</span>
         </div>
 
-        <h1 className="dmTitle">
-          Imposta la prova in <span className="dmGrad">modo semplice</span>.
-        </h1>
+        <div className="scx-heroRow">
+          <div className="scx-left">
+            <h1 className="scx-title">
+              Avvia la prova in <span className="scx-grad">30 secondi</span>.
+            </h1>
+            <div className="scx-chipRow" aria-hidden="true">
+              <span className="scx-chip">{order.length} materie</span>
+              <span className="scx-chip">{totalQuestions} domande</span>
+              <span className="scx-chip">{formatChip}</span>
+            </div>
 
-        <p className="dmSub">
-          Formato <b>Semestre Filtro (MUR)</b>: una materia alla volta, 31 domande, 45 minuti.
-        </p>
-      </div>
+            <div className="scx-ctaRow">
+              <button className="scx-btn scx-primary" onClick={startExam} disabled={starting}>
+                {starting ? "Avvio…" : "Avvia prova"} <span aria-hidden="true">→</span>
+                <span className="scx-shine" aria-hidden="true" />
+              </button>
 
-      <div className="dmGrid">
-        {/* LEFT */}
-        <div className="dmCard">
-          {err ? <div className="dmErr">{err}</div> : null}
+              <button className="scx-btn scx-soft" type="button" onClick={applyMUR}>
+                Formato MUR 2025/26
+              </button>
+            </div>
 
-          <div className="dmCardTitle">Materie</div>
-          <div className="dmCardHint">Seleziona 1 materia (una prova = una materia).</div>
+            {err ? <div className="scx-err">{err}</div> : null}
+          </div>
 
-          <div className="dmChips">
+          <div className="scx-right" aria-hidden="true">
+            <div className="scx-mini">
+              <div className="scx-miniTitle">Suggerimento</div>
+              <div className="scx-miniText">Se vuoi allenarti “come all’esame”, premi <b>Formato MUR</b> e vai.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3 STEP */}
+      <section className="scx-steps">
+        {/* STEP 1 */}
+        <div className="scx-card">
+          <div className="scx-cardTop">
+            <div className="scx-step">1</div>
+            <div>
+              <div className="scx-cardTitle">Scegli le materie</div>
+              <div className="scx-cardSub">Puoi selezionarne anche 2 o 3.</div>
+            </div>
+          </div>
+
+          <div className="scx-pills">
             {ALL_SUBJECTS.map((m) => (
               <button
                 key={m}
-                className={`dmChip ${(subjects[0] === m) ? "dmChipOn" : ""}`}
-                onClick={() => toggleSubject(m)}
                 type="button"
+                className={`scx-pill ${subjects.includes(m) ? "isOn" : ""}`}
+                onClick={() => toggleSubject(m)}
               >
                 {m}
               </button>
             ))}
           </div>
+        </div>
 
-          <div className="dmDivider" />
-
-          <div className="dmRow2">
+        {/* STEP 2 */}
+        <div className="scx-card">
+          <div className="scx-cardTop">
+            <div className="scx-step">2</div>
             <div>
-              <div className="dmCardTitle">Crocette</div>
-              <div className="dmCardHint">Formato MUR: fisso</div>
+              <div className="scx-cardTitle">Imposta il formato</div>
+              <div className="scx-cardSub">Timer e numero domande (cambi tutto tu).</div>
+            </div>
+          </div>
+
+          <div className="scx-grid">
+            <div className="scx-field">
+              <div className="scx-label">Crocette</div>
               <input
-                className="dmInput"
+                className="scx-input"
                 type="number"
                 min="0"
                 max="200"
                 value={sceltaCount}
-                disabled
-                title="Formato MUR 2025/26: 15 crocette + 16 completamento"
+                onChange={(e) => setSceltaCount(clampInt(e.target.value, 0, 200, 15))}
               />
             </div>
 
-            <div>
-              <div className="dmCardTitle">Completamento</div>
-              <div className="dmCardHint">Formato MUR: fisso</div>
+            <div className="scx-field">
+              <div className="scx-label">Completamento</div>
               <input
-                className="dmInput"
+                className="scx-input"
                 type="number"
                 min="0"
                 max="200"
                 value={compCount}
-                disabled
-                title="Formato MUR 2025/26: 15 crocette + 16 completamento"
+                onChange={(e) => setCompCount(clampInt(e.target.value, 0, 200, 16))}
               />
             </div>
-          </div>
 
-          <div className="dmDivider" />
-
-          <div className="dmRow2">
-            <div>
-              <div className="dmCardTitle">Tempo</div>
-              <div className="dmCardHint">Formato MUR: 45 minuti (timer fisso).</div>
-
-              <div className="dmToggleRow">
-                <button className={`dmMini ${true ? "dmMiniOn" : ""}`} type="button" disabled>
-                  Con timer
+            <div className="scx-field">
+              <div className="scx-label">Timer</div>
+              <div className="scx-toggleRow">
+                <button
+                  type="button"
+                  className={`scx-miniBtn ${timedMode ? "isOn" : ""}`}
+                  onClick={() => setTimedMode(true)}
+                >
+                  On
                 </button>
-                <button className={`dmMini ${false ? "dmMiniOn" : ""}`} type="button" disabled>
-                  Senza timer
+                <button
+                  type="button"
+                  className={`scx-miniBtn ${!timedMode ? "isOn" : ""}`}
+                  onClick={() => setTimedMode(false)}
+                >
+                  Off
                 </button>
               </div>
-
-              <div style={{ marginTop: 10 }}>
-                <input
-                  className="dmInput"
-                  type="number"
-                  min="5"
-                  max="240"
-                  value={durationMin}
-                  disabled
-                  title="Formato MUR 2025/26: 45 minuti"
-                />
-                <div className="dmTiny">Minuti (5–240)</div>
-              </div>
             </div>
 
-            <div>
-              <div className="dmCardTitle">Formato prova</div>
-              <div className="dmCardHint">Una sola materia per volta • 31 domande • 45 minuti</div>
-
-              <div className="dmPills" aria-hidden="true">
-                <span className="dmPillMini">15 crocette</span>
-                <span className="dmPillMini">16 completamento</span>
-                <span className="dmPillMini">+1 / −0,1 / 0</span>
-              </div>
+            <div className="scx-field">
+              <div className="scx-label">Minuti</div>
+              <input
+                className="scx-input"
+                type="number"
+                min="5"
+                max="240"
+                value={durationMin}
+                onChange={(e) => setDurationMin(clampInt(e.target.value, 5, 240, 45))}
+                disabled={!timedMode}
+              />
+              <div className="scx-hint">{timedMode ? "5–240" : "timer off"}</div>
             </div>
-          </div>
-
-          <div className="dmDivider" />
-
-          <div className="dmCardTitle">Argomenti</div>
-          <div className="dmCardHint">
-            Filtra gli argomenti per la <b>{onlySubject}</b>. Se lasci “Tutti”, prende domande di tutta la materia.
-          </div>
-
-          <div className="dmTopicBox">
-            <div className="dmToggleRow">
-              <button
-                className={`dmMini ${topicMode[onlySubject] === "all" ? "dmMiniOn" : ""}`}
-                onClick={() => setTopicMode((prev) => ({ ...prev, [onlySubject]: "all" }))}
-                type="button"
-              >
-                Tutti
-              </button>
-              <button
-                className={`dmMini ${topicMode[onlySubject] === "pick" ? "dmMiniOn" : ""}`}
-                onClick={() => setTopicMode((prev) => ({ ...prev, [onlySubject]: "pick" }))}
-                type="button"
-              >
-                Scelgo io
-              </button>
-            </div>
-
-            {topicMode[onlySubject] === "pick" ? (
-              <div className="dmTopicList">
-                {availableTopics.map((t) => {
-                  const on = (pickedTopics[onlySubject] || []).includes(t);
-                  return (
-                    <button
-                      key={t}
-                      type="button"
-                      className={`dmTopic ${on ? "dmTopicOn" : ""}`}
-                      onClick={() =>
-                        setPickedTopics((prev) => {
-                          const cur = prev[onlySubject] || [];
-                          const next = on ? cur.filter((x) => x !== t) : [...cur, t];
-                          return { ...prev, [onlySubject]: next };
-                        })
-                      }
-                    >
-                      {t}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="dmTiny">✔ Nessun filtro: userai tutte le domande di {onlySubject}.</div>
-            )}
-          </div>
-
-          <div className="dmActions">
-            <button className="dmBtn dmBtnPrimary" onClick={startExam} disabled={starting}>
-              {starting ? "Avvio…" : "Avvia prova"}
-            </button>
-
-            <button className="dmBtn dmBtnSoft" type="button" onClick={() => nav("/simulazioni")}>
-              Indietro
-            </button>
           </div>
         </div>
 
-        {/* RIGHT */}
-        <div className="dmCard dmSoft">
-          <div className="dmCardTitle">Riepilogo</div>
-
-          <div className="dmRecap">
-            <div className="dmRecapRow">
-              <div className="dmRecapLbl">Materia</div>
-              <div className="dmRecapVal">{onlySubject}</div>
-            </div>
-            <div className="dmRecapRow">
-              <div className="dmRecapLbl">Domande totali</div>
-              <div className="dmRecapVal">{totalQuestions}</div>
-            </div>
-            <div className="dmRecapRow">
-              <div className="dmRecapLbl">Timer</div>
-              <div className="dmRecapVal">45 min</div>
+        {/* STEP 3 */}
+        <div className="scx-card scx-wide">
+          <div className="scx-cardTop">
+            <div className="scx-step">3</div>
+            <div>
+              <div className="scx-cardTitle">Filtra per argomento (facoltativo)</div>
+              <div className="scx-cardSub">Se non tocchi nulla, prende tutta la materia.</div>
             </div>
           </div>
 
-          <div className="dmDivider" />
+          <div className="scx-topicWrap">
+            {order.map((m) => {
+              const mode = topicMode[m];
+              const isOpen = openTopicsFor === m;
+              const topics = TOPICS[m] || [];
+              const picked = pickedTopics[m] || [];
+              const pickedCount = picked.length;
 
-          <div className="dmCardTitle">Filtri attivi</div>
-          <div className="dmCardHint">Quello che selezioni qui deve combaciare con i tag delle domande.</div>
+              return (
+                <div className="scx-topicCard" key={m}>
+                  <div className="scx-topicHead">
+                    <div className="scx-topicName">{m}</div>
 
-          <div className="dmRecapTopics">
-            {effectiveTopics[onlySubject]?.length ? (
-              <>
-                <div className="dmTiny">Tag selezionati:</div>
-                <div className="dmPills">{effectiveTopics[onlySubject].map((t) => pill(t))}</div>
-              </>
-            ) : (
-              <div className="dmTiny">Nessun filtro tag (tutta la materia).</div>
-            )}
-          </div>
+                    <div className="scx-topicActions">
+                      <button
+                        type="button"
+                        className={`scx-miniBtn ${mode === "all" ? "isOn" : ""}`}
+                        onClick={() => setTopicMode((p) => ({ ...p, [m]: "all" }))}
+                      >
+                        Tutti
+                      </button>
+                      <button
+                        type="button"
+                        className={`scx-miniBtn ${mode === "pick" ? "isOn" : ""}`}
+                        onClick={() => setTopicMode((p) => ({ ...p, [m]: "pick" }))}
+                      >
+                        Scelgo io
+                      </button>
 
-          <div className="dmDivider" />
+                      <button
+                        type="button"
+                        className={`scx-open ${isOpen ? "isOn" : ""}`}
+                        onClick={() => setOpenTopicsFor((cur) => (cur === m ? null : m))}
+                      >
+                        {isOpen ? "Chiudi" : "Apri"} {mode === "pick" ? `(${pickedCount})` : ""}
+                      </button>
+                    </div>
+                  </div>
 
-          <div className="dmCardTitle">Formato scoring</div>
-          <div className="dmCardHint">Come nelle prove nazionali.</div>
-          <div className="dmPills" aria-hidden="true">
-            <span className="dmPillMini">+1 corretta</span>
-            <span className="dmPillMini">−0,1 errata</span>
-            <span className="dmPillMini">0 omessa</span>
-            <span className="dmPillMini">18/30 minimo</span>
+                  {mode === "pick" && isOpen ? (
+                    <div className="scx-topicList">
+                      {topics.map((t) => {
+                        const on = picked.includes(t);
+                        return (
+                          <button
+                            key={t}
+                            type="button"
+                            className={`scx-topic ${on ? "isOn" : ""}`}
+                            onClick={() =>
+                              setPickedTopics((prev) => {
+                                const cur = prev[m] || [];
+                                const next = on ? cur.filter((x) => x !== t) : [...cur, t];
+                                return { ...prev, [m]: next };
+                              })
+                            }
+                          >
+                            {t}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="scx-topicFoot">
+                      {mode === "all" ? "✔ Tutti gli argomenti" : pickedCount ? `✔ ${pickedCount} selezionati` : "Scegli argomenti (facoltativo)"}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </section>
     </main>
   );
 }
@@ -462,63 +465,153 @@ const css = `
 :root{
   --dino:#22c55e; --dino2:#16a34a;
   --med:#38bdf8;  --med2:#0ea5e9;
+
   --ink: rgba(15,23,42,0.92);
-  --ink2: rgba(15,23,42,0.72);
+  --ink2: rgba(15,23,42,0.70);
   --bd: rgba(15,23,42,0.10);
   --shadow: 0 18px 60px rgba(2,6,23,0.10);
 }
 
-.dmCfg{ max-width:1120px; margin:0 auto; padding:22px; }
+.scx{ max-width: 1120px; margin: 0 auto; padding: 22px; }
 
-.dmHead{ margin: 6px 4px 14px; }
-.dmKicker{
-  display:inline-flex; align-items:center; gap:10px;
+/* HERO */
+.scx-hero{
+  border-radius: 28px;
+  border: 1px solid var(--bd);
+  background:
+    radial-gradient(900px 320px at 12% -25%, rgba(34,197,94,0.16), transparent 60%),
+    radial-gradient(900px 320px at 78% -30%, rgba(56,189,248,0.16), transparent 55%),
+    rgba(255,255,255,0.90);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+  overflow:hidden;
+  padding: 18px;
+}
+
+.scx-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
   padding: 10px 14px;
   border-radius: 999px;
   border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.80);
-  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+  background: rgba(255,255,255,0.74);
   font-weight: 950;
   color: rgba(15,23,42,0.82);
 }
-.dmDot{
-  width:10px; height:10px; border-radius:999px;
+.scx-dot{
+  width: 10px; height: 10px; border-radius: 999px;
   background: linear-gradient(90deg, var(--dino2), var(--med2));
   box-shadow: 0 10px 20px rgba(2,6,23,0.10);
 }
-.dmBrand{ display:inline-flex; gap:0; }
-.dmDino{ color: var(--dino2); font-weight: 1000; }
-.dmMed{ color: var(--med2); font-weight: 1000; }
-.dmSep{ opacity:.55; }
-.dmTag{ font-weight: 950; }
+.scx-brand{ display:inline-flex; gap:0; }
+.scx-dino{ color: var(--dino2); font-weight: 1000; }
+.scx-med{ color: var(--med2); font-weight: 1000; }
+.scx-sep{ opacity:.55; }
 
-.dmTitle{
-  margin: 12px 0 6px;
+.scx-heroRow{
+  display:grid;
+  grid-template-columns: 1.25fr .75fr;
+  gap: 14px;
+  margin-top: 14px;
+  align-items: center;
+}
+@media (max-width: 980px){
+  .scx-heroRow{ grid-template-columns: 1fr; }
+}
+
+.scx-title{
+  margin: 0;
   font-size: 34px;
   line-height: 1.08;
   letter-spacing: -0.03em;
   color: var(--ink);
   font-weight: 1100;
 }
-.dmGrad{
+@media (max-width:520px){ .scx-title{ font-size: 30px; } }
+
+.scx-grad{
   background: linear-gradient(90deg, var(--dino2), var(--med2));
   -webkit-background-clip:text;
   background-clip:text;
   color: transparent;
 }
-.dmSub{ margin:0; color: var(--ink2); font-weight: 850; max-width: 80ch; }
 
-.dmGrid{
-  display:grid;
-  grid-template-columns: 1.25fr .75fr;
-  gap: 14px;
-  margin-top: 14px;
-}
-@media (max-width: 980px){
-  .dmGrid{ grid-template-columns: 1fr; }
+.scx-chipRow{ margin-top: 10px; display:flex; gap: 8px; flex-wrap: wrap; }
+.scx-chip{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.72);
+  font-weight: 950;
+  color: rgba(15,23,42,0.78);
 }
 
-.dmCard{
+.scx-ctaRow{ margin-top: 12px; display:flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.scx-btn{
+  position: relative;
+  overflow:hidden;
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 999px;
+  font-weight: 1000;
+  border: 1px solid rgba(15,23,42,0.10);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.10);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  cursor:pointer;
+  background: rgba(255,255,255,0.78);
+  color: rgba(15,23,42,0.86);
+}
+.scx-btn:hover{ transform: translateY(-1px); box-shadow: 0 18px 40px rgba(2,6,23,0.14); filter: saturate(1.03); }
+.scx-btn:disabled{ opacity:.70; cursor:not-allowed; }
+.scx-primary{
+  color:white;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: linear-gradient(90deg, var(--dino2), var(--med2));
+}
+.scx-soft{
+  background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(56,189,248,0.10));
+}
+.scx-shine{
+  position:absolute; inset:0;
+  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.26) 25%, transparent 50%);
+  transform: translateX(-120%);
+  animation: scxShine 4.2s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes scxShine{
+  0%, 58% { transform: translateX(-120%); }
+  88%, 100% { transform: translateX(120%); }
+}
+
+.scx-mini{
+  border-radius: 18px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.72);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+  padding: 12px;
+}
+.scx-miniTitle{ font-weight: 1100; color: rgba(15,23,42,0.90); }
+.scx-miniText{ margin-top: 6px; font-weight: 850; color: rgba(15,23,42,0.72); line-height: 1.35; }
+
+.scx-err{
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(185,28,28,0.22);
+  background: rgba(185,28,28,0.06);
+  color: #b91c1c;
+  font-weight: 900;
+  white-space: pre-wrap;
+}
+
+/* STEPS */
+.scx-steps{ margin-top: 14px; display:grid; gap: 14px; }
+
+.scx-card{
   border-radius: 24px;
   border: 1px solid var(--bd);
   background:
@@ -529,138 +622,114 @@ const css = `
   padding: 18px;
   color: rgba(15,23,42,0.88);
 }
-.dmSoft{
-  background:
-    radial-gradient(520px 220px at 20% -10%, rgba(56,189,248,0.10), transparent 60%),
-    radial-gradient(520px 220px at 80% -10%, rgba(34,197,94,0.10), transparent 60%),
-    rgba(255,255,255,0.92);
+.scx-wide{ padding: 18px; }
+
+.scx-cardTop{ display:flex; gap: 12px; align-items:flex-start; }
+.scx-step{
+  width: 36px; height: 36px;
+  border-radius: 14px;
+  display:grid; place-items:center;
+  font-weight: 1100;
+  color: rgba(15,23,42,0.86);
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.78);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
 }
+.scx-cardTitle{ font-weight: 1100; color: rgba(15,23,42,0.92); letter-spacing:-0.01em; }
+.scx-cardSub{ margin-top: 6px; font-weight: 850; color: rgba(15,23,42,0.70); line-height:1.35; }
 
-.dmCardTitle{ font-weight: 1100; color: rgba(15,23,42,0.92); letter-spacing:-0.01em; }
-.dmCardHint{ margin-top:6px; font-weight: 850; color: rgba(15,23,42,0.70); line-height: 1.35; }
-
-.dmErr{
-  margin-bottom: 12px;
-  padding: 12px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(185,28,28,0.22);
-  background: rgba(185,28,28,0.06);
-  color: #b91c1c;
-  font-weight: 900;
-  white-space: pre-wrap;
-}
-
-.dmChips{ margin-top: 10px; display:flex; gap:10px; flex-wrap:wrap; }
-.dmChip{
+/* STEP 1 pills */
+.scx-pills{ margin-top: 12px; display:flex; gap: 10px; flex-wrap: wrap; }
+.scx-pill{
   padding: 10px 12px;
   border-radius: 999px;
   border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.80);
+  background: rgba(255,255,255,0.78);
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
   font-weight: 950;
-  color: rgba(15,23,42,0.82);
+  color: rgba(15,23,42,0.80);
   cursor:pointer;
   transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
 }
-.dmChip:hover{ transform: translateY(-1px); box-shadow: 0 18px 40px rgba(2,6,23,0.10); }
-.dmChipOn{
+.scx-pill:hover{ transform: translateY(-1px); box-shadow: 0 18px 40px rgba(2,6,23,0.10); }
+.scx-pill.isOn{
   border-color: rgba(14,165,233,0.35);
   background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(56,189,248,0.12));
 }
 
-.dmDivider{ height:1px; background: rgba(15,23,42,0.10); margin: 14px 0; }
+/* STEP 2 grid */
+.scx-grid{ margin-top: 12px; display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+@media (max-width: 980px){ .scx-grid{ grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px){ .scx-grid{ grid-template-columns: 1fr; } }
 
-.dmRow2{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top: 10px; }
-@media (max-width: 720px){ .dmRow2{ grid-template-columns: 1fr; } }
-
-.dmInput{
-  width:100%;
+.scx-field{ display:flex; flex-direction:column; gap: 6px; }
+.scx-label{ font-weight: 950; color: rgba(15,23,42,0.76); }
+.scx-input{
+  width: 100%;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid var(--bd);
+  border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.92);
   font-weight: 950;
   color: rgba(15,23,42,0.86);
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
 }
-.dmInput:disabled{ opacity: .85; cursor: not-allowed; }
+.scx-input:disabled{ opacity: .75; cursor:not-allowed; }
+.scx-hint{ font-size: 12px; font-weight: 850; color: rgba(15,23,42,0.55); }
 
-.dmToggleRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
-.dmMini{
+.scx-toggleRow{ display:flex; gap: 8px; flex-wrap: wrap; }
+.scx-miniBtn{
   padding: 10px 12px;
   border-radius: 999px;
   border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.80);
+  background: rgba(255,255,255,0.78);
   font-weight: 950;
   color: rgba(15,23,42,0.78);
   cursor:pointer;
 }
-.dmMini:disabled{ opacity:.8; cursor:not-allowed; }
-.dmMiniOn{
+.scx-miniBtn.isOn{
   border-color: rgba(34,197,94,0.35);
   background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(56,189,248,0.12));
-  color: rgba(15,23,42,0.84);
 }
 
-.dmTopicBox{ margin-top: 10px; }
-.dmTopicList{
-  margin-top: 10px;
-  display:flex;
-  gap: 10px;
-  flex-wrap: wrap;
+/* STEP 3 topics */
+.scx-topicWrap{ margin-top: 12px; display:grid; gap: 12px; }
+.scx-topicCard{
+  border-radius: 20px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.78);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+  padding: 12px;
 }
-.dmTopic{
+.scx-topicHead{ display:flex; justify-content: space-between; gap: 10px; align-items:center; flex-wrap: wrap; }
+.scx-topicName{ font-weight: 1100; color: rgba(15,23,42,0.90); }
+.scx-topicActions{ display:flex; gap: 8px; flex-wrap: wrap; align-items:center; }
+.scx-open{
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: linear-gradient(135deg, rgba(56,189,248,0.10), rgba(34,197,94,0.10));
+  font-weight: 950;
+  color: rgba(15,23,42,0.78);
+  cursor:pointer;
+}
+.scx-open.isOn{ border-color: rgba(14,165,233,0.35); }
+
+.scx-topicFoot{ margin-top: 8px; font-weight: 850; color: rgba(15,23,42,0.68); }
+
+.scx-topicList{ margin-top: 10px; display:flex; gap: 10px; flex-wrap: wrap; }
+.scx-topic{
   padding: 9px 10px;
   border-radius: 999px;
   border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.76);
-  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
   font-weight: 900;
   color: rgba(15,23,42,0.76);
   cursor:pointer;
 }
-.dmTopicOn{
+.scx-topic.isOn{
   border-color: rgba(14,165,233,0.35);
   background: linear-gradient(135deg, rgba(56,189,248,0.14), rgba(56,189,248,0.06));
   color: rgba(14,165,233,0.95);
-}
-
-.dmRecap{ margin-top: 12px; display:grid; gap: 10px; }
-.dmRecapRow{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:8px 0; }
-.dmRecapLbl{ font-size:12px; font-weight:950; color: rgba(15,23,42,0.60); }
-.dmRecapVal{ font-weight:950; color: rgba(15,23,42,0.86); }
-
-.dmPills{ display:flex; gap:8px; flex-wrap:wrap; }
-.dmPillMini{ display:inline-flex; align-items:center; padding:8px 10px; border-radius:999px; border:1px solid rgba(15,23,42,0.10); background: rgba(255,255,255,0.70); font-weight:950; color: rgba(15,23,42,0.78); }
-.dmTiny{ margin-top:6px; font-size:12px; color: rgba(15,23,42,0.55); font-weight:800; }
-
-.dmPill{
-  display:inline-flex; align-items:center;
-  padding:8px 10px;
-  border-radius:999px;
-  border:1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.70);
-  font-weight:950;
-  color: rgba(15,23,42,0.78);
-}
-
-.dmActions{ margin-top: 14px; display:flex; gap:10px; flex-wrap:wrap; }
-
-.dmBtn{
-  padding:12px 14px; border-radius:14px;
-  font-weight:950; border:none; cursor:pointer;
-}
-.dmBtn:disabled{
-  opacity: .65;
-  cursor: not-allowed;
-}
-.dmBtnPrimary{
-  background:rgba(15,23,42,0.92);
-  color:white;
-  box-shadow:0 12px 30px rgba(15,23,42,0.18);
-}
-.dmBtnSoft{
-  background: rgba(255,255,255,0.86);
-  border:1px solid rgba(15,23,42,0.10);
 }
 `;
