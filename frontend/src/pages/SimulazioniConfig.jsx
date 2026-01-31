@@ -310,7 +310,7 @@ export default function SimulazioniConfig() {
       order: activeOrder,
     };
 
-    const candidates = ["/api/sim/start", "/api/sim/start/", "/api/simulazioni/start", "/api/simulazioni/start/"];
+    const candidates = ["/api/sim/start", "/api/sim/start/"];
     let lastInfo = "";
 
     setStarting(true);
@@ -341,7 +341,7 @@ export default function SimulazioniConfig() {
           const sessionId = data?.session_id || data?.id || data?.sessionId;
           if (!sessionId) throw new Error("Risposta OK ma manca session_id.\n" + lastInfo);
 
-          nav("/simulazioni/prova", { state: { sessionId, config: body } });
+          nav("/simulazioni/prova", { state: { session: data, config: body } });
           return;
         } catch (e) {
           if (String(e?.message || "").includes("[404]")) continue;
