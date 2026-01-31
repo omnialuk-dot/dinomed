@@ -416,10 +416,6 @@ async function startExam() {
 
             {err ? <div className="scx-err">{err}</div> : null}
 {debugStart ? (
-  <div className="scx-err" style={{ borderColor: "rgba(14,165,233,0.25)", color: "rgba(15,23,42,0.9)" }}>
-    <b>Debug avvio:</b>
-    <pre style={{ whiteSpace: "pre-wrap", marginTop: 8 }}>{debugStart}</pre>
-  </div>
 ) : null}
           </div>
 
