@@ -167,7 +167,7 @@ export default function SimulazioniConfig() {
     });
 
     setTimedMode(true);
-    setDurationMin(45);
+    setDurationMin(135);
   }
 
   function moveOrder(m, dir) {
