@@ -168,7 +168,7 @@ export default function SimulazioniConfig() {
         });
 
         setTimedMode(true);
-        setDurationMin(45);
+        setDurationMin(135);
       }
 
       // se disattivo MUR: non ti resetto tutto a caso.
@@ -275,7 +275,7 @@ export default function SimulazioniConfig() {
       return;
     }
 
-    const duration_min = timedMode ? clampInt(durationMin, 5, 240, 45) : 0;
+    const duration_min = timedMode ? clampInt(durationMin, 1, 240, 45) : 0;
 
     const sections = activeOrder.map((materia) => ({
       materia,
