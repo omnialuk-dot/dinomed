@@ -1060,30 +1060,42 @@ const css = `
   display:flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: flex-start;
 }
 
-/* ✅ chip più piccoli, non “colonnoni” */
+/* CHIP: non devono “allargarsi” a tutta la card */
 .scx-topic{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* <<< QUESTA È LA CHIAVE >>> */
+  flex: 0 0 auto;            /* non si “stira” */
+  max-width: 240px;          /* così ne entrano più per riga */
+  min-width: 120px;          /* evita chip microscopici */
+
   padding: 8px 10px;
   border-radius: 999px;
   border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.86);
+
   font-weight: 900;
   font-size: 0.86rem;
   line-height: 1;
+
   color: rgba(15,23,42,0.78);
   cursor:pointer;
-  white-space: nowrap;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+
+  white-space: nowrap;        /* non va su due righe */
+  overflow: hidden;           /* taglia */
+  text-overflow: ellipsis;    /* … */
 }
+
 .scx-topic.isOn{
   border-color: rgba(34,197,94,0.35);
   background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(56,189,248,0.14));
   color: rgba(15,23,42,0.88);
 }
-
 .scx-topicFoot{
   margin-top: 10px;
   font-weight: 900;
