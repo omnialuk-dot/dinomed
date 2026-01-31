@@ -114,7 +114,8 @@ def start(req: StartRequest):
     # ordine: se non fornito, usa l'ordine delle sections
     order = req.order or [s.materia for s in req.sections]
 
-    # costruisci pool per sezione
+    # costruisci pool per sezione.
+    # REQUISITO: ordine per materia fisso (in base a req.order), domande casuali all'interno della materia.
     picked_full: List[Dict[str, Any]] = []
     diagnostics = []
 
@@ -122,6 +123,9 @@ def start(req: StartRequest):
         sec = next((s for s in req.sections if s.materia == materia), None)
         if not sec:
             continue
+
+        # raccogli per la singola materia, poi shuffle locale
+        picked_this: List[Dict[str, Any]] = []
 
         # scelta multipla
         need_sc = int(sec.scelta or 0)
@@ -135,7 +139,7 @@ def start(req: StartRequest):
                     detail="Domande insufficienti: " + "; ".join(diagnostics) +
                            (f". Tag: {', '.join(sec.tag)}" if sec.tag else "")
                 )
-            picked_full.extend(sc)
+            picked_this.extend(sc)
 
         # completamento
         need_co = int(sec.completamento or 0)
@@ -149,13 +153,14 @@ def start(req: StartRequest):
                     detail="Domande insufficienti: " + "; ".join(diagnostics) +
                            (f". Tag: {', '.join(sec.tag)}" if sec.tag else "")
                 )
-            picked_full.extend(co)
+            picked_this.extend(co)
 
         if (need_sc + need_co) <= 0:
             raise HTTPException(status_code=400, detail=f"In {materia} metti almeno 1 domanda (crocette o completamento).")
 
-    # shuffle mantenendo comunque un minimo di mix (qui semplice random)
-    random.shuffle(picked_full)
+        # shuffle SOLO dentro la materia
+        random.shuffle(picked_this)
+        picked_full.extend(picked_this)
 
     session_id = str(uuid4())
     session = {
@@ -277,6 +282,8 @@ class FinishRequest(BaseModel):
     session_id: str
     answers: List[FinishAnswer]
     auto_finish: Optional[bool] = False
+    # opzionale: limita la correzione solo a un sottoinsieme di domande (es. uscita anticipata tra materie)
+    question_ids: Optional[List[str]] = None
 
 
 def _letter_to_index(v: Any) -> Optional[int]:
@@ -318,20 +325,44 @@ def finish(req: FinishRequest):
     s["finished"] = True
 
     questions_full = s.get("questions_full", [])
+
+    # se arrivano question_ids, correggi solo quelle (ordine preservato)
+    qid_filter = None
+    if req.question_ids:
+        qid_filter = {str(x) for x in req.question_ids if str(x).strip()}
+    if qid_filter is not None:
+        questions_full = [q for q in questions_full if str(q.get("id")) in qid_filter]
+
     total = len(questions_full)
     correct = 0
     wrong = 0
     blank = 0
     details = []
+    per_subject: Dict[str, Dict[str, Any]] = {}
 
     for q in questions_full:
         qid = str(q.get("id"))
         tipo = _norm(q.get("tipo"))
+        materia = str(q.get("materia") or "Materia")
+        if materia not in per_subject:
+            per_subject[materia] = {"total": 0, "correct": 0, "wrong": 0, "blank": 0}
+        per_subject[materia]["total"] += 1
         user = amap.get(qid, None)
 
         if user is None or (isinstance(user, str) and user.strip() == ""):
             blank += 1
-            details.append({"id": qid, "ok": None})
+            per_subject[materia]["blank"] += 1
+            details.append({
+                "id": qid,
+                "materia": materia,
+                "tipo": tipo,
+                "ok": None,
+                "your_answer": "",
+                "correct": q.get("corretta") if tipo == "completamento" else q.get("corretta_index"),
+                "testo": q.get("testo", ""),
+                "opzioni": q.get("opzioni", []) if tipo == "scelta" else [],
+                "spiegazione": q.get("spiegazione", ""),
+            })
             continue
 
         ok = False
@@ -348,15 +379,64 @@ def finish(req: FinishRequest):
                 ans = _norm(str(q.get("corretta") or ""))
                 ok = _norm(str(user)) == ans
 
+        correct_payload = None
+        if tipo == "scelta":
+            # salva l'indice corretto + anche la lettera per comodità
+            ci = q.get("corretta_index")
+            try:
+                ci_int = int(ci)
+            except Exception:
+                ci_int = None
+            correct_payload = {
+                "index": ci_int,
+                "letter": (chr(65 + ci_int) if isinstance(ci_int, int) and 0 <= ci_int <= 25 else None),
+            }
+        else:
+            corr_list = q.get("risposte") if isinstance(q.get("risposte"), list) else None
+            correct_payload = corr_list if corr_list else (q.get("corretta") or "")
+
+        d = {
+            "id": qid,
+            "materia": materia,
+            "tipo": tipo,
+            "ok": bool(ok),
+            "your_answer": user,
+            "correct": correct_payload,
+            "testo": q.get("testo", ""),
+            "opzioni": q.get("opzioni", []) if tipo == "scelta" else [],
+            "spiegazione": q.get("spiegazione", ""),
+            "tag": q.get("tag", []),
+        }
+
         if ok:
             correct += 1
-            details.append({"id": qid, "ok": True})
+            per_subject[materia]["correct"] += 1
         else:
             wrong += 1
-            details.append({"id": qid, "ok": False})
+            per_subject[materia]["wrong"] += 1
+        details.append(d)
 
     score = correct * 1.0 + wrong * (-0.1) + blank * 0.0
     percent = round((correct / total) * 100, 1) if total else 0.0
+
+    # calcolo voto per materia in /30 (scala lineare sul numero domande della materia)
+    per_subject_out: Dict[str, Any] = {}
+    total_vote = 0.0
+    max_vote = 0.0
+    for mat, st in per_subject.items():
+        mat_total = int(st.get("total", 0) or 0)
+        mat_correct = int(st.get("correct", 0) or 0)
+        mat_wrong = int(st.get("wrong", 0) or 0)
+        mat_blank = int(st.get("blank", 0) or 0)
+        mat_score = mat_correct * 1.0 + mat_wrong * (-0.1)
+        vote30 = round((mat_score * 30.0 / mat_total), 2) if mat_total else 0.0
+        per_subject_out[mat] = {
+            **st,
+            "score": round(mat_score, 3),
+            "vote30": vote30,
+        }
+        total_vote += vote30
+        max_vote += 30.0
 
     return {
         "session_id": session_id,
@@ -366,6 +446,9 @@ def finish(req: FinishRequest):
         "blank": blank,
         "score": round(score, 3),
         "percent": percent,
+        "per_subject": per_subject_out,
+        "total_vote": round(total_vote, 2),
+        "max_vote": round(max_vote, 0),
         "details": details,
         "scoring": {"correct": 1, "wrong": -0.1, "blank": 0},
     }

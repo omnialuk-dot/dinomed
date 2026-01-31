@@ -108,6 +108,11 @@ export default function SimulazioniRun() {
   const nav = useNavigate();
   const location = useLocation();
 
+  // Modalità revisione errori (senza timer, senza consegna)
+  const reviewMode = Boolean(location?.state?.mode === "review" && Array.isArray(location?.state?.reviewQuestions));
+  const reviewQuestions = reviewMode ? location.state.reviewQuestions : null;
+  const reviewMeta = reviewMode ? (location.state.reviewMeta || null) : null;
+
   const [loading, setLoading] = useState(true);
   const [fatal, setFatal] = useState("");
   const [session, setSession] = useState(null);
@@ -124,6 +129,10 @@ export default function SimulazioniRun() {
   // Banner error per argomenti ecc. (dal backend)
   const [banner, setBanner] = useState("");
 
+  // Gestione blocchi per materia (prove separate)
+  const [unlockedBlock, setUnlockedBlock] = useState(0); // indice blocco sbloccato (0 = prima materia)
+  const [gate, setGate] = useState(null); // { fromBlock, toBlock }
+
   const sessionId = useMemo(() => {
     const sp = new URLSearchParams(window.location.search);
     return (
@@ -137,6 +146,29 @@ export default function SimulazioniRun() {
   }, [location]);
 
   const storageKey = useMemo(() => (sessionId ? `dinomed_sim_${sessionId}` : ""), [sessionId]);
+
+  // In review mode: prepara una "session" locale e disabilita timer/fetch
+  useEffect(() => {
+    if (!reviewMode) return;
+    const qs = Array.isArray(reviewQuestions) ? reviewQuestions : [];
+    // precompila le "risposte" con quelle dell'utente per evidenziare l'errore
+    const amap = {};
+    qs.forEach((qq, i) => {
+      const id = qq?.id ?? qq?.qid ?? qq?.question_id ?? `q_${i}`;
+      const v = qq?.your_answer ?? qq?.yourAnswer ?? "";
+      amap[id] = v;
+    });
+    setSession({ session_id: "review", duration_min: 0, questions: qs, order: null, mode: "review" });
+    setIdx(0);
+    setAnswers(amap);
+    setTimeLeft(null);
+    setBanner("");
+    setFatal("");
+    setLoading(false);
+    setUnlockedBlock(0);
+    setGate(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reviewMode]);
 
   // Load saved answers
   useEffect(() => {
@@ -160,6 +192,7 @@ export default function SimulazioniRun() {
 
   // Fetch session
   useEffect(() => {
+    if (reviewMode) return;
     let alive = true;
 
     async function load() {
@@ -261,7 +294,7 @@ export default function SimulazioniRun() {
     return () => {
       alive = false;
     };
-  }, [sessionId]);
+  }, [sessionId, reviewMode]);
 
   // Timer tick
   useEffect(() => {
@@ -297,6 +330,52 @@ export default function SimulazioniRun() {
 
   const questions = useMemo(() => session?.questions || [], [session]);
 
+  // Blocchi per materia (in ordine). In review mode: 1 blocco unico.
+  const blocks = useMemo(() => {
+    if (!questions.length) return [];
+    if (reviewMode) {
+      return [{ materia: "Revisione", start: 0, end: questions.length - 1 }];
+    }
+
+    const order = Array.isArray(session?.order) && session.order.length ? session.order : null;
+    // se il backend ha già ordinato per materia (raccomandato), i blocchi sono contigui.
+    const out = [];
+    let curMat = getSubject(questions[0]);
+    let start = 0;
+    for (let i = 0; i < questions.length; i++) {
+      const m = getSubject(questions[i]);
+      if (m !== curMat) {
+        out.push({ materia: curMat, start, end: i - 1 });
+        curMat = m;
+        start = i;
+      }
+    }
+    out.push({ materia: curMat, start, end: questions.length - 1 });
+
+    // se esiste un order, riordina i blocchi in base a quello (fallback, non cambia gli indici)
+    if (order) {
+      const map = new Map(out.map((b) => [b.materia, b]));
+      const rebuilt = [];
+      for (const m of order) {
+        if (map.has(m)) rebuilt.push(map.get(m));
+      }
+      // aggiungi eventuali materie non in order
+      for (const b of out) {
+        if (!rebuilt.find((x) => x.materia === b.materia)) rebuilt.push(b);
+      }
+      return rebuilt;
+    }
+    return out;
+  }, [questions, session, reviewMode]);
+
+  const currentBlockIndex = useMemo(() => {
+    for (let bi = 0; bi < blocks.length; bi++) {
+      const b = blocks[bi];
+      if (idx >= b.start && idx <= b.end) return bi;
+    }
+    return 0;
+  }, [blocks, idx]);
+
   const q = questions[idx] || null;
 
   const qId = useMemo(() => {
@@ -313,6 +392,29 @@ export default function SimulazioniRun() {
   const options = useMemo(() => normalizeOptions(getOptions(q)), [q]);
 
   const currentAnswer = useMemo(() => answers[qId] ?? "", [answers, qId]);
+
+  const reviewCorrect = useMemo(() => {
+    if (!reviewMode || !q) return null;
+    // in v3 backend: campo 'correct'
+    const correct = q?.correct;
+    if (correct == null) return null;
+    if (qType === "scelta") {
+      if (typeof correct === "object") {
+        const idx = Number.isFinite(correct.index) ? correct.index : null;
+        const letter = correct.letter || (idx !== null ? String.fromCharCode(65 + idx) : null);
+        return { type: "scelta", index: idx, letter };
+      }
+      if (typeof correct === "number") return { type: "scelta", index: correct, letter: String.fromCharCode(65 + correct) };
+      if (typeof correct === "string") {
+        const s = correct.trim();
+        if (s.length === 1) return { type: "scelta", index: s.toUpperCase().charCodeAt(0) - 65, letter: s.toUpperCase() };
+      }
+      return { type: "scelta", index: null, letter: null };
+    }
+    // completamento
+    if (Array.isArray(correct)) return { type: "completamento", answers: correct.map((x) => String(x)) };
+    return { type: "completamento", answers: [String(correct)] };
+  }, [reviewMode, q, qType]);
 
   const progress = useMemo(() => {
     const total = questions.length;
@@ -342,16 +444,19 @@ export default function SimulazioniRun() {
   }, [questions, answers]);
 
   const brandLine = useMemo(() => {
+    if (reviewMode) return "Revisione errori";
     const isTimed = session?.duration_min && session.duration_min > 0;
     return isTimed ? `Timer attivo` : `Senza timer`;
-  }, [session]);
+  }, [session, reviewMode]);
 
   function setAnswer(val) {
+    if (reviewMode) return;
     setBanner(""); // appena selezioni, pulisce eventuali banner
     setAnswers((prev) => ({ ...prev, [qId]: val }));
   }
 
   function clearAnswer() {
+    if (reviewMode) return;
     setBanner("");
     setAnswers((prev) => {
       const next = { ...prev };
@@ -362,6 +467,17 @@ export default function SimulazioniRun() {
 
   function nextQ() {
     setBanner("");
+    if (reviewMode) {
+      setIdx((i) => Math.min(questions.length - 1, i + 1));
+      return;
+    }
+
+    const b = blocks[currentBlockIndex];
+    if (b && idx === b.end && currentBlockIndex < blocks.length - 1) {
+      // fine materia: non avanzare automaticamente
+      setGate({ fromBlock: currentBlockIndex, toBlock: currentBlockIndex + 1 });
+      return;
+    }
     setIdx((i) => Math.min(questions.length - 1, i + 1));
   }
 
@@ -372,17 +488,53 @@ export default function SimulazioniRun() {
 
   function jumpTo(i) {
     setBanner("");
-    setIdx(clampInt(i, 0, questions.length - 1, 0));
+    const target = clampInt(i, 0, questions.length - 1, 0);
+    if (!reviewMode) {
+      // blocchi non ancora sbloccati
+      const tBlock = blocks.findIndex((b) => target >= b.start && target <= b.end);
+      if (tBlock > unlockedBlock) {
+        setGate({ fromBlock: unlockedBlock, toBlock: tBlock });
+        setShowMap(false);
+        return;
+      }
+    }
+    setIdx(target);
     setShowMap(false);
   }
 
-  async function finishExam(auto = false) {
-    if (!session || finishing) return;
+  function goToNextBlock() {
+    if (!gate) return;
+    const to = gate.toBlock;
+    const b = blocks[to];
+    if (!b) return;
+    setUnlockedBlock((u) => Math.max(u, to));
+    setGate(null);
+    setIdx(b.start);
+  }
+
+  function terminateAtGate() {
+    if (!gate) return;
+    const from = gate.fromBlock;
+    const b = blocks[from];
+    setGate(null);
+    if (b) {
+      finishExam(false, b.end);
+    } else {
+      finishExam(false);
+    }
+  }
+
+  async function finishExam(auto = false, cutoffIndex = null) {
+    if (!session || finishing || reviewMode) return;
     setFinishing(true);
     setBanner("");
 
+    // se tagliamo (uscita anticipata), correggiamo solo le domande fino a cutoffIndex
+    const lastIndex = cutoffIndex === null ? questions.length - 1 : clampInt(cutoffIndex, 0, questions.length - 1, 0);
+    const subset = questions.slice(0, lastIndex + 1);
+
     // prepara risposte in forma stabile
-    const payloadAnswers = questions.map((qq, i) => {
+    const payloadAnswers = subset.map((qq, i) => {
       const id = qq?.id ?? qq?.qid ?? qq?.question_id ?? `q_${i}`;
       const type = normType(qq);
       const val = answers[id];
@@ -399,6 +551,7 @@ export default function SimulazioniRun() {
       session_id: session?.session_id || sessionId,
       answers: payloadAnswers,
       auto_finish: Boolean(auto),
+      question_ids: subset.map((qq, i) => String(qq?.id ?? qq?.qid ?? qq?.question_id ?? `q_${i}`)),
     };
 
     const candidates = [
@@ -441,8 +594,9 @@ export default function SimulazioniRun() {
             sessionId: session?.session_id || sessionId,
             result: data,
             meta: {
-              total: questions.length,
+              total: subset.length,
               duration_min: session?.duration_min || 0,
+              completed_subjects: blocks.slice(0, blocks.findIndex((b) => b.end === lastIndex) + 1).map((b) => b.materia),
             },
           },
         });
@@ -469,8 +623,9 @@ export default function SimulazioniRun() {
         sessionId: session?.session_id || sessionId,
         result: local.result,
         meta: {
-          total: questions.length,
+          total: subset.length,
           duration_min: session?.duration_min || 0,
+          completed_subjects: blocks.slice(0, blocks.findIndex((b) => b.end === lastIndex) + 1).map((b) => b.materia),
         },
       },
     });
@@ -649,7 +804,7 @@ export default function SimulazioniRun() {
               {brandLine}
             </div>
 
-            {timeLeft !== null && (
+            {!reviewMode && timeLeft !== null && (
               <div className={`sr-timer ${timeLeft <= 60 ? "isHot" : ""}`}>
                 <span className="sr-timerLab">Tempo</span>
                 <span className="sr-timerVal">{formatTime(timeLeft)}</span>
@@ -702,13 +857,18 @@ export default function SimulazioniRun() {
                 {options.length ? (
                   options.map((o) => {
                     const on = String(currentAnswer) === String(o.key) || String(currentAnswer) === String(o.text);
-                    return (
-                      <button
-                        key={o.key}
-                        type="button"
-                        className={`sr-opt ${on ? "isOn" : ""}`}
-                        onClick={() => setAnswer(o.key)}
-                      >
+                    const isCorrect =
+                      reviewMode && reviewCorrect?.type === "scelta" && reviewCorrect.letter && String(o.key) === String(reviewCorrect.letter);
+                    const cls = `sr-opt ${on ? "isOn" : ""} ${isCorrect ? "isCorrect" : ""} ${reviewMode ? "isRo" : ""}`;
+                    return reviewMode ? (
+                      <div key={o.key} className={cls}>
+                        <span className="sr-optKey">{o.key}</span>
+                        <span className="sr-optTxt">{o.text}</span>
+                        {isCorrect && <span className="sr-badgeMini">Corretta</span>}
+                        {on && !isCorrect && <span className="sr-badgeMini warn">Tua</span>}
+                      </div>
+                    ) : (
+                      <button key={o.key} type="button" className={cls} onClick={() => setAnswer(o.key)}>
                         <span className="sr-optKey">{o.key}</span>
                         <span className="sr-optTxt">{o.text}</span>
                       </button>
@@ -721,22 +881,54 @@ export default function SimulazioniRun() {
             ) : (
               <div className="sr-fill">
                 <div className="sr-fillLab">Completa la risposta</div>
-                <input
-                  className="sr-input"
-                  type="text"
-                  placeholder="Scrivi qui la parola mancante…"
-                  value={typeof currentAnswer === "string" ? currentAnswer : String(currentAnswer ?? "")}
-                  onChange={(e) => setAnswer(e.target.value)}
-                />
+                {reviewMode ? (
+                  <div className="sr-reviewBox">
+                    <div className="sr-reviewRow">
+                      <span>La tua risposta</span>
+                      <b>{String(currentAnswer || "—")}</b>
+                    </div>
+                    <div className="sr-reviewRow">
+                      <span>Risposta corretta</span>
+                      <b>{reviewCorrect?.type === "completamento" ? reviewCorrect.answers.join(" / ") : "—"}</b>
+                    </div>
+                  </div>
+                ) : (
+                  <input
+                    className="sr-input"
+                    type="text"
+                    placeholder="Scrivi qui la parola mancante…"
+                    value={typeof currentAnswer === "string" ? currentAnswer : String(currentAnswer ?? "")}
+                    onChange={(e) => setAnswer(e.target.value)}
+                  />
+                )}
                 <div className="sr-fillHint">Suggerimento: usa una sola parola (senza frasi lunghe).</div>
               </div>
             )}
 
+            {reviewMode && q?.spiegazione ? (
+              <div className="sr-explain">
+                <div className="sr-explainTitle">Spiegazione</div>
+                <div className="sr-explainTxt">{q.spiegazione}</div>
+              </div>
+            ) : null}
+
             {/* Actions */}
             <div className="sr-actions">
-              <button className="sr-btn sr-soft" type="button" onClick={clearAnswer}>
-                Cancella
-              </button>
+              {reviewMode ? (
+                <button className="sr-btn sr-soft" type="button" onClick={() => {
+                  if (reviewMeta?.sessionId) {
+                    nav("/simulazioni/risultato", { state: { sessionId: reviewMeta.sessionId } });
+                  } else {
+                    nav(-1);
+                  }
+                }}>
+                  ← Torna ai risultati
+                </button>
+              ) : (
+                <button className="sr-btn sr-soft" type="button" onClick={clearAnswer}>
+                  Cancella
+                </button>
+              )}
 
               <div className="sr-nav">
                 <button className="sr-btn sr-soft" type="button" onClick={prevQ} disabled={idx === 0}>
@@ -747,19 +939,25 @@ export default function SimulazioniRun() {
                 </button>
               </div>
 
-              <button
-                className="sr-btn sr-primary"
-                type="button"
-                onClick={() => {
-                  // UX: se l’utente è in "Scelgo io" e non ha argomenti, quel controllo dovrebbe stare in Config.
-                  // Qui facciamo solo una consegna pulita.
-                  finishExam(false);
-                }}
-                disabled={finishing}
-              >
-                {finishing ? "Consegna…" : "Termina prova"}
-                <span className="sr-shine" aria-hidden="true" />
-              </button>
+              {reviewMode ? (
+                <button className="sr-btn sr-primary" type="button" onClick={() => nav("/simulazioni/config")}>
+                  Nuova prova
+                  <span className="sr-shine" aria-hidden="true" />
+                </button>
+              ) : (
+                <button
+                  className="sr-btn sr-primary"
+                  type="button"
+                  onClick={() => {
+                    // Consegna pulita (backend calcola score e per materia)
+                    finishExam(false);
+                  }}
+                  disabled={finishing}
+                >
+                  {finishing ? "Consegna…" : "Termina prova"}
+                  <span className="sr-shine" aria-hidden="true" />
+                </button>
+              )}
             </div>
 
             {/* Progress */}
@@ -813,6 +1011,25 @@ export default function SimulazioniRun() {
           </aside>
         </section>
 
+        {/* Gate tra materie */}
+        {!reviewMode && gate && blocks[gate.fromBlock] && blocks[gate.toBlock] ? (
+          <div className="sr-gateBackdrop" role="presentation">
+            <div className="sr-gate" role="presentation">
+              <div className="sr-gateTitle">Hai terminato la prova di {blocks[gate.fromBlock].materia}.</div>
+              <div className="sr-gateText">Vuoi passare alla prova di {blocks[gate.toBlock].materia}?</div>
+              <div className="sr-gateRow">
+                <button className="sr-btn sr-primary" type="button" onClick={goToNextBlock}>
+                  ✅ Passa alla prova successiva
+                  <span className="sr-shine" aria-hidden="true" />
+                </button>
+                <button className="sr-btn sr-soft" type="button" onClick={terminateAtGate} disabled={finishing}>
+                  ❌ Termina la prova
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         {/* Map drawer */}
         {showMap && (
           <div className="sr-mapBackdrop" onClick={() => setShowMap(false)} role="presentation">
@@ -850,10 +1067,17 @@ export default function SimulazioniRun() {
                   <span className="sr-leg"><i className="sr-legDot isActive" /> attuale</span>
                 </div>
 
-                <button className="sr-btn sr-primary sr-mapFinish" onClick={() => finishExam(false)} disabled={finishing}>
-                  {finishing ? "Consegna…" : "Termina prova"}
-                  <span className="sr-shine" aria-hidden="true" />
-                </button>
+                {!reviewMode ? (
+                  <button className="sr-btn sr-primary sr-mapFinish" onClick={() => finishExam(false)} disabled={finishing}>
+                    {finishing ? "Consegna…" : "Termina prova"}
+                    <span className="sr-shine" aria-hidden="true" />
+                  </button>
+                ) : (
+                  <button className="sr-btn sr-primary sr-mapFinish" onClick={() => setShowMap(false)}>
+                    Chiudi
+                    <span className="sr-shine" aria-hidden="true" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -1075,6 +1299,47 @@ const css = `
   border-color: rgba(34,197,94,0.35);
   background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(56,189,248,0.12));
 }
+.sr-opt.isCorrect{
+  border-color: rgba(56,189,248,0.35);
+  background: linear-gradient(135deg, rgba(56,189,248,0.14), rgba(34,197,94,0.10));
+}
+.sr-opt.isRo{ cursor: default; }
+.sr-opt.isRo:hover{ transform:none; box-shadow: 0 14px 30px rgba(2,6,23,0.06); }
+
+.sr-badgeMini{
+  margin-left: auto;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.90);
+  font-weight: 1000;
+  color: rgba(15,23,42,0.80);
+}
+.sr-badgeMini.warn{
+  border-color: rgba(244,63,94,0.25);
+  background: rgba(244,63,94,0.08);
+}
+
+.sr-reviewBox{
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.86);
+}
+.sr-reviewRow{ display:flex; justify-content:space-between; gap: 10px; padding: 6px 0; }
+.sr-reviewRow span{ color: rgba(15,23,42,0.70); font-weight: 900; }
+.sr-reviewRow b{ font-weight: 1100; color: rgba(15,23,42,0.88); }
+
+.sr-explain{
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(56,189,248,0.06));
+}
+.sr-explainTitle{ font-weight: 1100; color: rgba(15,23,42,0.88); }
+.sr-explainTxt{ margin-top: 6px; color: rgba(15,23,42,0.78); font-weight: 850; line-height: 1.35; }
 .sr-optKey{
   width: 34px; height: 34px;
   border-radius: 14px;
@@ -1206,6 +1471,29 @@ const css = `
 .sr-scoreTitle{ font-weight: 1100; color: rgba(15,23,42,0.90); }
 .sr-scoreRow{ margin-top: 8px; display:flex; justify-content: space-between; gap: 10px; font-weight: 950; color: rgba(15,23,42,0.78); }
 .sr-scoreNote{ margin-top: 10px; font-weight: 850; color: rgba(15,23,42,0.62); line-height: 1.35; }
+
+.sr-gateBackdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(2,6,23,0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display:grid;
+  place-items:center;
+  padding: 14px;
+  z-index: 60;
+}
+.sr-gate{
+  width: min(620px, 100%);
+  border-radius: 24px;
+  border: 1px solid rgba(15,23,42,0.12);
+  background: rgba(255,255,255,0.92);
+  box-shadow: 0 22px 80px rgba(2,6,23,0.30);
+  padding: 18px;
+}
+.sr-gateTitle{ font-weight: 1100; color: rgba(15,23,42,0.92); }
+.sr-gateText{ margin-top: 6px; font-weight: 900; color: rgba(15,23,42,0.74); line-height: 1.35; }
+.sr-gateRow{ margin-top: 14px; display:flex; gap: 10px; flex-wrap:wrap; }
 
 .sr-mapBackdrop{
   position: fixed;

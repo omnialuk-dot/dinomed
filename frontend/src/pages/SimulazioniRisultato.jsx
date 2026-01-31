@@ -52,16 +52,39 @@ export default function SimulazioniRisultato() {
     const score = r.score ?? r.punteggio ?? null;
     const vote30 = r.vote30 ?? r.voto30 ?? null;
 
+    const perSubject = r.per_subject ?? r.perSubject ?? null;
+    const totalVote = r.total_vote ?? r.totalVote ?? null;
+    const maxVote = r.max_vote ?? r.maxVote ?? null;
+
     // se il backend non manda score ma manda correct/wrong/blank, calcolo MUR
     const computedScore =
       score ?? Math.round((correct * 1 + wrong * -0.1) * 1000) / 1000;
 
     // voto in /30 (scala semplice)
-    const computed30 =
-      vote30 ??
-      (total ? Math.round(((computedScore * 30) / total) * 100) / 100 : null);
+    const computed30 = vote30 ?? (total ? Math.round(((computedScore * 30) / total) * 100) / 100 : null);
 
-    return { correct, wrong, blank, total, score: computedScore, vote30: computed30 };
+    // se perSubject esiste, il "voto" principale è totalVote/maxVote (es. 75/90)
+    const mainNumerator = Number.isFinite(totalVote) ? totalVote : computed30;
+    const mainDenominator = Number.isFinite(maxVote) ? maxVote : 30;
+
+    return {
+      correct,
+      wrong,
+      blank,
+      total,
+      score: computedScore,
+      vote30: computed30,
+      perSubject,
+      totalVote: Number.isFinite(totalVote) ? totalVote : null,
+      maxVote: Number.isFinite(maxVote) ? maxVote : null,
+      mainNumerator,
+      mainDenominator,
+    };
+  }, [r]);
+
+  const wrongOnly = useMemo(() => {
+    if (!r?.details || !Array.isArray(r.details)) return [];
+    return r.details.filter((d) => d && d.ok === false);
   }, [r]);
 
   if (!r || !summary) {
@@ -88,7 +111,7 @@ export default function SimulazioniRisultato() {
     );
   }
 
-  const pass = summary.vote30 !== null ? summary.vote30 >= 18 : null;
+  const pass = summary.mainDenominator === 30 && summary.vote30 !== null ? summary.vote30 >= 18 : null;
 
   return (
     <main className="sr2">
@@ -108,6 +131,22 @@ export default function SimulazioniRisultato() {
             <button className="sr2-btn" onClick={() => nav("/simulazioni/config")}>
               Nuova prova
             </button>
+            {wrongOnly.length > 0 && (
+              <button
+                className="sr2-btn"
+                onClick={() => {
+                  nav("/simulazioni/run", {
+                    state: {
+                      mode: "review",
+                      reviewQuestions: wrongOnly,
+                      reviewMeta: { sessionId: loaded.sessionId },
+                    },
+                  });
+                }}
+              >
+                Rivedi errori
+              </button>
+            )}
             <button className="sr2-btn sr2-primary" onClick={() => nav("/simulazioni/run", { state: { sessionId: loaded.sessionId } })}>
               Rifai la stessa prova →
             </button>
@@ -118,10 +157,10 @@ export default function SimulazioniRisultato() {
           <div className="sr2-card sr2-main">
             <div className="sr2-hero">
               <div className="sr2-big">
-                {summary.vote30 !== null ? (
+                {summary.mainNumerator !== null ? (
                   <>
-                    <div className="sr2-bigNum">{summary.vote30}</div>
-                    <div className="sr2-bigLab">/ 30</div>
+                    <div className="sr2-bigNum">{summary.mainNumerator}</div>
+                    <div className="sr2-bigLab">/ {summary.mainDenominator}</div>
                   </>
                 ) : (
                   <>
@@ -172,6 +211,28 @@ export default function SimulazioniRisultato() {
                 <b>{summary.vote30}</b>
               </div>
             )}
+
+            {summary.perSubject && typeof summary.perSubject === "object" ? (
+              <div className="sr2-breakdown">
+                <div className="sr2-breakTitle">Punteggio per materia</div>
+                <div className="sr2-breakRows">
+                  {Object.keys(summary.perSubject).map((m) => {
+                    const st = summary.perSubject[m] || {};
+                    const v30 = st.vote30 ?? null;
+                    return (
+                      <div key={m} className="sr2-breakRow">
+                        <span>{m}</span>
+                        <b>{v30 !== null ? `${v30}/30` : "—"}</b>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="sr2-breakTotal">
+                  <span>Totale</span>
+                  <b>{summary.totalVote !== null && summary.maxVote !== null ? `${summary.totalVote}/${summary.maxVote}` : "—"}</b>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <aside className="sr2-card sr2-side">
@@ -294,6 +355,25 @@ const css = `
   border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.82);
   font-weight: 950; color: rgba(15,23,42,0.82);
+}
+
+.sr2-breakdown{
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.82);
+}
+.sr2-breakTitle{ font-weight: 1100; color: rgba(15,23,42,0.92); }
+.sr2-breakRows{ margin-top: 8px; display:grid; gap: 8px; }
+.sr2-breakRow{ display:flex; justify-content:space-between; gap: 12px; font-weight: 950; color: rgba(15,23,42,0.82); }
+.sr2-breakTotal{
+  margin-top: 10px;
+  display:flex; justify-content:space-between; gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(15,23,42,0.10);
+  font-weight: 1100;
+  color: rgba(15,23,42,0.90);
 }
 
 .sr2-sideTitle{ font-weight: 1100; color: rgba(15,23,42,0.92); }
