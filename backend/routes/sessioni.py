@@ -191,6 +191,12 @@ def get_session(session_id: str):
         "order": s.get("order", []),
     }
 
+
+# Alias più esplicito (compatibilità frontend)
+@router.get("/session/{session_id}")
+def get_session_alias(session_id: str):
+    return get_session(session_id)
+
 class SubmitRequest(BaseModel):
     answers: Dict[str, Any] = Field(default_factory=dict)  # {questionId: userAnswer}
 
@@ -255,4 +261,111 @@ def submit(session_id: str, req: SubmitRequest):
         "score": round(score, 2),
         "percent": percent,
         "details": details,
+    }
+
+# =========================
+# Compat finish endpoint (per SimulazioniRun.jsx)
+# =========================
+class FinishAnswer(BaseModel):
+    id: str
+    materia: Optional[str] = None
+    type: Optional[str] = None
+    answer: Any = ""
+
+
+class FinishRequest(BaseModel):
+    session_id: str
+    answers: List[FinishAnswer]
+    auto_finish: Optional[bool] = False
+
+
+def _letter_to_index(v: Any) -> Optional[int]:
+    if v is None:
+        return None
+    if isinstance(v, int):
+        return v
+    s = str(v).strip()
+    if not s:
+        return None
+    # 'A'..'E'
+    if len(s) == 1 and s.upper() in ("A", "B", "C", "D", "E"):
+        return ord(s.upper()) - 65
+    # numerico
+    try:
+        return int(s)
+    except Exception:
+        return None
+
+
+@router.post("/finish")
+@router.post("/finish/")
+@router.post("/end")
+@router.post("/end/")
+def finish(req: FinishRequest):
+    # accetta sia session_id nel body sia nell'url (frontend invia nel body)
+    session_id = req.session_id
+    s = SESSIONS.get(session_id)
+    if not s:
+        raise HTTPException(status_code=404, detail="Sessione non trovata")
+
+    # converte answers array -> dict stabile {qid: answer}
+    amap: Dict[str, Any] = {}
+    for a in req.answers or []:
+        amap[str(a.id)] = a.answer
+
+    # riusa la logica submit ma con parsing più elastico
+    s["answers"] = amap
+    s["finished"] = True
+
+    questions_full = s.get("questions_full", [])
+    total = len(questions_full)
+    correct = 0
+    wrong = 0
+    blank = 0
+    details = []
+
+    for q in questions_full:
+        qid = str(q.get("id"))
+        tipo = _norm(q.get("tipo"))
+        user = amap.get(qid, None)
+
+        if user is None or (isinstance(user, str) and user.strip() == ""):
+            blank += 1
+            details.append({"id": qid, "ok": None})
+            continue
+
+        ok = False
+        if tipo == "scelta":
+            ui = _letter_to_index(user)
+            ok = ui is not None and ui == int(q.get("corretta_index", -1))
+        elif tipo == "completamento":
+            # accetta 1 o più risposte corrette (risposte)
+            corr_list = q.get("risposte") if isinstance(q.get("risposte"), list) else None
+            if corr_list:
+                corr_set = {_norm(str(x)) for x in corr_list}
+                ok = _norm(str(user)) in corr_set
+            else:
+                ans = _norm(str(q.get("corretta") or ""))
+                ok = _norm(str(user)) == ans
+
+        if ok:
+            correct += 1
+            details.append({"id": qid, "ok": True})
+        else:
+            wrong += 1
+            details.append({"id": qid, "ok": False})
+
+    score = correct * 1.0 + wrong * (-0.1) + blank * 0.0
+    percent = round((correct / total) * 100, 1) if total else 0.0
+
+    return {
+        "session_id": session_id,
+        "total": total,
+        "correct": correct,
+        "wrong": wrong,
+        "blank": blank,
+        "score": round(score, 3),
+        "percent": percent,
+        "details": details,
+        "scoring": {"correct": 1, "wrong": -0.1, "blank": 0},
     }

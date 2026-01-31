@@ -94,7 +94,6 @@ function niceErr(e) {
 export default function SimulazioniConfig() {
   const nav = useNavigate();
   const location = useLocation();
-  const [debugStart, setDebugStart] = useState("");
   const preset = location?.state?.preset || null;
 
   const [err, setErr] = useState("");

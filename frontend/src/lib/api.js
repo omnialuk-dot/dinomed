@@ -146,4 +146,21 @@ export const api = {
   deleteSimulazione(id) {
     return request(`/api/simulazioni/${id}`, { method: "DELETE", auth: true });
   },
+
+  // ---------- DOMANDE (ADMIN) ----------
+  listDomandeAll() {
+    return request("/api/admin/domande", { auth: true });
+  },
+
+  createDomanda(payload) {
+    return request("/api/admin/domande", { method: "POST", body: payload, auth: true });
+  },
+
+  updateDomanda(id, payload) {
+    return request(`/api/admin/domande/${id}`, { method: "PUT", body: payload, auth: true });
+  },
+
+  deleteDomanda(id) {
+    return request(`/api/admin/domande/${id}`, { method: "DELETE", auth: true });
+  },
 };

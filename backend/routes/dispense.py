@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
@@ -7,6 +7,8 @@ import os
 import json
 
 router = APIRouter(prefix="/api/dispense", tags=["dispense"])
+
+from auth import admin_required
 
 # =========================
 # JSON storage
@@ -107,13 +109,15 @@ async def list_dispense(request: Request, include_unpublished: bool = False):
 
     items = [_normalize(x) for x in _read_all()]
     if include_unpublished:
+        # include_unpublished è pensato per la UI Admin
+        _ = admin_required(request)
         return items
     return [x for x in items if x.get("pubblicata") is True]
 
 
 @router.post("")
 @router.post("/")
-async def create_dispensa(request: Request, payload: DispensaCreate):
+async def create_dispensa(request: Request, payload: DispensaCreate, _payload=Depends(admin_required)):
     db = getattr(request.app.state, "db", None)
 
     tags_clean = [t.strip() for t in payload.tag if t and t.strip()]
@@ -147,7 +151,7 @@ async def create_dispensa(request: Request, payload: DispensaCreate):
 
 
 @router.put("/{dispensa_id}")
-async def update_dispensa(request: Request, dispensa_id: str, payload: DispensaCreate):
+async def update_dispensa(request: Request, dispensa_id: str, payload: DispensaCreate, _payload=Depends(admin_required)):
     db = getattr(request.app.state, "db", None)
 
     tags_clean = [t.strip() for t in payload.tag if t and t.strip()]
@@ -186,7 +190,7 @@ async def update_dispensa(request: Request, dispensa_id: str, payload: DispensaC
 
 
 @router.patch("/{dispensa_id}/toggle")
-async def toggle_dispensa(request: Request, dispensa_id: str):
+async def toggle_dispensa(request: Request, dispensa_id: str, _payload=Depends(admin_required)):
     db = getattr(request.app.state, "db", None)
 
     # Mongo
@@ -210,7 +214,7 @@ async def toggle_dispensa(request: Request, dispensa_id: str):
 
 
 @router.delete("/{dispensa_id}")
-async def delete_dispensa(request: Request, dispensa_id: str):
+async def delete_dispensa(request: Request, dispensa_id: str, _payload=Depends(admin_required)):
     db = getattr(request.app.state, "db", None)
 
     # Mongo

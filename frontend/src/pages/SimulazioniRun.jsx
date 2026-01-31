@@ -255,7 +255,6 @@ export default function SimulazioniRun() {
 
       setLoading(false);
       setFatal("Impossibile caricare la sessione (endpoint non trovato).");
-      console.error(last);
     }
 
     load();
@@ -462,7 +461,6 @@ export default function SimulazioniRun() {
     if (!local.can) {
       setBanner("Non posso correggere da qui (soluzioni non disponibili). Riprova oppure abilita l’endpoint /finish nel backend.");
       setFinishing(false);
-      console.error(last);
       return;
     }
 

@@ -1,9 +1,14 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException, Request, Depends
+from pydantic import BaseModel, Field
 from typing import List, Optional, Literal, Dict, Any
 from datetime import datetime
 import uuid
 import random
+import os
+import json
+from pathlib import Path
+
+from auth import admin_required
 
 router = APIRouter(prefix="/api/simulazioni", tags=["simulazioni"])
 
@@ -39,6 +44,113 @@ class AnswerIn(BaseModel):
 
 class SubmitPayload(BaseModel):
     answers: List[AnswerIn]
+
+
+# =========================
+# CRUD Simulazioni (JSON) — per Dashboard Admin
+# =========================
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE_DIR / "data"
+SIM_FILE = DATA_DIR / "simulazioni.json"
+
+
+def _ensure_db():
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if not SIM_FILE.exists():
+        SIM_FILE.write_text("[]", encoding="utf-8")
+
+
+def _read_all() -> List[dict]:
+    _ensure_db()
+    try:
+        data = json.loads(SIM_FILE.read_text(encoding="utf-8") or "[]")
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
+def _write_all(items: List[dict]):
+    _ensure_db()
+    SIM_FILE.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+class SimDomanda(BaseModel):
+    qid: str
+    tipo: Literal["scelta", "completamento"]
+    testo: str = Field(..., min_length=1)
+    opzioni: Optional[List[str]] = None
+    corretta: Optional[int] = None  # index per scelta
+    risposte: Optional[List[str]] = None  # per completamento
+    spiegazione: Optional[str] = None
+
+
+class SimulazioneIn(BaseModel):
+    titolo: str = Field(..., min_length=1)
+    materia: str = Field(..., min_length=1)
+    descrizione: str = Field(..., min_length=1)
+    durata_min: int = Field(0, ge=0, le=240)
+    difficolta: str = "Base"
+    tag: List[str] = Field(default_factory=list)
+    pubblicata: bool = True
+    domande: List[SimDomanda] = Field(default_factory=list)
+
+
+@router.get("")
+@router.get("/")
+async def list_simulazioni(request: Request, include_unpublished: bool = False):
+    items = _read_all()
+    if include_unpublished:
+        admin_required(request)
+        return items
+    return [x for x in items if x.get("pubblicata") is True]
+
+
+@router.post("")
+@router.post("/")
+async def create_simulazione(payload: SimulazioneIn, _=Depends(admin_required)):
+    items = _read_all()
+    new_item = payload.model_dump()
+    new_item["id"] = uuid.uuid4().hex
+    new_item["created_at"] = datetime.utcnow().isoformat()
+    items.insert(0, new_item)
+    _write_all(items)
+    return new_item
+
+
+@router.put("/{sim_id}")
+async def update_simulazione(sim_id: str, payload: SimulazioneIn, _=Depends(admin_required)):
+    items = _read_all()
+    idx = next((i for i, x in enumerate(items) if x.get("id") == sim_id), None)
+    if idx is None:
+        raise HTTPException(status_code=404, detail="Simulazione non trovata")
+    cur = items[idx]
+    upd = payload.model_dump()
+    upd["id"] = sim_id
+    upd["created_at"] = cur.get("created_at") or datetime.utcnow().isoformat()
+    items[idx] = upd
+    _write_all(items)
+    return upd
+
+
+@router.patch("/{sim_id}/toggle")
+async def toggle_simulazione(sim_id: str, _=Depends(admin_required)):
+    items = _read_all()
+    for x in items:
+        if x.get("id") == sim_id:
+            x["pubblicata"] = not bool(x.get("pubblicata", True))
+            _write_all(items)
+            return {"success": True, "pubblicata": x["pubblicata"]}
+    raise HTTPException(status_code=404, detail="Simulazione non trovata")
+
+
+@router.delete("/{sim_id}")
+async def delete_simulazione(sim_id: str, _=Depends(admin_required)):
+    items = _read_all()
+    new_items = [x for x in items if x.get("id") != sim_id]
+    if len(new_items) == len(items):
+        raise HTTPException(status_code=404, detail="Simulazione non trovata")
+    _write_all(new_items)
+    return {"success": True}
 
 
 # =========================

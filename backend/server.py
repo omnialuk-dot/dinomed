@@ -4,12 +4,18 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+import logging
 
 # =========================
 # Setup base
 # =========================
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
+
+ENV = os.getenv("ENV", "local")
+LOG_LEVEL = logging.DEBUG if ENV == "local" else logging.INFO
+logging.basicConfig(level=LOG_LEVEL, format="%(levelname)s:%(name)s:%(message)s")
+logger = logging.getLogger("dinomed")
 
 app = FastAPI(
     title="DinoMed API",
@@ -45,19 +51,22 @@ try:
     from routes import simulazioni
 except Exception as e:
     simulazioni = None
-    print("[WARN] routes/simulazioni.py non importabile:", e)
+    if ENV == "local":
+        logger.warning("routes/simulazioni.py non importabile: %s", e)
 
 try:
     from routes import domande
 except Exception as e:
     domande = None
-    print("[WARN] routes/domande.py non importabile:", e)
+    if ENV == "local":
+        logger.warning("routes/domande.py non importabile: %s", e)
 
 try:
     from routes import sessioni
 except Exception as e:
     sessioni = None
-    print("[WARN] routes/sessioni.py non importabile:", e)
+    if ENV == "local":
+        logger.warning("routes/sessioni.py non importabile: %s", e)
 
 # =========================
 # Register routers

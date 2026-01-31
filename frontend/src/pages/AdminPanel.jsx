@@ -3,11 +3,12 @@ import { api, clearToken } from "../lib/api";
 import { useNavigate } from "react-router-dom";
 import AdminDispense from "./AdminDispense";
 import AdminSimulazioni from "./AdminSimulazioni";
+import AdminDomande from "./AdminDomande";
 
 export default function AdminPanel() {
   const nav = useNavigate();
   const [me, setMe] = useState(null);
-  const [tab, setTab] = useState("dispense"); // dispense | simulazioni
+  const [tab, setTab] = useState("dispense"); // dispense | domande | simulazioni
 
   useEffect(() => {
     api.me()
@@ -79,11 +80,12 @@ export default function AdminPanel() {
       {/* Tabs */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
         {tabBtn("dispense", "Dispense")}
+        {tabBtn("domande", "Domande")}
         {tabBtn("simulazioni", "Simulazioni")}
       </div>
 
       {/* Contenuto */}
-      {tab === "dispense" ? <AdminDispense /> : <AdminSimulazioni />}
+      {tab === "dispense" ? <AdminDispense /> : tab === "domande" ? <AdminDomande /> : <AdminSimulazioni />}
     </main>
   );
 }

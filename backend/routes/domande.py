@@ -79,10 +79,28 @@ def validate_question(q: dict):
             raise HTTPException(status_code=400, detail="opzioni non valide")
         q["opzioni"] = opts
 
-        corretta = str(q.get("corretta", "")).strip().upper()
-        if corretta not in ("A", "B", "C", "D", "E"):
-            raise HTTPException(status_code=400, detail="corretta deve essere A/B/C/D/E")
-        q["corretta"] = corretta
+        # corretta: accetta sia lettera (A-E) sia index (0-4) come corretta_index
+        corretta_index = q.get("corretta_index")
+        corretta = q.get("corretta")
+
+        if corretta_index is None and corretta is None:
+            raise HTTPException(status_code=400, detail="corretta mancante")
+
+        if corretta_index is not None:
+            try:
+                idx = int(corretta_index)
+            except Exception:
+                raise HTTPException(status_code=400, detail="corretta_index non valido")
+            if idx < 0 or idx > 4:
+                raise HTTPException(status_code=400, detail="corretta_index deve essere tra 0 e 4")
+            q["corretta_index"] = idx
+            q["corretta"] = chr(65 + idx)
+        else:
+            lett = str(corretta).strip().upper()
+            if lett not in ("A", "B", "C", "D", "E"):
+                raise HTTPException(status_code=400, detail="corretta deve essere A/B/C/D/E")
+            q["corretta"] = lett
+            q["corretta_index"] = ord(lett) - 65
 
         # cleanup
         q.pop("risposta", None)
@@ -97,6 +115,7 @@ def validate_question(q: dict):
         # cleanup
         q.pop("opzioni", None)
         q.pop("corretta", None)
+        q.pop("corretta_index", None)
         q.pop("risposta", None)
 
     # normalizza testo/descrizione/spiegazione
@@ -115,6 +134,7 @@ class QuestionIn(BaseModel):
     # scelta multipla
     opzioni: Optional[List[str]] = None
     corretta: Optional[str] = None
+    corretta_index: Optional[int] = None
 
     # completamento
     # supportiamo sia risposta (legacy) che risposte (nuovo)
@@ -132,6 +152,7 @@ class QuestionOut(BaseModel):
     tag: List[str] = []
     opzioni: Optional[List[str]] = None
     corretta: Optional[str] = None
+    corretta_index: Optional[int] = None
     risposte: Optional[List[str]] = None
     spiegazione: Optional[str] = None
 
