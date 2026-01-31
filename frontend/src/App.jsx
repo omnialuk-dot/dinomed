@@ -4,7 +4,6 @@ import SiteHeader from "./components/SiteHeader";
 
 import Home from "./pages/Home";
 import Dispense from "./pages/Dispense";
-import SimulazioniRun from "./pages/SimulazioniRun";
 import ChiSiamo from "./pages/ChiSiamo";
 import Contatti from "./pages/Contatti";
 import SimulazioniRun from "./pages/SimulazioniRun.jsx";
