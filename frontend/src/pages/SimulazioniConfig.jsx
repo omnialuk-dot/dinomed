@@ -252,122 +252,114 @@ export default function SimulazioniConfig() {
     setErr((e) => (e.startsWith("Completa gli argomenti") ? "" : e));
   }
 
-async function startExam() {
-  if (starting) return;
-  setErr("");
-  setDebugStart("");
+  async function startExam() {
+    if (starting) return;
+    setErr("");
 
-  if (!activeOrder.length) {
-    setErr("Seleziona almeno 1 materia.");
-    return;
-  }
+    // reset errori argomenti
+    setTopicErrors({});
 
-  // valida: ogni materia deve avere almeno 1 domanda
-  for (const m of activeOrder) {
-    const sc = clampInt(countsBySubject[m]?.scelta ?? 0, 0, 200, 15);
-    const co = clampInt(countsBySubject[m]?.completamento ?? 0, 0, 200, 16);
-    if (sc + co <= 0) {
-      setErr(`In ${m} metti almeno 1 domanda (crocette o completamento).`);
+    if (!activeOrder.length) {
+      setErr("Seleziona almeno 1 materia.");
       return;
     }
-  }
 
-  // valida TOPICS: se "pick" e 0 selezionati → blocca e segnala chiaramente
-  for (const m of activeOrder) {
-    if (topicMode[m] === "pick") {
-      const picked = pickedTopics[m] || [];
-      if (picked.length === 0) {
-        setErr(`Hai scelto "Scelgo io" in ${m}, ma non hai selezionato nessun argomento.`);
+    // valida: ogni materia deve avere almeno 1 domanda
+    for (const m of activeOrder) {
+      const sc = clampInt(countsBySubject[m]?.scelta ?? 0, 0, 200, 15);
+      const co = clampInt(countsBySubject[m]?.completamento ?? 0, 0, 200, 16);
+      if (sc + co <= 0) {
+        setErr(`In ${m} metti almeno 1 domanda (crocette o completamento).`);
         return;
       }
     }
-  }
 
-  const duration_min = timedMode ? clampInt(durationMin, 5, 240, 45) : 0;
-
-  const sections = activeOrder.map((materia) => ({
-    materia,
-    scelta: clampInt(countsBySubject[materia]?.scelta ?? 15, 0, 200, 15),
-    completamento: clampInt(countsBySubject[materia]?.completamento ?? 16, 0, 200, 16),
-    tag: topicMode[materia] === "all" ? [] : pickedTopics[materia] || [],
-    difficolta: "Base",
-  }));
-
-  const body = {
-    duration_min,
-    sections,
-    order: activeOrder,
-  };
-
-  const candidates = [
-    "/api/sim/start",
-    "/api/sim/start/",
-    "/api/simulazioni/start",
-    "/api/simulazioni/start/",
-  ];
-
-  let lastInfo = "";
-
-  setStarting(true);
-  try {
-    for (const path of candidates) {
-      setDebugStart(`Tentativo: ${API_BASE}${path}`);
-
-      let res;
-      let txt = "";
-      try {
-        res = await fetchWithTimeout(
-          `${API_BASE}${path}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify(body),
-          },
-          12000
-        );
-        txt = await res.text();
-      } catch (e) {
-        // qui entrano: timeout, CORS, backend giù, mixed content, DNS, ecc.
-        lastInfo = `❌ ${API_BASE}${path}\n${niceErr(e)}`;
-        continue; // prova prossimo endpoint
+    // valida: se “Scelgo io” → deve avere almeno 1 argomento selezionato
+    const missing = [];
+    for (const m of activeOrder) {
+      if (topicMode[m] === "pick") {
+        const picked = pickedTopics[m] || [];
+        if (picked.length === 0) missing.push(m);
       }
+    }
+    if (missing.length) {
+      const local = {};
+      for (const m of missing) local[m] = true;
+      setTopicErrors(local);
 
-      lastInfo = `[${res.status}] ${path}\n${txt || "(empty)"}`;
-
-      if (!res.ok) {
-        if (res.status === 404) continue; // prova prossimo
-        throw new Error(lastInfo);
+      // errore “chiaro” + scroll sulla prima materia che manca
+      const first = missing[0];
+      setErr(`Completa gli argomenti selezionati prima di avviare la prova. (${first})`);
+      const el = topicCardRef.current?.[first];
+      if (el && typeof el.scrollIntoView === "function") {
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
       }
-
-      let data = null;
-      try {
-        data = JSON.parse(txt);
-      } catch {
-        data = null;
-      }
-
-      const sessionId = data?.session_id || data?.id || data?.sessionId;
-      if (!sessionId) throw new Error("Risposta OK ma manca session_id.\n" + lastInfo);
-
-      // NAVIGAZIONE: assicurati che la route esista
-      nav("/simulazioni/run", { state: { sessionId, config: body } });
       return;
     }
 
-    // nessun endpoint ha funzionato
-    throw new Error(
-      "Non riesco ad avviare la prova.\n" +
-        "Cause comuni: backend spento / CORS / VITE_API_BASE sbagliato / https→http.\n\n" +
-        "Ultimo tentativo:\n" +
-        lastInfo
-    );
-  } catch (e) {
-    setErr(String(e?.message || e || "Errore sconosciuto"));
-  } finally {
-    setStarting(false);
-    setDebugStart("");
+    const duration_min = timedMode ? clampInt(durationMin, 5, 240, 45) : 0;
+
+    const sections = activeOrder.map((materia) => ({
+      materia,
+      scelta: clampInt(countsBySubject[materia]?.scelta ?? 15, 0, 200, 15),
+      completamento: clampInt(countsBySubject[materia]?.completamento ?? 16, 0, 200, 16),
+      tag: topicMode[materia] === "all" ? [] : pickedTopics[materia] || [],
+      difficolta: "Base",
+    }));
+
+    const body = { duration_min, sections, order: activeOrder };
+
+    const candidates = ["/api/sim/start", "/api/sim/start/", "/api/simulazioni/start", "/api/simulazioni/start/"];
+    let lastInfo = "";
+
+    setStarting(true);
+    try {
+      for (const path of candidates) {
+        try {
+          const res = await fetch(`${API_BASE}${path}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          const txt = await res.text();
+          lastInfo = `[${res.status}] ${path}\n${txt || "(empty)"}`;
+
+          if (!res.ok) {
+            if (res.status === 404) continue;
+            throw new Error(txt || `Errore backend (${res.status})`);
+          }
+
+          let data = null;
+          try {
+            data = JSON.parse(txt);
+          } catch {
+            data = null;
+          }
+
+          const sessionId = data?.session_id || data?.id || data?.sessionId;
+
+          // se backend non ritorna la struttura, evito crash
+          if (!sessionId) throw new Error("Risposta OK ma manca session_id.\n" + lastInfo);
+
+          // ✅ FIX IMPORTANTISSIMO: route corretta è /simulazioni/run (non /simulazioni/prova)
+        nav(`/simulazioni/run?s=${encodeURIComponent(sessionId)}`, {
+  state: { sessionId, config: body },
+});
+
+          return;
+        } catch (e) {
+          if (String(e?.message || "").includes("[404]")) continue;
+          throw e;
+        }
+      }
+      throw new Error("Nessun endpoint start trovato.\nUltimo tentativo:\n" + lastInfo);
+    } catch (e) {
+      setErr(String(e?.message || e || "Errore sconosciuto"));
+    } finally {
+      setStarting(false);
+    }
   }
-}
 
   const showOrder = activeOrder.length > 1;
 
@@ -414,7 +406,10 @@ async function startExam() {
               </button>
             </div>
 
- 
+            {err ? <div className="scx-err">{err}</div> : null}
+          </div>
+
+          <div className="scx-right" aria-hidden="true">
             <div className="scx-mini">
               <div className="scx-miniTitle">Suggerimento</div>
               <div className="scx-miniText">
