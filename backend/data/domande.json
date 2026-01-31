@@ -1,3677 +1,3383 @@
 [
   {
-    "id": "ef91993f-c4e3-4212-9259-13a7b3438b5b",
+    "id": "d3c27f6c-71b4-4324-b169-23fd72943eb2",
     "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "Calcola il pH di una soluzione di HCl 1e-02 M (25°C).",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 18 g di un composto con massa molare 180 g/mol?",
+    "opzioni": [
+      "0.01 mol",
+      "0.2 mol",
+      "1 mol",
+      "0.1 mol",
+      "0.05 mol"
+    ],
+    "correct_index": 3,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "a5e6cc14-f5b8-4baa-b3f5-dcbe180ea4c4",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Centro di massa e corpo rigido"
+    ],
+    "testo": "Un corpo in moto rettilineo uniforme ha accelerazione:",
+    "opzioni": [
+      "Costante non nulla",
+      "Variabile",
+      "Nulla",
+      "Sempre positiva",
+      "Dipende dalla massa"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Nel MRU la velocità è costante → a = 0."
+  },
+  {
+    "id": "3b83c628-6a2c-4ac5-98cd-0104898606e1",
+    "materia": "Chimica",
+    "tipo": "scelta",
     "tag": [
       "Acidi-basi, pH, tamponi"
     ],
-    "difficolta": "Base",
-    "spiegazione": "HCl è acido forte: [H+]≈C. pH=−log C.",
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-09 M. Qual è il pH (approssimato)?",
     "opzioni": [
-      "2",
-      "7",
-      "14",
-      "1",
-      "9"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:41:18.877010"
-  },
-  {
-    "id": "691adbdd-ad94-4e59-b10d-1497787e4d1a",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Calcola il pH di una soluzione di HCl 1e-05 M (25°C).",
-    "tag": [
-      "Acidi-basi, pH, tamponi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "HCl è acido forte: [H+]≈C. pH=−log C.",
-    "opzioni": [
-      "5",
-      "7",
-      "14",
-      "1",
-      "9"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:41:18.877316"
-  },
-  {
-    "id": "9824641e-7f46-4f60-81c1-36c6f6600012",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Calcola il pH di una soluzione di HNO3 3,2×10⁻⁴ M (25°C).",
-    "tag": [
-      "Acidi-basi, pH, tamponi"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Acido forte: pH=−log(3,2×10⁻⁴)=3,49 (circa).",
-    "opzioni": [
-      "3,49",
-      "4,49",
-      "3,20",
-      "10,51",
-      "0,49"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:41:18.877642"
-  },
-  {
-    "id": "3f7cb03e-e925-46dd-aa18-0547263f0849",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Quanti moli di gas ideale sono presenti in 4,10 L a 1,00 atm e 273 K? (R=0,082 L·atm·mol⁻¹·K⁻¹)",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "n=PV/RT=1,00×4,10/(0,082×273)≈0.183→0,183 mol.",
-    "opzioni": [
-      "0,183",
-      "1,00",
-      "0,500",
-      "0,041",
-      "2,00"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:41:18.877694"
-  },
-  {
-    "id": "477818de-f41a-4827-a88c-ed6617842c95",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Per la reazione A ⇌ B, a equilibrio [A]=0,20 M e [B]=0,80 M. Quanto vale Kc?",
-    "tag": [
-      "Equilibri chimici"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Kc=[B]/[A]=0,80/0,20=4,0.",
-    "opzioni": [
-      "4,0",
-      "0,25",
-      "1,0",
-      "0,16",
-      "2,0"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:41:18.877725"
-  },
-  {
-    "id": "889a0187-7791-42de-a229-6de7e98768ec",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Quale specie è l’acido coniugato di NH3?",
-    "tag": [
-      "Acidi-basi, pH, tamponi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Aggiungendo un protone (H+) ad NH3 si ottiene NH4+, che è il suo acido coniugato.",
-    "opzioni": [
-      "NH2−",
-      "NH4+",
-      "N2H4",
-      "NH3",
-      "H3O+"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:41:24.741046"
-  },
-  {
-    "id": "f13b9366-bb70-4de7-849e-9eda52308996",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "In una titolazione di HCl con NaOH, il pH al punto equivalente (25°C) è circa:",
-    "tag": [
-      "Acidi-basi, pH, tamponi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Acido forte + base forte → al punto equivalente la soluzione contiene solo NaCl in acqua: pH ~7.",
-    "opzioni": [
-      "1",
-      "4",
-      "7",
+      "8",
       "10",
-      "13"
+      "7",
+      "9",
+      "11"
     ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:41:24.741159"
+    "correct_index": 3,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
   },
   {
-    "id": "c26176fe-9e8a-4fbb-bf4d-9bd4f5a5f4d5",
+    "id": "afcb62d3-f3cb-4011-aa24-ee283f127822",
     "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "Per la reazione N2(g)+3H2(g)⇌2NH3(g), aumentando la pressione totale a T costante l’equilibrio si sposta:",
     "tag": [
-      "Equilibri chimici"
+      "Biomolecole: carboidrati, lipidi, proteine, acidi nucleici"
     ],
-    "difficolta": "Media",
-    "spiegazione": "Meno moli gassose a destra (2 vs 4): più pressione favorisce il lato con meno moli.",
+    "testo": "Nel tampone H₂CO₃/HCO₃⁻, l'aggiunta di H⁺ viene principalmente 'tamponata' da:",
     "opzioni": [
-      "a sinistra",
-      "a destra",
-      "non cambia",
-      "dipende dal catalizzatore",
-      "verso i reagenti solo se NH3 è liquido"
+      "H₂CO₃",
+      "HCO₃⁻",
+      "CO₃²⁻",
+      "H₂O",
+      "CO₂"
     ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:41:24.741268"
+    "correct_index": 1,
+    "spiegazione": "La base coniugata HCO₃⁻ consuma H⁺ formando H₂CO₃."
   },
   {
-    "id": "b5ee8477-3724-4c0e-b58d-a846bf6f01bd",
+    "id": "01628b87-ad63-4d63-a23a-ac4e6485c50b",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=5 m/s e accelera uniformemente con a=1 m/s² per t=5 s. Qual è la velocità finale?",
+    "opzioni": [
+      "9 m/s",
+      "20 m/s",
+      "5 m/s",
+      "10 m/s",
+      "11 m/s"
+    ],
+    "correct_index": 3,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "2042d522-4357-40e2-a39f-61806ee76d60",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=0 m/s e accelera uniformemente con a=1 m/s² per t=5 s. Qual è la velocità finale?",
+    "opzioni": [
+      "6 m/s",
+      "2.5 m/s",
+      "10 m/s",
+      "4 m/s",
+      "5 m/s"
+    ],
+    "correct_index": 4,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "9d8270e7-f342-4ed7-9c7a-7c32e0c17006",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Idrodinamica: portata, continuità, Bernoulli"
+    ],
+    "testo": "La potenza è P = L/____, dove L è il lavoro.",
+    "correct_text": "t",
+    "spiegazione": "Potenza = lavoro nell'unità di tempo."
+  },
+  {
+    "id": "5c91d3ef-3ae9-4330-b27e-1b9971c0a6c8",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
+    ],
+    "testo": "La quantità di moto si indica con p = m ______.",
+    "correct_text": "v",
+    "spiegazione": "Definizione: p = m v."
+  },
+  {
+    "id": "bb911500-bcb9-46ce-802e-ce6557266c9c",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Metabolismo: anabolismo/catabolismo, condensazione/idrolisi"
+    ],
+    "testo": "Quale struttura è tipica dei procarioti ma assente negli eucarioti?",
+    "opzioni": [
+      "Mitocondri",
+      "Nucleo delimitato da membrana",
+      "Ribosomi",
+      "Membrana plasmatica",
+      "Citoplasma"
+    ],
+    "correct_index": 1,
+    "spiegazione": "I procarioti non hanno nucleo membranoso."
+  },
+  {
+    "id": "9d4d85b4-2197-49ad-93b8-e8a547cba7ec",
     "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "Il valore di pOH di una soluzione con [OH−]=1,0×10⁻³ M è:",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 9.8 g di un composto con massa molare 18 g/mol?",
+    "opzioni": [
+      "0.544 mol",
+      "0.054 mol",
+      "1.088 mol",
+      "5.44 mol",
+      "0.272 mol"
+    ],
+    "correct_index": 0,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "0d289438-86f1-42ca-8289-6dc406f2766a",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Virus: struttura e classi"
+    ],
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
+  },
+  {
+    "id": "ee966760-96c4-450f-b9b3-d93b6cdee413",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 36 g di un composto con massa molare 18 g/mol?",
+    "opzioni": [
+      "0.2 mol",
+      "20 mol",
+      "4 mol",
+      "2 mol",
+      "1 mol"
+    ],
+    "correct_index": 3,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "d27102ed-6f10-4ea4-8203-6ffe19f85d57",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 4.4 g di un composto con massa molare 36 g/mol?",
+    "opzioni": [
+      "0.061 mol",
+      "1.22 mol",
+      "0.244 mol",
+      "0.012 mol",
+      "0.122 mol"
+    ],
+    "correct_index": 4,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "58626c91-1f88-4f89-8b7c-96e373cdf54c",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Torricelli e manometro (misura pressione)"
+    ],
+    "testo": "La densità è definita come ρ = m/______.",
+    "correct_text": "V",
+    "spiegazione": "ρ = massa/volume."
+  },
+  {
+    "id": "b69d4fe8-65e5-4726-b2fb-704456ab5f85",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Mutazioni e riparazione DNA"
+    ],
+    "testo": "Un enzima abbassa l'energia di attivazione perché:",
+    "opzioni": [
+      "Aumenta ΔG della reazione",
+      "Stabilizza lo stato di transizione",
+      "Consuma ATP",
+      "Cambia l'equilibrio",
+      "Trasforma i prodotti in reagenti"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Gli enzimi stabilizzano lo stato di transizione riducendo Ea."
+  },
+  {
+    "id": "3ff87308-ec0f-4351-a40b-efae1a1b30ee",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Il trasporto attraverso membrana che richiede ATP è detto:",
+    "opzioni": [
+      "Diffusione semplice",
+      "Diffusione facilitata",
+      "Osmosi",
+      "Trasporto attivo",
+      "Filtrazione"
+    ],
+    "correct_index": 3,
+    "spiegazione": "Il trasporto attivo usa energia (ATP o gradienti) per muovere contro gradiente."
+  },
+  {
+    "id": "ea3fea1a-83d8-4c67-9d67-7de430ad6a6f",
+    "materia": "Chimica",
+    "tipo": "completamento",
+    "tag": [
+      "Solubilità e Kps"
+    ],
+    "testo": "Nel bilanciamento redox in ambiente acido, gli atomi di ______ si bilanciano aggiungendo H₂O.",
+    "correct_text": "ossigeno",
+    "spiegazione": "In ambiente acido, O si bilancia con H₂O e H con H⁺."
+  },
+  {
+    "id": "bbbf060d-2420-4218-8cff-16e671f21689",
+    "materia": "Chimica",
+    "tipo": "scelta",
     "tag": [
       "Acidi-basi, pH, tamponi"
     ],
-    "difficolta": "Base",
-    "spiegazione": "pOH = −log[OH−] = −log(10⁻³)=3.",
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-08 M. Qual è il pH (approssimato)?",
     "opzioni": [
-      "3",
-      "11",
+      "8",
+      "9",
+      "10",
       "7",
-      "14",
-      "1"
+      "6"
     ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:41:24.741371"
+    "correct_index": 0,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
   },
   {
-    "id": "b52f9ed4-a45b-44ba-a893-c04f06fd74db",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Quale coppia rappresenta un ossidante e un riducente, rispettivamente, nella reazione Zn + Cu2+ → Zn2+ + Cu?",
+    "id": "821345f0-ef41-42fd-a5e5-2ab2f1924939",
+    "materia": "Fisica",
+    "tipo": "completamento",
     "tag": [
-      "Ossidazione-riduzione"
+      "Cinematica: moto, velocità, accelerazione"
     ],
-    "difficolta": "Media",
-    "spiegazione": "Cu2+ si riduce a Cu (quindi è ossidante); Zn si ossida a Zn2+ (quindi è riducente).",
-    "opzioni": [
-      "Zn / Cu2+",
-      "Cu2+ / Zn",
-      "Cu / Zn2+",
-      "Zn2+ / Cu",
-      "Cu / Zn"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:41:24.741422"
+    "testo": "Nel principio di Archimede, la spinta vale S = ρ_liquido · g · ______ spostato.",
+    "correct_text": "volume",
+    "spiegazione": "La spinta è pari al peso del fluido spostato: ρ g V."
   },
   {
-    "id": "6382a9fa-4016-4dbc-8f60-dc76335d7e0b",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Nel modello dei gas ideali, la costante R vale circa:",
+    "id": "c4923626-fdeb-471b-8f74-a1946d671527",
+    "materia": "Fisica",
+    "tipo": "completamento",
     "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
+      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
     ],
-    "difficolta": "Base",
-    "spiegazione": "R è 0,082 in L·atm e 8,31 in joule: è la stessa costante in unità diverse.",
-    "opzioni": [
-      "0,082 L·atm·mol⁻¹·K⁻¹",
-      "8,31 J·mol⁻¹·K⁻¹",
-      "entrambe sono R in unità diverse",
-      "nessuna delle due",
-      "1,00"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:41:24.741447"
+    "testo": "Nel principio di Archimede, la spinta vale S = ρ_liquido · g · ______ spostato.",
+    "correct_text": "volume",
+    "spiegazione": "La spinta è pari al peso del fluido spostato: ρ g V."
   },
   {
-    "id": "bd1a55c9-551d-4026-95b7-058863055690",
-    "materia": "Chimica",
+    "id": "190067b3-2629-4a87-83d6-cf12776f52eb",
+    "materia": "Fisica",
     "tipo": "scelta",
-    "testo": "In una reazione esotermica, aumentando la temperatura l’equilibrio si sposta:",
     "tag": [
-      "Equilibri chimici"
+      "Dinamica: leggi di Newton"
     ],
-    "difficolta": "Media",
-    "spiegazione": "Il calore è un prodotto: aumentando T l’equilibrio si sposta verso i reagenti.",
+    "testo": "In un fluido incomprimibile in moto stazionario, l'equazione di continuità implica che A·v sia:",
     "opzioni": [
-      "verso i prodotti",
-      "verso i reagenti",
-      "non cambia",
-      "a destra se K>1",
-      "dipende dalla pressione"
+      "Costante",
+      "Zero",
+      "Proporzionale a p",
+      "Proporzionale a g",
+      "Proporzionale a ρ²"
     ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:41:24.741627"
+    "correct_index": 0,
+    "spiegazione": "Portata Q = A v costante lungo la linea di flusso."
   },
   {
-    "id": "cbf072d3-be03-4221-9c8c-a52dd406bc0e",
+    "id": "8ccbfeaa-18d5-4f78-8b27-54f73fc5508c",
     "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "Quale affermazione su ΔG è corretta?",
+    "tag": [
+      "Solubilità e Kps"
+    ],
+    "testo": "Per CaF2 con Kps = 3.9e-11, qual è la solubilità molare s in acqua pura?",
+    "opzioni": [
+      "1.07e-04 M",
+      "4.27e-04 M",
+      "2.14e-04 M",
+      "2.14e-05 M",
+      "2.14e-03 M"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Kps = [A²⁺][F⁻]² = s·(2s)² = 4s³"
+  },
+  {
+    "id": "7904fea8-9d2c-4985-814e-14541a458432",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Divisione cellulare (concetto)"
+    ],
+    "testo": "I virus sono considerati parassiti obbligati perché:",
+    "opzioni": [
+      "Non hanno DNA",
+      "Si replicano solo in cellule ospiti",
+      "Hanno ribosomi propri",
+      "Metabolizzano glucosio",
+      "Hanno parete cellulare"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Dipendono dalla cellula ospite per replicarsi."
+  },
+  {
+    "id": "2545cdc5-c89f-43d2-9c88-bd42be6404ea",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. fibrosi cistica), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "100%",
+      "50%",
+      "75%",
+      "0%",
+      "25%"
+    ],
+    "correct_index": 4,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "5fb64c6a-b1cd-4c19-bca2-bb9615804e68",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=5 m/s e accelera uniformemente con a=1 m/s² per t=4 s. Qual è la velocità finale?",
+    "opzioni": [
+      "9 m/s",
+      "4.5 m/s",
+      "18 m/s",
+      "8 m/s",
+      "10 m/s"
+    ],
+    "correct_index": 0,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "54d40a27-1b13-489e-a409-dbd5dcbad05c",
+    "materia": "Chimica",
+    "tipo": "completamento",
     "tag": [
       "Termodinamica e spontaneità"
     ],
-    "difficolta": "Media",
-    "spiegazione": "ΔG<0 indica spontaneità (condizioni standard o non standard a T,P costanti).",
-    "opzioni": [
-      "Se ΔG<0 la reazione è spontanea a T,P costanti",
-      "Se ΔG=0 la reazione è impossibile",
-      "Se ΔG>0 la reazione è sempre spontanea",
-      "ΔG dipende solo da ΔH",
-      "ΔG non dipende dalla temperatura"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:41:24.741697"
+    "testo": "In una soluzione tampone, pH ≈ pKa quando [acido] = [base] (equazione di ______).",
+    "correct_text": "Henderson-Hasselbalch",
+    "spiegazione": "pH = pKa + log([A⁻]/[HA])."
   },
   {
-    "id": "cb52f1af-6590-48c2-a258-b31a225524c9",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "La velocità di una reazione aumenta di solito se:",
+    "id": "d3fdcaf2-2112-4551-b101-5200bcbe8462",
+    "materia": "Biologia",
+    "tipo": "completamento",
     "tag": [
-      "Cinetica chimica"
+      "Macromolecole: zuccheri, lipidi, proteine, nucleotidi"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Più concentrazione (o pressione per gas) aumenta la frequenza di urti efficaci.",
-    "opzioni": [
-      "diminuisce la temperatura",
-      "aumenta l’energia di attivazione",
-      "aumenta la concentrazione dei reagenti",
-      "si aumenta la massa del solvente",
-      "si aggiunge un prodotto"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:41:24.741900"
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
   },
   {
-    "id": "b75458e6-c694-40ee-bf1c-ca84bc32a501",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Quale è un alcol?",
+    "id": "67a4f3b9-6c5d-4cbe-b428-7d6f96ffe7ef",
+    "materia": "Biologia",
+    "tipo": "completamento",
     "tag": [
-      "Chimica organica: gruppi funzionali"
+      "Genetica mendeliana e non-mendeliana"
     ],
-    "difficolta": "Base",
-    "spiegazione": "CH3CH2OH contiene il gruppo −OH su carbonio saturo: è un alcol (etanolo).",
-    "opzioni": [
-      "CH3COOH",
-      "CH3CH2OH",
-      "CH3OCH3",
-      "CH3CHO",
-      "CH3COOCH3"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:41:24.741988"
+    "testo": "L'organello responsabile della sintesi di ATP è il ______.",
+    "correct_text": "mitocondrio",
+    "spiegazione": "La fosforilazione ossidativa avviene nei mitocondri."
   },
   {
-    "id": "9aaa8ae1-c712-497c-b3e4-4c554d1fa1b0",
+    "id": "6e7a4e8e-e7eb-43d0-a03d-59994f4390ca",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1000 kg/m³, qual è l'aumento di pressione a profondità h=1 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "98000 Pa",
+      "19600 Pa",
+      "4900 Pa",
+      "9800 Pa",
+      "980 Pa"
+    ],
+    "correct_index": 3,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "8c90b084-4614-4adf-87b0-3f39bacbad61",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=0 m/s e accelera uniformemente con a=2 m/s² per t=2 s. Qual è la velocità finale?",
+    "opzioni": [
+      "8 m/s",
+      "6 m/s",
+      "9 m/s",
+      "2 m/s",
+      "4 m/s"
+    ],
+    "correct_index": 4,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "cbf49726-380b-48d8-9a99-44e4cff10613",
     "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "Qual è il numero di ossidazione dell’ossigeno in H2O2?",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 18 g di un composto con massa molare 180 g/mol?",
+    "opzioni": [
+      "0.05 mol",
+      "1 mol",
+      "0.01 mol",
+      "0.1 mol",
+      "0.2 mol"
+    ],
+    "correct_index": 3,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "81b8bdb8-c371-4af2-88bf-afa9dfc1d1ca",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Lavoro, energia, potenza"
+    ],
+    "testo": "L'unità SI della forza è il ______.",
+    "correct_text": "newton",
+    "spiegazione": "1 N = 1 kg·m/s²."
+  },
+  {
+    "id": "11b8a49a-5333-4542-9309-2468fdc56309",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "602a9c8f-dde0-4bb7-b306-ec0cbba992c4",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "f51c9476-f71f-4149-b707-d67cfcc8f9e4",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1200 kg/m³, qual è l'aumento di pressione a profondità h=3 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "352800 Pa",
+      "3528 Pa",
+      "35280 Pa",
+      "70560 Pa",
+      "17640 Pa"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "5dcf94cd-9cd1-43f7-9618-7263e8504e6a",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 18 g di un composto con massa molare 60 g/mol?",
+    "opzioni": [
+      "0.3 mol",
+      "0.03 mol",
+      "0.15 mol",
+      "3 mol",
+      "0.6 mol"
+    ],
+    "correct_index": 0,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "c93d9d6e-1bf0-4c19-a94f-4630693fe445",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1200 kg/m³, qual è l'aumento di pressione a profondità h=1 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "11760 Pa",
+      "23520 Pa",
+      "5880 Pa",
+      "117600 Pa",
+      "1176 Pa"
+    ],
+    "correct_index": 0,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "c10385d4-546e-4ca9-9d9d-0092837c9969",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Fluidi: pressione e densità"
+    ],
+    "testo": "Se raddoppio la forza risultante su una massa costante, l'accelerazione:",
+    "opzioni": [
+      "Si dimezza",
+      "Raddoppia",
+      "Resta uguale",
+      "Diventa zero",
+      "Diventa negativa"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Seconda legge di Newton: a = F/m."
+  },
+  {
+    "id": "271ad951-1517-4e38-891d-6db1fbca964e",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Acidi-basi, pH, tamponi"
+    ],
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-03 M. Qual è il pH (approssimato)?",
+    "opzioni": [
+      "3",
+      "5",
+      "1",
+      "4",
+      "2"
+    ],
+    "correct_index": 0,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
+  },
+  {
+    "id": "39227bf6-849e-4d83-8a44-5f43da84a3c3",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=5 m/s e accelera uniformemente con a=3 m/s² per t=2 s. Qual è la velocità finale?",
+    "opzioni": [
+      "14 m/s",
+      "5.5 m/s",
+      "11 m/s",
+      "8 m/s",
+      "22 m/s"
+    ],
+    "correct_index": 2,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "cd8c6086-772a-41c8-8284-91659294f177",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Centro di massa e corpo rigido"
+    ],
+    "testo": "Nel principio di Archimede, la spinta vale S = ρ_liquido · g · ______ spostato.",
+    "correct_text": "volume",
+    "spiegazione": "La spinta è pari al peso del fluido spostato: ρ g V."
+  },
+  {
+    "id": "8ae8d4d4-ca3d-43b8-a92d-056dbc34ce18",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "4d15ab60-a5cc-4f40-ade8-c7bd4705fdac",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=5 m/s e accelera uniformemente con a=3 m/s² per t=5 s. Qual è la velocità finale?",
+    "opzioni": [
+      "10 m/s",
+      "23 m/s",
+      "40 m/s",
+      "20 m/s",
+      "17 m/s"
+    ],
+    "correct_index": 3,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "4baf9550-44ef-42a4-8d20-539eb35ee5cd",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Moto laminare/turbolento e resistenze"
+    ],
+    "testo": "Il flusso magnetico è Φ = B · A · cos______.",
+    "correct_text": "θ",
+    "spiegazione": "θ è l'angolo tra B e la normale alla superficie."
+  },
+  {
+    "id": "f34a633f-a6dc-4f74-b4b8-db8001fa0eb2",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 6 g di un composto con massa molare 98 g/mol?",
+    "opzioni": [
+      "0.061 mol",
+      "0.122 mol",
+      "0.006 mol",
+      "0.61 mol",
+      "0.03 mol"
+    ],
+    "correct_index": 0,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "33f7df39-5a86-4424-af02-d184a857f5ca",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Elettromagnetismo: induzione (Faraday)"
+    ],
+    "testo": "Se raddoppio la forza risultante su una massa costante, l'accelerazione:",
+    "opzioni": [
+      "Si dimezza",
+      "Raddoppia",
+      "Resta uguale",
+      "Diventa zero",
+      "Diventa negativa"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Seconda legge di Newton: a = F/m."
+  },
+  {
+    "id": "ea8ab056-9b18-4749-b839-b02c8139990c",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. fibrosi cistica), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "100%",
+      "50%",
+      "25%",
+      "0%",
+      "75%"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "578c8e91-b498-4241-a7be-aa0b1145afb2",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Torricelli e manometro (misura pressione)"
+    ],
+    "testo": "Secondo Faraday, una variazione di flusso magnetico induce una forza elettromotrice:",
+    "opzioni": [
+      "Nulla",
+      "Direttamente proporzionale a ΔΦ/Δt",
+      "Inversamente proporzionale a ΔΦ/Δt",
+      "Proporzionale alla massa",
+      "Proporzionale alla resistenza"
+    ],
+    "correct_index": 1,
+    "spiegazione": "ε = - dΦ/dt (legge di Faraday-Lenz)."
+  },
+  {
+    "id": "662a186e-753c-446f-a41d-dac1ff8a8921",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=800 kg/m³, qual è l'aumento di pressione a profondità h=0.5 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "3920 Pa",
+      "392 Pa",
+      "39200 Pa",
+      "1960 Pa",
+      "7840 Pa"
+    ],
+    "correct_index": 0,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "ffae8a00-c0ec-48a9-861a-7398e7a87fa7",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "b340799b-547e-497c-91de-9da73bb83ac5",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=0 m/s e accelera uniformemente con a=1 m/s² per t=3 s. Qual è la velocità finale?",
+    "opzioni": [
+      "6 m/s",
+      "3 m/s",
+      "2 m/s",
+      "1.5 m/s",
+      "4 m/s"
+    ],
+    "correct_index": 1,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "15f0ffdc-b1d4-4520-b922-ee4fab522ab8",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Idrodinamica: portata, continuità, Bernoulli"
+    ],
+    "testo": "Nel principio di Archimede, la spinta vale S = ρ_liquido · g · ______ spostato.",
+    "correct_text": "volume",
+    "spiegazione": "La spinta è pari al peso del fluido spostato: ρ g V."
+  },
+  {
+    "id": "25437ba0-d1f3-4697-861e-154bfbab9e1b",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Basi chimiche della vita (polare/non polare)"
+    ],
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
+  },
+  {
+    "id": "7588c133-5d50-487e-aed7-8e77e2819319",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "9923f55d-8061-413e-9869-35c33f8ef4da",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=800 kg/m³, qual è l'aumento di pressione a profondità h=1 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "3920 Pa",
+      "784 Pa",
+      "7840 Pa",
+      "15680 Pa",
+      "78400 Pa"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "c028a027-4120-44a4-8712-f3ea741baf49",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Acidi-basi, pH, tamponi"
+    ],
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-11 M. Qual è il pH (approssimato)?",
+    "opzioni": [
+      "13",
+      "11",
+      "9",
+      "10",
+      "12"
+    ],
+    "correct_index": 1,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
+  },
+  {
+    "id": "76c2e9ae-0324-4165-a6cd-5d3772e3a7b2",
+    "materia": "Chimica",
+    "tipo": "scelta",
     "tag": [
       "Ossidazione-riduzione"
     ],
-    "difficolta": "Media",
-    "spiegazione": "Nel perossido (H2O2) l’ossigeno ha numero di ossidazione −1.",
+    "testo": "Quale particella determina il numero atomico Z di un elemento?",
     "opzioni": [
-      "−2",
-      "−1",
-      "0",
-      "+1",
-      "+2"
+      "Neutroni",
+      "Protoni",
+      "Elettroni di valenza",
+      "Isotopi",
+      "Nucleoni totali"
     ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:41:39.521743"
+    "correct_index": 1,
+    "spiegazione": "Z coincide con il numero di protoni nel nucleo."
   },
   {
-    "id": "fe8f4093-dd0a-42ce-8e0a-8c5d10973f94",
+    "id": "07141fd4-b81a-4bd7-8139-bcc36b1beb79",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. fibrosi cistica), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "25%",
+      "50%",
+      "0%",
+      "75%",
+      "100%"
+    ],
+    "correct_index": 0,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "d92894f8-a487-498e-b3bb-fc28c1b70601",
     "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "In una soluzione 0,10 M di NaCl, la concentrazione di Cl− è circa:",
     "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
+      "Chimica organica: gruppi funzionali"
     ],
-    "difficolta": "Base",
-    "spiegazione": "NaCl è elettrolita forte 1:1 → [Cl−]≈0,10 M.",
+    "testo": "Quale tendenza è corretta scendendo lungo un gruppo della tavola periodica?",
+    "opzioni": [
+      "Aumenta l'elettronegatività",
+      "Diminuisce il raggio atomico",
+      "Aumenta il raggio atomico",
+      "Aumenta l'energia di ionizzazione",
+      "Diminuisce la massa atomica"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Scendendo nel gruppo aumentano i livelli elettronici: raggio ↑, elettronegatività e IE ↓."
+  },
+  {
+    "id": "ad5e4cc3-f871-46d3-b3de-57720741d079",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Solubilità e Kps"
+    ],
+    "testo": "Per CaF2 con Kps = 3.9e-11, qual è la solubilità molare s in acqua pura?",
+    "opzioni": [
+      "4.27e-04 M",
+      "2.14e-05 M",
+      "2.14e-03 M",
+      "1.07e-04 M",
+      "2.14e-04 M"
+    ],
+    "correct_index": 4,
+    "spiegazione": "Kps = [A²⁺][F⁻]² = s·(2s)² = 4s³"
+  },
+  {
+    "id": "ab08e712-72a3-4150-b368-4d827bec283a",
+    "materia": "Chimica",
+    "tipo": "completamento",
+    "tag": [
+      "Acidi-basi, pH, tamponi"
+    ],
+    "testo": "In un legame covalente polare, la coppia di elettroni è spostata verso l'atomo più ______.",
+    "correct_text": "elettronegativo",
+    "spiegazione": "La polarità dipende dall'elettronegatività."
+  },
+  {
+    "id": "c69c7f4d-fbcd-446a-b7e6-df8335a137b3",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Enzimi: sito attivo, specificità, denaturazione"
+    ],
+    "testo": "Un enzima abbassa l'energia di attivazione perché:",
+    "opzioni": [
+      "Aumenta ΔG della reazione",
+      "Stabilizza lo stato di transizione",
+      "Consuma ATP",
+      "Cambia l'equilibrio",
+      "Trasforma i prodotti in reagenti"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Gli enzimi stabilizzano lo stato di transizione riducendo Ea."
+  },
+  {
+    "id": "533a85dd-582e-445f-b711-69100d0b6c51",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Albero della vita e teoria cellulare"
+    ],
+    "testo": "Durante la mitosi, i cromosomi si allineano in ______.",
+    "correct_text": "metafase",
+    "spiegazione": "In metafase i cromosomi si dispongono al piano equatoriale."
+  },
+  {
+    "id": "9887e505-23c2-4a7e-8bad-d25123f67a2c",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1000 kg/m³, qual è l'aumento di pressione a profondità h=1 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "9800 Pa",
+      "980 Pa",
+      "19600 Pa",
+      "98000 Pa",
+      "4900 Pa"
+    ],
+    "correct_index": 0,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "9995f28c-75a9-468b-a7a3-d475d2374c4b",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un fluido incomprimibile in moto stazionario, l'equazione di continuità implica che A·v sia:",
+    "opzioni": [
+      "Costante",
+      "Zero",
+      "Proporzionale a p",
+      "Proporzionale a g",
+      "Proporzionale a ρ²"
+    ],
+    "correct_index": 0,
+    "spiegazione": "Portata Q = A v costante lungo la linea di flusso."
+  },
+  {
+    "id": "cafad3bc-731a-450d-a6c4-43e80466349b",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Reazioni organiche di base"
+    ],
+    "testo": "In una soluzione 0,10 M di NaCl (elettrolita forte), la concentrazione di ioni Cl⁻ è:",
     "opzioni": [
       "0,05 M",
       "0,10 M",
       "0,20 M",
       "1,0 M",
-      "dipende dal pH"
+      "Dipende dal pH"
     ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:41:39.521861"
+    "correct_index": 1,
+    "spiegazione": "NaCl dissocia 1:1 → [Cl⁻] = 0,10 M."
   },
   {
-    "id": "496a9ac9-81af-438a-8097-03c018e6f430",
+    "id": "6da8b459-422a-4302-befd-aefdd341b35d",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "b1d56aa1-671c-4efc-9dce-85de1df82315",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1000 kg/m³, qual è l'aumento di pressione a profondità h=3 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "2940 Pa",
+      "29400 Pa",
+      "58800 Pa",
+      "14700 Pa",
+      "294000 Pa"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "bd42594f-6ba3-4554-b407-f1ce0f389b88",
     "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "Quanti grammi di NaOH (M=40 g/mol) servono per preparare 250 mL di soluzione 0,50 M?",
     "tag": [
       "Stechiometria e bilanciamento reazioni"
     ],
-    "difficolta": "Base",
-    "spiegazione": "n=C·V=0,50·0,250=0,125 mol → m=n·M=0,125·40=5,0 g.",
+    "testo": "Quante moli ci sono in 6 g di un composto con massa molare 180 g/mol?",
     "opzioni": [
-      "5,0 g",
-      "10 g",
-      "2,0 g",
-      "20 g",
-      "0,5 g"
+      "0.33 mol",
+      "0.033 mol",
+      "0.017 mol",
+      "0.003 mol",
+      "0.066 mol"
     ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:41:39.521971"
+    "correct_index": 1,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
   },
   {
-    "id": "800205d8-d868-4164-9c20-4df145afcd24",
-    "materia": "Chimica",
+    "id": "40961666-299f-4ede-8dea-5104e2626b0d",
+    "materia": "Fisica",
     "tipo": "scelta",
-    "testo": "Quanti grammi di KCl (M=74.55 g/mol) servono per preparare 500 mL di soluzione 0.20 M?",
     "tag": [
-      "Stechiometria e bilanciamento reazioni"
+      "Vettori: somma, prodotto scalare e vettoriale"
     ],
-    "difficolta": "Base",
-    "spiegazione": "m = C·V·M = 0.20·0.500·74.55 = 7.46 g.",
+    "testo": "Un corpo in moto rettilineo uniforme ha accelerazione:",
     "opzioni": [
-      "7,46 g",
-      "14,92 g",
-      "3,73 g",
-      "11,19 g",
-      "5,97 g"
+      "Costante non nulla",
+      "Variabile",
+      "Nulla",
+      "Sempre positiva",
+      "Dipende dalla massa"
     ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.167531"
+    "correct_index": 2,
+    "spiegazione": "Nel MRU la velocità è costante → a = 0."
   },
   {
-    "id": "6a6d19f6-1556-45c4-96b2-e03900ebc1e8",
-    "materia": "Chimica",
+    "id": "ae69728f-6d5c-4fe1-8089-f8dfac07e3ab",
+    "materia": "Fisica",
     "tipo": "scelta",
-    "testo": "Quanti grammi di Glucosio (M=180.16 g/mol) servono per preparare 250 mL di soluzione 0.10 M?",
     "tag": [
-      "Stechiometria e bilanciamento reazioni"
+      "Lavoro, energia, potenza"
     ],
-    "difficolta": "Base",
-    "spiegazione": "m = C·V·M = 0.10·0.250·180.16 = 4.5 g.",
+    "testo": "Secondo Faraday, una variazione di flusso magnetico induce una forza elettromotrice:",
     "opzioni": [
-      "4,5 g",
-      "9,0 g",
-      "2,25 g",
-      "6,75 g",
-      "3,6 g"
+      "Nulla",
+      "Direttamente proporzionale a ΔΦ/Δt",
+      "Inversamente proporzionale a ΔΦ/Δt",
+      "Proporzionale alla massa",
+      "Proporzionale alla resistenza"
     ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.167635"
+    "correct_index": 1,
+    "spiegazione": "ε = - dΦ/dt (legge di Faraday-Lenz)."
   },
   {
-    "id": "3cbc9754-1afe-48c5-9bc9-e7346329f58b",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Quanti grammi di CaCl2 (M=110.98 g/mol) servono per preparare 200 mL di soluzione 0.15 M?",
+    "id": "13bebdbe-be47-4f61-bb1e-b41e3d18963e",
+    "materia": "Fisica",
+    "tipo": "completamento",
     "tag": [
-      "Stechiometria e bilanciamento reazioni"
+      "Elettromagnetismo: induzione (Faraday)"
     ],
-    "difficolta": "Base",
-    "spiegazione": "m = C·V·M = 0.15·0.200·110.98 = 3.33 g.",
-    "opzioni": [
-      "3,33 g",
-      "6,66 g",
-      "1,67 g",
-      "5,0 g",
-      "2,66 g"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.167683"
+    "testo": "Nella legge di Stevino, la variazione di pressione con la profondità è Δp = ρ g ______.",
+    "correct_text": "h",
+    "spiegazione": "Δp cresce linearmente con la profondità h."
   },
   {
-    "id": "b5620a24-ae1e-4f54-bc85-159abfc51bf2",
+    "id": "2da8bd06-2f99-43fa-978c-d870d60b44d9",
     "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "Quanti grammi di Na2CO3 (M=106 g/mol) servono per preparare 1000 mL di soluzione 0.05 M?",
-    "tag": [
-      "Stechiometria e bilanciamento reazioni"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "m = C·V·M = 0.05·1.000·106 = 5.3 g.",
-    "opzioni": [
-      "5,3 g",
-      "10,6 g",
-      "2,65 g",
-      "7,95 g",
-      "4,24 g"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.167927"
-  },
-  {
-    "id": "97471e53-a447-4c53-8aa0-cd9bcb071e9f",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Si diluiscono 25 mL di una soluzione 1.00 M fino a 250 mL. Qual è la nuova concentrazione?",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Diluzione: C1·V1=C2·V2.",
-    "opzioni": [
-      "0,1 M",
-      "0,2 M",
-      "0,05 M",
-      "0,15 M",
-      "0,08 M"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.168154"
-  },
-  {
-    "id": "08e12d64-88ee-465f-8758-a3c6fb9d47e9",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Si diluiscono 40 mL di una soluzione 0.50 M fino a 200 mL. Qual è la nuova concentrazione?",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Diluzione: C1·V1=C2·V2.",
-    "opzioni": [
-      "0,1 M",
-      "0,2 M",
-      "0,05 M",
-      "0,15 M",
-      "0,08 M"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.168528"
-  },
-  {
-    "id": "663a3fbc-2c64-4f23-a11d-b180d76f9852",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Si diluiscono 10 mL di una soluzione 2.00 M fino a 500 mL. Qual è la nuova concentrazione?",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Diluzione: C1·V1=C2·V2.",
-    "opzioni": [
-      "0,04 M",
-      "0,08 M",
-      "0,02 M",
-      "0,06 M",
-      "0,032 M"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.168671"
-  },
-  {
-    "id": "c934de21-9f6e-46a5-912a-c4483a16b24a",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Si diluiscono 50 mL di una soluzione 0.20 M fino a 100 mL. Qual è la nuova concentrazione?",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Diluzione: C1·V1=C2·V2.",
-    "opzioni": [
-      "0,1 M",
-      "0,2 M",
-      "0,05 M",
-      "0,15 M",
-      "0,08 M"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.168754"
-  },
-  {
-    "id": "332cf039-3ddb-4e9b-8dc3-b5667ea08fc2",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Quante moli di gas ideale sono presenti a 1.00 atm, 2.46 L e 298 K? (R=0,082)",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Usa PV=nRT → n=PV/RT.",
-    "opzioni": [
-      "0,101 mol",
-      "0,201 mol",
-      "0,05 mol",
-      "0,151 mol",
-      "0,081 mol"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.168858"
-  },
-  {
-    "id": "c9f214bb-0317-41f5-b9eb-77cd4b2c5144",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Quante moli di gas ideale sono presenti a 0.95 atm, 5.00 L e 300 K? (R=0,082)",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Usa PV=nRT → n=PV/RT.",
-    "opzioni": [
-      "0,193 mol",
-      "0,386 mol",
-      "0,097 mol",
-      "0,29 mol",
-      "0,154 mol"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.168890"
-  },
-  {
-    "id": "08669808-249c-49ac-be52-fe5e59dc32fc",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Quante moli di gas ideale sono presenti a 1.20 atm, 3.00 L e 273 K? (R=0,082)",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Usa PV=nRT → n=PV/RT.",
-    "opzioni": [
-      "0,161 mol",
-      "0,322 mol",
-      "0,08 mol",
-      "0,241 mol",
-      "0,129 mol"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.168905"
-  },
-  {
-    "id": "2be15d86-e61f-41ec-97c1-647ef226e0f1",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Quante moli di gas ideale sono presenti a 0.80 atm, 10.00 L e 310 K? (R=0,082)",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Usa PV=nRT → n=PV/RT.",
-    "opzioni": [
-      "0,315 mol",
-      "0,629 mol",
-      "0,157 mol",
-      "0,472 mol",
-      "0,252 mol"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:42:00.168917"
-  },
-  {
-    "id": "bc5d95e6-8db6-4c2e-97c6-e0586083c3a3",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Quale legame è tipico di un sale come NaCl?",
-    "tag": [
-      "Legami chimici e geometria molecolare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Nei sali si forma un reticolo di ioni: legame ionico.",
-    "opzioni": [
-      "Covalente apolare",
-      "Covalente polare",
-      "Ionico",
-      "Metallico",
-      "A idrogeno"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:42:15.338283"
-  },
-  {
-    "id": "e463a1db-e602-47c6-b5c3-9f4843326234",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Il numero massimo di legami a idrogeno che una molecola di H2O può formare è:",
-    "tag": [
-      "Termodinamica e spontaneità"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "H2O può donare 2 H e accettare 2 coppie solitarie: fino a 4 legami a idrogeno.",
-    "opzioni": [
-      "1",
-      "2",
-      "3",
-      "4",
-      "6"
-    ],
-    "corretta_index": 3,
-    "created_at": "2026-01-31T00:42:15.338365"
-  },
-  {
-    "id": "98524415-5d13-42b9-82ad-e610e1eac5b6",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Quale tra questi è un tampone?",
     "tag": [
       "Acidi-basi, pH, tamponi"
     ],
-    "difficolta": "Media",
-    "spiegazione": "Un tampone è una coppia acido debole/base coniugata: acido acetico/acetato.",
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-08 M. Qual è il pH (approssimato)?",
     "opzioni": [
-      "HCl/Cl−",
-      "CH3COOH/CH3COO−",
-      "NaCl/Na+",
-      "H2SO4/HSO4−",
-      "HNO3/NO3−"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:42:15.338463"
-  },
-  {
-    "id": "d9980f73-581b-4fb0-b26b-abbb4ac6b967",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "A parità di condizioni, l’aumento di un catalizzatore in una reazione reversibile:",
-    "tag": [
-      "Equilibri chimici"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Il catalizzatore accelera entrambe le direzioni e non modifica K né la posizione di equilibrio.",
-    "opzioni": [
-      "sposta l’equilibrio a destra",
-      "sposta l’equilibrio a sinistra",
-      "aumenta K",
-      "non cambia K e accelera sia avanti che indietro",
-      "riduce ΔG"
-    ],
-    "corretta_index": 3,
-    "created_at": "2026-01-31T00:42:15.338585"
-  },
-  {
-    "id": "9f883d08-6cf6-4fa7-b83f-8c132d649aab",
-    "materia": "Chimica",
-    "tipo": "scelta",
-    "testo": "Qual è la formula generale di un alcano aciclico saturo?",
-    "tag": [
-      "Chimica organica: gruppi funzionali"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Gli alcani aciclici saturi hanno formula CnH2n+2.",
-    "opzioni": [
-      "CnH2n",
-      "CnH2n+2",
-      "CnH2n−2",
-      "CnHn",
-      "CnH2n+1"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:42:15.338661"
-  },
-  {
-    "id": "61a6c609-284d-435f-9dcd-6adc0c3e3fa5",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "In una soluzione acquosa, il pH è definito come −log della concentrazione di __________.",
-    "tag": [
-      "Acidi-basi, pH, tamponi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Definizione: pH = −log10[H+].",
-    "risposte": [
-      "H+"
-    ],
-    "created_at": "2026-01-31T00:42:33.027291"
-  },
-  {
-    "id": "749df2e3-86a1-4ca2-bd66-51de91908bcf",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Nella reazione di ossidoriduzione, la specie che si riduce agisce da __________.",
-    "tag": [
-      "Ossidazione-riduzione"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Chi si riduce accetta elettroni e ossida l’altra specie: è l’ossidante.",
-    "risposte": [
-      "ossidante"
-    ],
-    "created_at": "2026-01-31T00:42:33.027571"
-  },
-  {
-    "id": "464a2ba3-1e66-4cb4-8bc6-a6a0d50a5580",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "La costante di equilibrio Kc per A ⇌ B è definita come [B]/[A] elevato ai rispettivi __________ stechiometrici.",
-    "tag": [
-      "Equilibri chimici"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "In generale Kc usa i coefficienti stechiometrici come esponenti.",
-    "risposte": [
-      "coefficienti"
-    ],
-    "created_at": "2026-01-31T00:42:33.027720"
-  },
-  {
-    "id": "6f046725-b535-4ad0-9656-3b0ecca35c01",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "La quantità di sostanza si misura in __________.",
-    "tag": [
-      "Stechiometria e bilanciamento reazioni"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "L’unità SI della quantità di sostanza è la mole (mol).",
-    "risposte": [
-      "moli"
-    ],
-    "created_at": "2026-01-31T00:42:33.027789"
-  },
-  {
-    "id": "1cf04ee7-b22b-4634-aac6-2712a4c08d3f",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Un legame a idrogeno si forma tipicamente quando H è legato a F, O o __________.",
-    "tag": [
-      "Termodinamica e spontaneità"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "I tre atomi più elettronegativi tipici: F, O, N.",
-    "risposte": [
-      "N"
-    ],
-    "created_at": "2026-01-31T00:42:33.027825"
-  },
-  {
-    "id": "ecd7739a-14dd-45f6-b3a7-dd443a2705bf",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Nel gas ideale vale l’equazione PV = n__________.",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Equazione di stato dei gas ideali: PV=nRT.",
-    "risposte": [
-      "RT"
-    ],
-    "created_at": "2026-01-31T00:42:33.027849"
-  },
-  {
-    "id": "9c5800f7-65f0-4551-b76f-c820ef06bd57",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Una soluzione che resiste a variazioni di pH è detta soluzione __________.",
-    "tag": [
-      "Acidi-basi, pH, tamponi"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Un tampone contiene acido debole e base coniugata (o viceversa).",
-    "risposte": [
-      "tampone"
-    ],
-    "created_at": "2026-01-31T00:42:33.027949"
-  },
-  {
-    "id": "21ae3464-597d-4334-9107-74e28e70c748",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "La variazione di entalpia di una reazione a pressione costante è indicata con Δ__________.",
-    "tag": [
-      "Termodinamica e spontaneità"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "ΔH misura il calore scambiato a pressione costante.",
-    "risposte": [
-      "H"
-    ],
-    "created_at": "2026-01-31T00:42:33.028064"
-  },
-  {
-    "id": "0de217ff-9419-45a4-a0be-9bd4f7f193ac",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Nella scala di elettronegatività, l’elemento più elettronegativo è il __________.",
-    "tag": [
-      "Tavola periodica e proprietà periodiche"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Il fluoro è il più elettronegativo nella tavola periodica.",
-    "risposte": [
-      "fluoro"
-    ],
-    "created_at": "2026-01-31T00:42:33.028117"
-  },
-  {
-    "id": "0f2c0067-44f3-4282-aa08-19457810c197",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Un acido forte in acqua è considerato completamente __________.",
-    "tag": [
-      "Acidi-basi, pH, tamponi"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Gli acidi forti si dissociano praticamente al 100% in acqua.",
-    "risposte": [
-      "dissociato"
-    ],
-    "created_at": "2026-01-31T00:42:33.028277"
-  },
-  {
-    "id": "f2b87520-41f8-47aa-bf48-35f6b878d901",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "In una soluzione con pOH = 3, il pH (25°C) vale __________.",
-    "tag": [
-      "Acidi-basi, pH, tamponi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "A 25°C vale pH+pOH=14 → pH=11.",
-    "risposte": [
-      "11"
-    ],
-    "created_at": "2026-01-31T00:43:07.514613"
-  },
-  {
-    "id": "1ff59494-a981-41fc-98b8-874320a0d495",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Il numero di ossidazione del sodio (Na) nei composti è tipicamente __________.",
-    "tag": [
-      "Ossidazione-riduzione"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Il sodio è un metallo alcalino e forma quasi sempre Na+.",
-    "risposte": [
-      "+1"
-    ],
-    "created_at": "2026-01-31T00:43:07.514685"
-  },
-  {
-    "id": "24f27e65-f730-4418-8ec9-656c26d548c3",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "La massa molare dell’acqua H2O è 18 g/__________.",
-    "tag": [
-      "Stechiometria e bilanciamento reazioni"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "La massa molare si esprime in g/mol.",
-    "risposte": [
-      "mol"
-    ],
-    "created_at": "2026-01-31T00:43:07.514847"
-  },
-  {
-    "id": "7251836b-ee8d-4f5d-876d-bfeba7c14200",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "La trasformazione CH3CH2OH → CH3CHO è una __________.",
-    "tag": [
-      "Ossidazione-riduzione"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Un alcol primario ossidato dà un’aldeide (ossidazione).",
-    "risposte": [
-      "ossidazione"
-    ],
-    "created_at": "2026-01-31T00:43:07.514913"
-  },
-  {
-    "id": "d47f3b8c-ddbe-43d6-977d-5d8474df8dc9",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Il reagente limitante è quello che si consuma per __________.",
-    "tag": [
-      "Stechiometria e bilanciamento reazioni"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Il limitante è il primo che si esaurisce e limita la quantità di prodotto.",
-    "risposte": [
-      "primo"
-    ],
-    "created_at": "2026-01-31T00:43:07.515107"
-  },
-  {
-    "id": "0b7efecc-e945-4046-99b8-5de2cdf08a7d",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Il valore di Kc cambia se si aggiunge un __________.",
-    "tag": [
-      "Equilibri chimici"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Il catalizzatore non modifica Kc, solo la velocità di raggiungimento dell’equilibrio.",
-    "risposte": [
-      "catalizzatore"
-    ],
-    "created_at": "2026-01-31T00:43:07.515347"
-  },
-  {
-    "id": "fce51968-4846-43e4-9a24-4d5c66ba1950",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "In una soluzione, la frazione molare è una grandezza __________.",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "È un rapporto tra moli, quindi senza unità.",
-    "risposte": [
-      "adimensionale"
-    ],
-    "created_at": "2026-01-31T00:43:07.515361"
-  },
-  {
-    "id": "38618f27-f932-4a61-a5d9-eaeb3a01960a",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Un composto con gruppo funzionale −COOH è un acido __________.",
-    "tag": [
-      "Chimica organica: gruppi funzionali"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "−COOH identifica gli acidi carbossilici.",
-    "risposte": [
-      "carbossilico"
-    ],
-    "created_at": "2026-01-31T00:43:07.515371"
-  },
-  {
-    "id": "404a3aae-0100-4725-951d-732baf267b8e",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "La specie HCO3− è la base coniugata dell’acido __________.",
-    "tag": [
-      "Acidi-basi, pH, tamponi"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "H2CO3 ⇌ H+ + HCO3−: bicarbonato è base coniugata dell’acido carbonico.",
-    "risposte": [
-      "carbonico"
-    ],
-    "created_at": "2026-01-31T00:43:07.515380"
-  },
-  {
-    "id": "c6de2997-ed3f-4192-b901-dfd1eec6b599",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "In una reazione spontanea a T,P costanti, ΔG è __________.",
-    "tag": [
-      "Termodinamica e spontaneità"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "ΔG<0 indica spontaneità (condizioni date).",
-    "risposte": [
-      "negativo"
-    ],
-    "created_at": "2026-01-31T00:43:07.515388"
-  },
-  {
-    "id": "bdcb1bbc-1df8-4356-9a8c-1137a3e2e5a9",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Un elettrolita forte in acqua è completamente __________.",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Sali come NaCl in acqua sono completamente dissociati/ionizzati.",
-    "risposte": [
-      "ionizzato"
-    ],
-    "created_at": "2026-01-31T00:43:07.515395"
-  },
-  {
-    "id": "10ce2c72-a6f9-403d-8f54-8800cdbc7bd9",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Il pH di una soluzione neutra a 25°C è __________.",
-    "tag": [
-      "Acidi-basi, pH, tamponi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "In acqua pura [H+]=1×10⁻⁷ M → pH 7.",
-    "risposte": [
+      "6",
+      "9",
+      "8",
+      "10",
       "7"
     ],
-    "created_at": "2026-01-31T00:43:07.515407"
+    "correct_index": 2,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
   },
   {
-    "id": "c81ee250-518b-4db0-ab41-c0b3d670c72a",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Nella legge di Henry, la solubilità di un gas è proporzionale alla sua __________ parziale.",
+    "id": "1b8d6aa6-26b8-4e9e-9c34-4562f964d915",
+    "materia": "Biologia",
+    "tipo": "scelta",
     "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
+      "Virus: struttura e classi"
     ],
-    "difficolta": "Media",
-    "spiegazione": "Più pressione parziale → più gas disciolto.",
-    "risposte": [
-      "pressione"
+    "testo": "Quale struttura è tipica dei procarioti ma assente negli eucarioti?",
+    "opzioni": [
+      "Mitocondri",
+      "Nucleo delimitato da membrana",
+      "Ribosomi",
+      "Membrana plasmatica",
+      "Citoplasma"
     ],
-    "created_at": "2026-01-31T00:43:07.515414"
+    "correct_index": 1,
+    "spiegazione": "I procarioti non hanno nucleo membranoso."
   },
   {
-    "id": "b4298c32-ef81-4174-8339-518346762072",
-    "materia": "Chimica",
+    "id": "92085db7-0d11-4bb0-8258-11c983322410",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. albinismo), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "75%",
+      "25%",
+      "0%",
+      "100%",
+      "50%"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "a8a4b54c-48e7-4909-9025-0489647d4787",
+    "materia": "Fisica",
     "tipo": "completamento",
-    "testo": "In un acido monoprotico forte, la concentrazione di H+ coincide con la __________ dell’acido.",
+    "tag": [
+      "Moto laminare/turbolento e resistenze"
+    ],
+    "testo": "Nel principio di Archimede, la spinta vale S = ρ_liquido · g · ______ spostato.",
+    "correct_text": "volume",
+    "spiegazione": "La spinta è pari al peso del fluido spostato: ρ g V."
+  },
+  {
+    "id": "e0b95b19-020f-4c5e-8a9b-7864d7b302aa",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Solubilità e Kps"
+    ],
+    "testo": "Per AgCl con Kps = 1.8e-10, qual è la solubilità molare s in acqua pura?",
+    "opzioni": [
+      "6.71e-06 M",
+      "1.34e-05 M",
+      "1.34e-04 M",
+      "2.68e-05 M",
+      "1.34e-06 M"
+    ],
+    "correct_index": 1,
+    "spiegazione": "s = √Kps"
+  },
+  {
+    "id": "440df57c-e5ea-4e51-a1ba-cb1dda62805b",
+    "materia": "Chimica",
+    "tipo": "scelta",
     "tag": [
       "Acidi-basi, pH, tamponi"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Per acido forte monoprotico: [H+]≈C acido.",
-    "risposte": [
-      "molarità"
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-10 M. Qual è il pH (approssimato)?",
+    "opzioni": [
+      "9",
+      "12",
+      "10",
+      "11",
+      "8"
     ],
-    "created_at": "2026-01-31T00:43:07.515422"
+    "correct_index": 2,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
   },
   {
-    "id": "73879b89-6829-49a3-9279-daa2d95ba261",
-    "materia": "Chimica",
+    "id": "946c40b2-9437-4b99-8d2f-5eef56071e0c",
+    "materia": "Fisica",
     "tipo": "completamento",
-    "testo": "Il simbolo che indica una reazione reversibile è la doppia __________.",
     "tag": [
-      "Equilibri chimici"
+      "Centro di massa e corpo rigido"
     ],
-    "difficolta": "Base",
-    "spiegazione": "⇌ indica equilibrio/reversibilità.",
-    "risposte": [
-      "freccia"
-    ],
-    "created_at": "2026-01-31T00:43:07.515428"
+    "testo": "Il lavoro di una forza costante parallela allo spostamento è L = F · ______.",
+    "correct_text": "s",
+    "spiegazione": "L = F s."
   },
   {
-    "id": "d304815e-f61e-4957-b5c8-e63982da5c4b",
-    "materia": "Chimica",
+    "id": "be2e295a-ff94-4ac1-9dcd-b55bc256977f",
+    "materia": "Biologia",
     "tipo": "completamento",
-    "testo": "Un aumento della temperatura aumenta tipicamente la velocità di reazione perché aumenta l’energia __________ delle molecole.",
+    "tag": [
+      "Enzimi: sito attivo, specificità, denaturazione"
+    ],
+    "testo": "La reazione di sintesi di macromolecole spesso avviene per ______ (rimozione di H₂O).",
+    "correct_text": "condensazione",
+    "spiegazione": "Condensazione = disidratazione; idrolisi fa l'opposto."
+  },
+  {
+    "id": "b7d4e69d-2e74-431e-8065-700a162df377",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Acidi-basi, pH, tamponi"
+    ],
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-10 M. Qual è il pH (approssimato)?",
+    "opzioni": [
+      "8",
+      "9",
+      "10",
+      "12",
+      "11"
+    ],
+    "correct_index": 2,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
+  },
+  {
+    "id": "3ff9869a-e14e-4d72-b373-47ed8069e95b",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. albinismo), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "0%",
+      "100%",
+      "75%",
+      "50%",
+      "25%"
+    ],
+    "correct_index": 4,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "446abf5e-c429-4d08-8a6c-42b4c7ff808d",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Moto laminare/turbolento e resistenze"
+    ],
+    "testo": "Nel principio di Archimede, la spinta vale S = ρ_liquido · g · ______ spostato.",
+    "correct_text": "volume",
+    "spiegazione": "La spinta è pari al peso del fluido spostato: ρ g V."
+  },
+  {
+    "id": "9f5008da-f5ba-4f49-af6e-edbdf49c8f06",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
+    ],
+    "testo": "L'unità SI della pressione è:",
+    "opzioni": [
+      "J",
+      "W",
+      "Pa",
+      "N",
+      "C"
+    ],
+    "correct_index": 2,
+    "spiegazione": "La pressione è forza/superficie → pascal (Pa)."
+  },
+  {
+    "id": "30b92940-a669-43c6-9a2e-bacbabc0393c",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Macromolecole: zuccheri, lipidi, proteine, nucleotidi"
+    ],
+    "testo": "Il modello a mosaico ______ descrive la struttura della membrana plasmatica.",
+    "correct_text": "fluido",
+    "spiegazione": "Proteine immerse in un doppio strato lipidico dinamico."
+  },
+  {
+    "id": "46cb44b1-dd74-424d-b7e3-179d59b759c0",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Mutazioni e riparazione DNA"
+    ],
+    "testo": "La duplicazione del DNA avviene in modo ______ (5'→3').",
+    "correct_text": "semiconservativo",
+    "spiegazione": "Ogni doppia elica figlia conserva un filamento parentale."
+  },
+  {
+    "id": "5a103ed4-9316-4f22-9b87-e53f54137543",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "Nel principio di Archimede, la spinta vale S = ρ_liquido · g · ______ spostato.",
+    "correct_text": "volume",
+    "spiegazione": "La spinta è pari al peso del fluido spostato: ρ g V."
+  },
+  {
+    "id": "4bde3137-bdff-489f-84db-fe439864ccf6",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 9.8 g di un composto con massa molare 44 g/mol?",
+    "opzioni": [
+      "0.446 mol",
+      "0.223 mol",
+      "0.112 mol",
+      "2.23 mol",
+      "0.022 mol"
+    ],
+    "correct_index": 1,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "8e9acf62-cff5-49d9-94c1-68aa926bd0a1",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=5 m/s e accelera uniformemente con a=1 m/s² per t=3 s. Qual è la velocità finale?",
+    "opzioni": [
+      "4 m/s",
+      "16 m/s",
+      "8 m/s",
+      "9 m/s",
+      "7 m/s"
+    ],
+    "correct_index": 2,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "5a3a9027-2505-4ff8-85f8-3790c0cbc0e6",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Metabolismo: anabolismo/catabolismo, condensazione/idrolisi"
+    ],
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
+  },
+  {
+    "id": "834169d8-46ee-4c12-9032-0d14852a2269",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Acidi-basi, pH, tamponi"
+    ],
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-02 M. Qual è il pH (approssimato)?",
+    "opzioni": [
+      "4",
+      "0",
+      "2",
+      "3",
+      "1"
+    ],
+    "correct_index": 2,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
+  },
+  {
+    "id": "1e9938f9-9319-4f1e-b155-c917077e8434",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "2a0868e5-e658-4d42-8b59-66e5caeb462a",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 36 g di un composto con massa molare 58.5 g/mol?",
+    "opzioni": [
+      "0.061 mol",
+      "6.15 mol",
+      "0.307 mol",
+      "1.23 mol",
+      "0.615 mol"
+    ],
+    "correct_index": 4,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "0fcdbc46-8b08-4b4f-8e1b-d8395499c078",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Acidi-basi, pH, tamponi"
+    ],
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-02 M. Qual è il pH (approssimato)?",
+    "opzioni": [
+      "1",
+      "3",
+      "4",
+      "0",
+      "2"
+    ],
+    "correct_index": 4,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
+  },
+  {
+    "id": "ca139403-c365-4233-9440-4039c4d5501e",
+    "materia": "Chimica",
+    "tipo": "scelta",
     "tag": [
       "Cinetica chimica"
     ],
-    "difficolta": "Base",
-    "spiegazione": "T più alta → energia cinetica media più alta → più urti efficaci.",
-    "risposte": [
-      "cinetica"
+    "testo": "Quale composto contiene il gruppo funzionale aldeidico?",
+    "opzioni": [
+      "Propanone",
+      "Etanolo",
+      "Etanale",
+      "Acido etanoico",
+      "Etere dietilico"
     ],
-    "created_at": "2026-01-31T00:43:07.515434"
+    "correct_index": 2,
+    "spiegazione": "Un'aldeide ha il gruppo –CHO: etanale = CH₃–CHO."
   },
   {
-    "id": "2d1393f2-3862-4676-83ff-51f44c0a670e",
-    "materia": "Chimica",
+    "id": "2eb9580a-f645-49e1-8489-cfd214c74280",
+    "materia": "Biologia",
     "tipo": "completamento",
-    "testo": "Nella reazione 2H2 + O2 → 2H2O, il coefficiente stechiometrico dell’ossigeno è __________.",
+    "tag": [
+      "Mutazioni e riparazione DNA"
+    ],
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
+  },
+  {
+    "id": "04fb2897-cb58-4672-b409-b98007069361",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. talassemia), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "50%",
+      "100%",
+      "0%",
+      "75%",
+      "25%"
+    ],
+    "correct_index": 4,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "ead2cd04-ca31-4274-a77d-afe1f685428b",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "90186a7b-e457-4a3e-b169-bb223a98c24a",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Dinamica: leggi di Newton"
+    ],
+    "testo": "Nel moto circolare uniforme, l'accelerazione è diretta verso il ______ della traiettoria.",
+    "correct_text": "centro",
+    "spiegazione": "Accelerazione centripeta."
+  },
+  {
+    "id": "28c18697-a3ae-49c2-a50a-b4407d5f6024",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1200 kg/m³, qual è l'aumento di pressione a profondità h=0.5 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "588 Pa",
+      "2940 Pa",
+      "11760 Pa",
+      "58800 Pa",
+      "5880 Pa"
+    ],
+    "correct_index": 4,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "5789e96a-1355-4f59-933f-b2ebbe486961",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "ATP e catene di trasporto elettroni (concetto)"
+    ],
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
+  },
+  {
+    "id": "b5006f59-5c4d-484d-a2ec-93865bcedadb",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Solubilità e Kps"
+    ],
+    "testo": "Per AgCl con Kps = 1.8e-10, qual è la solubilità molare s in acqua pura?",
+    "opzioni": [
+      "6.71e-06 M",
+      "1.34e-05 M",
+      "2.68e-05 M",
+      "1.34e-06 M",
+      "1.34e-04 M"
+    ],
+    "correct_index": 1,
+    "spiegazione": "s = √Kps"
+  },
+  {
+    "id": "eca94d70-efee-4cfe-b770-b3caaf884a56",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Solubilità e Kps"
+    ],
+    "testo": "Per BaSO4 con Kps = 1.1e-10, qual è la solubilità molare s in acqua pura?",
+    "opzioni": [
+      "5.24e-06 M",
+      "1.05e-05 M",
+      "1.05e-06 M",
+      "1.05e-04 M",
+      "2.10e-05 M"
+    ],
+    "correct_index": 1,
+    "spiegazione": "s = √Kps"
+  },
+  {
+    "id": "6b480086-a631-4e6d-b6a7-768df384be79",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Basi chimiche della vita (polare/non polare)"
+    ],
+    "testo": "I virus sono considerati parassiti obbligati perché:",
+    "opzioni": [
+      "Non hanno DNA",
+      "Si replicano solo in cellule ospiti",
+      "Hanno ribosomi propri",
+      "Metabolizzano glucosio",
+      "Hanno parete cellulare"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Dipendono dalla cellula ospite per replicarsi."
+  },
+  {
+    "id": "7e153961-5927-4699-8620-adf85c2f58a6",
+    "materia": "Chimica",
+    "tipo": "scelta",
     "tag": [
       "Stechiometria e bilanciamento reazioni"
     ],
-    "difficolta": "Base",
-    "spiegazione": "O2 ha coefficiente 1.",
-    "risposte": [
-      "1"
+    "testo": "Quante moli ci sono in 18 g di un composto con massa molare 60 g/mol?",
+    "opzioni": [
+      "0.6 mol",
+      "0.3 mol",
+      "0.03 mol",
+      "0.15 mol",
+      "3 mol"
     ],
-    "created_at": "2026-01-31T00:43:07.515440"
+    "correct_index": 1,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
   },
   {
-    "id": "9ae64f7a-3a89-4d15-a316-f6efe762e520",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Il numero di Avogadro vale circa 6,02×10^__________.",
+    "id": "6b315666-fbd9-4304-892c-f0133cad3569",
+    "materia": "Biologia",
+    "tipo": "scelta",
     "tag": [
-      "Stechiometria e bilanciamento reazioni"
+      "Genetica mendeliana e non-mendeliana"
     ],
-    "difficolta": "Base",
-    "spiegazione": "NA ≈ 6,022×10^23.",
-    "risposte": [
-      "23"
+    "testo": "Per un carattere autosomico recessivo (es. talassemia), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "25%",
+      "100%",
+      "75%",
+      "50%",
+      "0%"
     ],
-    "created_at": "2026-01-31T00:43:07.515446"
+    "correct_index": 0,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
   },
   {
-    "id": "dc1119ad-afbf-405a-9839-f9172057e081",
+    "id": "d4a27164-b7d5-40ef-af88-b72798f4fec0",
     "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "La concentrazione espressa in mol/L è detta __________.",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Unità mol/L definisce la molarità.",
-    "risposte": [
-      "molarità"
-    ],
-    "created_at": "2026-01-31T00:43:07.515453"
-  },
-  {
-    "id": "8cded870-30fa-4d74-817c-4ea031f317fe",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "La soluzione che ha concentrazione di soluti maggiore della cellula è detta __________.",
-    "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Ipertonica: più soluti fuori → acqua esce dalla cellula.",
-    "risposte": [
-      "ipertonica"
-    ],
-    "created_at": "2026-01-31T00:43:07.515459"
-  },
-  {
-    "id": "1b742359-b04b-4014-8571-4ee085f78d6b",
-    "materia": "Chimica",
-    "tipo": "completamento",
-    "testo": "Nel calcolo del pH, log10(10⁻³)=__________.",
+    "tipo": "scelta",
     "tag": [
       "Struttura della materia e teoria atomica"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Proprietà dei logaritmi: log(10^a)=a.",
-    "risposte": [
-      "−3"
+    "testo": "Quale particella determina il numero atomico Z di un elemento?",
+    "opzioni": [
+      "Neutroni",
+      "Protoni",
+      "Elettroni di valenza",
+      "Isotopi",
+      "Nucleoni totali"
     ],
-    "created_at": "2026-01-31T00:43:07.515465"
+    "correct_index": 1,
+    "spiegazione": "Z coincide con il numero di protoni nel nucleo."
   },
   {
-    "id": "aa824819-bdf3-4401-b921-01469ba0aa25",
-    "materia": "Chimica",
+    "id": "db2f7ec9-0a74-4a18-b8a2-6a52272fd874",
+    "materia": "Fisica",
     "tipo": "completamento",
-    "testo": "Il composto CH3COCH3 è un __________.",
     "tag": [
-      "Chimica organica: gruppi funzionali"
+      "Centro di massa e corpo rigido"
     ],
-    "difficolta": "Base",
-    "spiegazione": "CH3COCH3 (acetone) contiene il gruppo carbonile interno: chetone.",
-    "risposte": [
-      "chetone"
-    ],
-    "created_at": "2026-01-31T00:43:07.515471"
+    "testo": "Nel principio di Archimede, la spinta vale S = ρ_liquido · g · ______ spostato.",
+    "correct_text": "volume",
+    "spiegazione": "La spinta è pari al peso del fluido spostato: ρ g V."
   },
   {
-    "id": "0f3c944a-0f0b-4646-905f-b399fbec5d5e",
+    "id": "5390006c-2db3-4d60-be87-4dd69f6d08c9",
     "materia": "Chimica",
     "tipo": "completamento",
-    "testo": "La pressione osmotica è descritta dall’equazione di van ’t __________.",
     "tag": [
-      "Soluzioni: concentrazioni, osmolarità"
+      "Stechiometria e bilanciamento reazioni"
     ],
-    "difficolta": "Media",
-    "spiegazione": "Formula: Π = iCRT (van ’t Hoff).",
-    "risposte": [
-      "Hoff"
-    ],
-    "created_at": "2026-01-31T00:43:07.515477"
+    "testo": "Il numero di moli si calcola come n = m / M, dove M è la ______ molare.",
+    "correct_text": "massa",
+    "spiegazione": "M è la massa molare (g/mol)."
   },
   {
-    "id": "a7f8c4aa-65b3-42c4-a200-d93411525c52",
+    "id": "af5e1940-0ff1-4d5f-91ea-a73aaf843c48",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1200 kg/m³, qual è l'aumento di pressione a profondità h=3 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "352800 Pa",
+      "17640 Pa",
+      "70560 Pa",
+      "35280 Pa",
+      "3528 Pa"
+    ],
+    "correct_index": 3,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "f7eba270-bd7c-4d28-b24d-4de937ebf408",
     "materia": "Chimica",
     "tipo": "completamento",
-    "testo": "Un processo che assorbe calore dall’ambiente è __________.",
+    "tag": [
+      "Equilibri chimici"
+    ],
+    "testo": "In condizioni standard, il potenziale di riduzione si indica con E° e si misura in ______.",
+    "correct_text": "volt",
+    "spiegazione": "Unità SI: V."
+  },
+  {
+    "id": "f6b42ceb-437e-46cd-8428-38def93f4b67",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Struttura della materia e teoria atomica"
+    ],
+    "testo": "Quale composto contiene il gruppo funzionale aldeidico?",
+    "opzioni": [
+      "Propanone",
+      "Etanolo",
+      "Etanale",
+      "Acido etanoico",
+      "Etere dietilico"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Un'aldeide ha il gruppo –CHO: etanale = CH₃–CHO."
+  },
+  {
+    "id": "22c65d72-3286-4faa-a817-de90b073d8ed",
+    "materia": "Chimica",
+    "tipo": "completamento",
+    "tag": [
+      "Ossidazione-riduzione"
+    ],
+    "testo": "Una reazione di addizione agli alcheni trasforma un doppio legame in un legame ______.",
+    "correct_text": "singolo",
+    "spiegazione": "Addizione: saturazione del doppio legame."
+  },
+  {
+    "id": "26b808b3-a39a-44a5-8344-e81d2282e685",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Acidi-basi, pH, tamponi"
+    ],
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-09 M. Qual è il pH (approssimato)?",
+    "opzioni": [
+      "10",
+      "8",
+      "11",
+      "9",
+      "7"
+    ],
+    "correct_index": 3,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
+  },
+  {
+    "id": "ad5ac1ca-324f-4396-86c1-c302b4cd3028",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "DNA/RNA: struttura, replicazione, trascrizione"
+    ],
+    "testo": "Il capside virale è costituito da ______.",
+    "correct_text": "proteine",
+    "spiegazione": "Il capside è un rivestimento proteico."
+  },
+  {
+    "id": "86555883-1db2-4854-bf3f-dccff40659f0",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "ATP e catene di trasporto elettroni (concetto)"
+    ],
+    "testo": "I virus sono considerati parassiti obbligati perché:",
+    "opzioni": [
+      "Non hanno DNA",
+      "Si replicano solo in cellule ospiti",
+      "Hanno ribosomi propri",
+      "Metabolizzano glucosio",
+      "Hanno parete cellulare"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Dipendono dalla cellula ospite per replicarsi."
+  },
+  {
+    "id": "12fbdd1b-5324-4f38-8136-e597cfd6a6c7",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Solubilità e Kps"
+    ],
+    "testo": "Per BaSO4 con Kps = 1.1e-10, qual è la solubilità molare s in acqua pura?",
+    "opzioni": [
+      "1.05e-06 M",
+      "1.05e-05 M",
+      "5.24e-06 M",
+      "1.05e-04 M",
+      "2.10e-05 M"
+    ],
+    "correct_index": 1,
+    "spiegazione": "s = √Kps"
+  },
+  {
+    "id": "b546f060-cc15-4aeb-ab9f-a70cbfb912d9",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1000 kg/m³, qual è l'aumento di pressione a profondità h=2 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "9800 Pa",
+      "196000 Pa",
+      "19600 Pa",
+      "1960 Pa",
+      "39200 Pa"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "3075ca2c-ef95-4f32-a717-88902cd56600",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Acidi-basi, pH, tamponi"
+    ],
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-04 M. Qual è il pH (approssimato)?",
+    "opzioni": [
+      "2",
+      "4",
+      "6",
+      "3",
+      "5"
+    ],
+    "correct_index": 1,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
+  },
+  {
+    "id": "33db977c-10b0-41dc-96e9-19e85d712c00",
+    "materia": "Chimica",
+    "tipo": "completamento",
+    "tag": [
+      "Biomolecole: carboidrati, lipidi, proteine, acidi nucleici"
+    ],
+    "testo": "Gli isomeri con stessa formula e diverso gruppo funzionale sono isomeri di ______.",
+    "correct_text": "funzione",
+    "spiegazione": "Isomeria di funzione: stessa formula, diversi gruppi."
+  },
+  {
+    "id": "bbcb74c9-3674-491a-bafb-faff6af352ae",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. talassemia), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "75%",
+      "50%",
+      "0%",
+      "25%",
+      "100%"
+    ],
+    "correct_index": 3,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "be2277c3-d686-4be1-b32d-e8f20fcaff38",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=5 m/s e accelera uniformemente con a=2 m/s² per t=4 s. Qual è la velocità finale?",
+    "opzioni": [
+      "26 m/s",
+      "13 m/s",
+      "15 m/s",
+      "6.5 m/s",
+      "11 m/s"
+    ],
+    "correct_index": 1,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "9642e00a-6159-4a31-835b-81193296a424",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Cellula eucariotica e endomembrane"
+    ],
+    "testo": "Il trasporto attraverso membrana che richiede ATP è detto:",
+    "opzioni": [
+      "Diffusione semplice",
+      "Diffusione facilitata",
+      "Osmosi",
+      "Trasporto attivo",
+      "Filtrazione"
+    ],
+    "correct_index": 3,
+    "spiegazione": "Il trasporto attivo usa energia (ATP o gradienti) per muovere contro gradiente."
+  },
+  {
+    "id": "e8d838a9-59bd-4b81-ab4e-668961c98a59",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
+  },
+  {
+    "id": "8bac62ba-edd4-4930-ae11-c1507ed5686d",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=0 m/s e accelera uniformemente con a=3 m/s² per t=4 s. Qual è la velocità finale?",
+    "opzioni": [
+      "24 m/s",
+      "9 m/s",
+      "6 m/s",
+      "15 m/s",
+      "12 m/s"
+    ],
+    "correct_index": 4,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "7552c40d-c7c0-43dd-b73e-adc930cebd75",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "ATP e catene di trasporto elettroni (concetto)"
+    ],
+    "testo": "Le proteine destinate alla secrezione passano per il reticolo endoplasmatico ______.",
+    "correct_text": "rugoso",
+    "spiegazione": "RER con ribosomi sintetizza proteine secretorie."
+  },
+  {
+    "id": "61a45041-9730-42a3-84c8-831d33db99b6",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Enzimi: sito attivo, specificità, denaturazione"
+    ],
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
+  },
+  {
+    "id": "1d0f3108-2c1a-4091-b79d-f5d6de1be854",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1000 kg/m³, qual è l'aumento di pressione a profondità h=2 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "39200 Pa",
+      "1960 Pa",
+      "9800 Pa",
+      "19600 Pa",
+      "196000 Pa"
+    ],
+    "correct_index": 3,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "884cea09-e748-4f20-ad9e-f9550fb13d3a",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. albinismo), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "75%",
+      "50%",
+      "100%",
+      "25%",
+      "0%"
+    ],
+    "correct_index": 3,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "229dc127-bb6e-42ae-b62a-a45dee1b7b58",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "9f59dde7-e196-4d71-ae5f-226ebb541272",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Codice genetico e traduzione (concetto)"
+    ],
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
+  },
+  {
+    "id": "4ee7c1be-4da8-415a-9ed3-a277f0df49bb",
+    "materia": "Chimica",
+    "tipo": "completamento",
+    "tag": [
+      "Reazioni organiche di base"
+    ],
+    "testo": "La costante di dissociazione acida si indica con K____.",
+    "correct_text": "a",
+    "spiegazione": "Per un acido HA ⇌ H⁺ + A⁻ si usa Ka."
+  },
+  {
+    "id": "59c4e217-036c-47f5-b9e8-b7f83d409f10",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=2 m/s e accelera uniformemente con a=1 m/s² per t=5 s. Qual è la velocità finale?",
+    "opzioni": [
+      "6 m/s",
+      "14 m/s",
+      "3.5 m/s",
+      "7 m/s",
+      "8 m/s"
+    ],
+    "correct_index": 3,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "085e9a7d-9f45-4139-b2f1-a3dc29b6c9ec",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "72a76718-3c32-4c4d-9cde-2751a4af1fcf",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=10 m/s e accelera uniformemente con a=1 m/s² per t=3 s. Qual è la velocità finale?",
+    "opzioni": [
+      "26 m/s",
+      "12 m/s",
+      "14 m/s",
+      "13 m/s",
+      "6.5 m/s"
+    ],
+    "correct_index": 3,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "3b90b5e0-e989-4816-980f-c13d0a9ca58b",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 36 g di un composto con massa molare 180 g/mol?",
+    "opzioni": [
+      "0.1 mol",
+      "0.4 mol",
+      "2 mol",
+      "0.2 mol",
+      "0.02 mol"
+    ],
+    "correct_index": 3,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "52580911-a60e-474c-a06f-2e4f553f5855",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Vettori: somma, prodotto scalare e vettoriale"
+    ],
+    "testo": "Secondo Faraday, una variazione di flusso magnetico induce una forza elettromotrice:",
+    "opzioni": [
+      "Nulla",
+      "Direttamente proporzionale a ΔΦ/Δt",
+      "Inversamente proporzionale a ΔΦ/Δt",
+      "Proporzionale alla massa",
+      "Proporzionale alla resistenza"
+    ],
+    "correct_index": 1,
+    "spiegazione": "ε = - dΦ/dt (legge di Faraday-Lenz)."
+  },
+  {
+    "id": "47c05322-0d86-415c-a1d6-661131236184",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "La doppia elica del DNA è stabilizzata da legami a ______ tra basi complementari.",
+    "correct_text": "idrogeno",
+    "spiegazione": "Le basi si appaiano con legami a idrogeno (A-T, G-C)."
+  },
+  {
+    "id": "68991dd5-48e2-4a45-ba6e-b790f118692c",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Macromolecole: zuccheri, lipidi, proteine, nucleotidi"
+    ],
+    "testo": "Negli eucarioti, la traduzione delle proteine avviene principalmente nel:",
+    "opzioni": [
+      "Nucleo",
+      "Mitocondrio",
+      "Ribosoma",
+      "Apparato di Golgi",
+      "Lisosome"
+    ],
+    "correct_index": 2,
+    "spiegazione": "I ribosomi traducono mRNA in polipeptidi."
+  },
+  {
+    "id": "4f5d252b-4f56-4be3-bfb4-904b74b4aa67",
+    "materia": "Chimica",
+    "tipo": "completamento",
+    "tag": [
+      "Tavola periodica e proprietà periodiche"
+    ],
+    "testo": "Un processo con ΔG < 0 è ______ (a T e p costanti).",
+    "correct_text": "spontaneo",
+    "spiegazione": "ΔG negativo indica spontaneità a T,p costanti."
+  },
+  {
+    "id": "00aad300-1e98-4909-8fab-e66d94dfcdfc",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1000 kg/m³, qual è l'aumento di pressione a profondità h=0.5 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "490 Pa",
+      "9800 Pa",
+      "4900 Pa",
+      "49000 Pa",
+      "2450 Pa"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "49c09ce5-bfd2-4229-a300-3c56179d483e",
+    "materia": "Chimica",
+    "tipo": "scelta",
     "tag": [
       "Termodinamica e spontaneità"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Endotermico: ΔH>0, assorbe calore.",
-    "risposte": [
-      "endotermico"
+    "testo": "Nel tampone H₂CO₃/HCO₃⁻, l'aggiunta di H⁺ viene principalmente 'tamponata' da:",
+    "opzioni": [
+      "H₂CO₃",
+      "HCO₃⁻",
+      "CO₃²⁻",
+      "H₂O",
+      "CO₂"
     ],
-    "created_at": "2026-01-31T00:43:07.515483"
+    "correct_index": 1,
+    "spiegazione": "La base coniugata HCO₃⁻ consuma H⁺ formando H₂CO₃."
   },
   {
-    "id": "01ccbdff-f737-406f-b49c-1fbedf1cb710",
+    "id": "f7f286e7-fd73-4a2d-a95b-117c7599ebde",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "DNA/RNA: struttura, replicazione, trascrizione"
+    ],
+    "testo": "Negli eucarioti, la traduzione delle proteine avviene principalmente nel:",
+    "opzioni": [
+      "Nucleo",
+      "Mitocondrio",
+      "Ribosoma",
+      "Apparato di Golgi",
+      "Lisosome"
+    ],
+    "correct_index": 2,
+    "spiegazione": "I ribosomi traducono mRNA in polipeptidi."
+  },
+  {
+    "id": "b1f0e20c-2acb-4f21-887c-e5b8c876dbec",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Elettromagnetismo: induzione (Faraday)"
+    ],
+    "testo": "L'energia cinetica è K = (1/2) m v____.",
+    "correct_text": "2",
+    "spiegazione": "K dipende dal quadrato della velocità."
+  },
+  {
+    "id": "07f55ee0-5e46-42e4-bd57-b795285bb496",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Cellula procariotica (membrana/parete)"
+    ],
+    "testo": "Un enzima abbassa l'energia di attivazione perché:",
+    "opzioni": [
+      "Aumenta ΔG della reazione",
+      "Stabilizza lo stato di transizione",
+      "Consuma ATP",
+      "Cambia l'equilibrio",
+      "Trasforma i prodotti in reagenti"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Gli enzimi stabilizzano lo stato di transizione riducendo Ea."
+  },
+  {
+    "id": "c35cd537-44e2-45cd-acb7-04aafa747f14",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "Nel principio di Archimede, la spinta vale S = ρ_liquido · g · ______ spostato.",
+    "correct_text": "volume",
+    "spiegazione": "La spinta è pari al peso del fluido spostato: ρ g V."
+  },
+  {
+    "id": "aa519108-1773-41ac-987b-372b42f9dee8",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Solubilità e Kps"
+    ],
+    "testo": "Per BaSO4 con Kps = 1.1e-10, qual è la solubilità molare s in acqua pura?",
+    "opzioni": [
+      "1.05e-05 M",
+      "5.24e-06 M",
+      "1.05e-06 M",
+      "2.10e-05 M",
+      "1.05e-04 M"
+    ],
+    "correct_index": 0,
+    "spiegazione": "s = √Kps"
+  },
+  {
+    "id": "b75e5a6f-232d-48c7-87f9-149f4dd66b37",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Moto laminare/turbolento e resistenze"
+    ],
+    "testo": "Un corpo in moto rettilineo uniforme ha accelerazione:",
+    "opzioni": [
+      "Costante non nulla",
+      "Variabile",
+      "Nulla",
+      "Sempre positiva",
+      "Dipende dalla massa"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Nel MRU la velocità è costante → a = 0."
+  },
+  {
+    "id": "4a2d9fa7-4c10-454b-b8df-0b3b16c6c9c3",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 9.8 g di un composto con massa molare 58.5 g/mol?",
+    "opzioni": [
+      "0.017 mol",
+      "0.336 mol",
+      "1.68 mol",
+      "0.168 mol",
+      "0.084 mol"
+    ],
+    "correct_index": 3,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "8126df53-f679-4e85-a61b-606734a7faa4",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Solubilità e Kps"
+    ],
+    "testo": "Per AgCl con Kps = 1.8e-10, qual è la solubilità molare s in acqua pura?",
+    "opzioni": [
+      "1.34e-04 M",
+      "2.68e-05 M",
+      "1.34e-06 M",
+      "6.71e-06 M",
+      "1.34e-05 M"
+    ],
+    "correct_index": 4,
+    "spiegazione": "s = √Kps"
+  },
+  {
+    "id": "0f1b9278-e75a-480b-94c5-35e1a50b1bad",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=10 m/s e accelera uniformemente con a=1 m/s² per t=5 s. Qual è la velocità finale?",
+    "opzioni": [
+      "14 m/s",
+      "15 m/s",
+      "30 m/s",
+      "7.5 m/s",
+      "16 m/s"
+    ],
+    "correct_index": 1,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "be72f893-2276-4531-9d99-106e5ed4ab84",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Tavola periodica e proprietà periodiche"
+    ],
+    "testo": "Quale tendenza è corretta scendendo lungo un gruppo della tavola periodica?",
+    "opzioni": [
+      "Aumenta l'elettronegatività",
+      "Diminuisce il raggio atomico",
+      "Aumenta il raggio atomico",
+      "Aumenta l'energia di ionizzazione",
+      "Diminuisce la massa atomica"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Scendendo nel gruppo aumentano i livelli elettronici: raggio ↑, elettronegatività e IE ↓."
+  },
+  {
+    "id": "0443fb1f-e0b0-4244-8e7c-fb6e6b1c2f74",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
+    ],
+    "testo": "In un fluido incomprimibile in moto stazionario, l'equazione di continuità implica che A·v sia:",
+    "opzioni": [
+      "Costante",
+      "Zero",
+      "Proporzionale a p",
+      "Proporzionale a g",
+      "Proporzionale a ρ²"
+    ],
+    "correct_index": 0,
+    "spiegazione": "Portata Q = A v costante lungo la linea di flusso."
+  },
+  {
+    "id": "2aa64a2a-2fda-4907-a161-7b50d4812730",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1200 kg/m³, qual è l'aumento di pressione a profondità h=1 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "11760 Pa",
+      "23520 Pa",
+      "5880 Pa",
+      "117600 Pa",
+      "1176 Pa"
+    ],
+    "correct_index": 0,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "3c76fb77-2c29-4895-8b8b-90b08a7b801c",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=800 kg/m³, qual è l'aumento di pressione a profondità h=2 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "31360 Pa",
+      "1568 Pa",
+      "15680 Pa",
+      "7840 Pa",
+      "156800 Pa"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "8e2c9497-0cb3-4b20-87eb-ae83e23e7381",
+    "materia": "Fisica",
+    "tipo": "completamento",
+    "tag": [
+      "Quantità di moto e urti"
+    ],
+    "testo": "Nel principio di Archimede, la spinta vale S = ρ_liquido · g · ______ spostato.",
+    "correct_text": "volume",
+    "spiegazione": "La spinta è pari al peso del fluido spostato: ρ g V."
+  },
+  {
+    "id": "f5d9de46-4809-44eb-8a50-ff0a988622d9",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Nel tampone H₂CO₃/HCO₃⁻, l'aggiunta di H⁺ viene principalmente 'tamponata' da:",
+    "opzioni": [
+      "H₂CO₃",
+      "HCO₃⁻",
+      "CO₃²⁻",
+      "H₂O",
+      "CO₂"
+    ],
+    "correct_index": 1,
+    "spiegazione": "La base coniugata HCO₃⁻ consuma H⁺ formando H₂CO₃."
+  },
+  {
+    "id": "36692d3a-d097-460e-8c82-cda52536063b",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 18 g di un composto con massa molare 98 g/mol?",
+    "opzioni": [
+      "0.018 mol",
+      "0.368 mol",
+      "0.092 mol",
+      "0.184 mol",
+      "1.84 mol"
+    ],
+    "correct_index": 3,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "80d25ee7-118a-4489-a854-755eca4a6da8",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Solubilità e Kps"
+    ],
+    "testo": "Per CaF2 con Kps = 3.9e-11, qual è la solubilità molare s in acqua pura?",
+    "opzioni": [
+      "2.14e-05 M",
+      "2.14e-04 M",
+      "1.07e-04 M",
+      "2.14e-03 M",
+      "4.27e-04 M"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Kps = [A²⁺][F⁻]² = s·(2s)² = 4s³"
+  },
+  {
+    "id": "e43cc55e-a50b-4ca7-b5f2-568259013d94",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. fibrosi cistica), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "50%",
+      "100%",
+      "0%",
+      "25%",
+      "75%"
+    ],
+    "correct_index": 3,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "dde4658d-1c19-4443-bb98-641dcd514a8c",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Solubilità e Kps"
+    ],
+    "testo": "Per BaSO4 con Kps = 1.1e-10, qual è la solubilità molare s in acqua pura?",
+    "opzioni": [
+      "1.05e-05 M",
+      "1.05e-04 M",
+      "5.24e-06 M",
+      "1.05e-06 M",
+      "2.10e-05 M"
+    ],
+    "correct_index": 0,
+    "spiegazione": "s = √Kps"
+  },
+  {
+    "id": "60f0f7f7-973f-4ee5-a4e8-3836618af07e",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Le proteine destinate alla secrezione passano per il reticolo endoplasmatico ______.",
+    "correct_text": "rugoso",
+    "spiegazione": "RER con ribosomi sintetizza proteine secretorie."
+  },
+  {
+    "id": "9639253e-89c9-488a-a7fa-b6ef766e9f40",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Acidi-basi, pH, tamponi"
+    ],
+    "testo": "Quale tendenza è corretta scendendo lungo un gruppo della tavola periodica?",
+    "opzioni": [
+      "Aumenta l'elettronegatività",
+      "Diminuisce il raggio atomico",
+      "Aumenta il raggio atomico",
+      "Aumenta l'energia di ionizzazione",
+      "Diminuisce la massa atomica"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Scendendo nel gruppo aumentano i livelli elettronici: raggio ↑, elettronegatività e IE ↓."
+  },
+  {
+    "id": "ddf06b2e-f101-4102-b91c-b593fc814320",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 6 g di un composto con massa molare 98 g/mol?",
+    "opzioni": [
+      "0.03 mol",
+      "0.61 mol",
+      "0.061 mol",
+      "0.006 mol",
+      "0.122 mol"
+    ],
+    "correct_index": 2,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "71dd8d30-ace1-4466-85d5-a6cf6de9914e",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 9.8 g di un composto con massa molare 44 g/mol?",
+    "opzioni": [
+      "0.223 mol",
+      "2.23 mol",
+      "0.446 mol",
+      "0.112 mol",
+      "0.022 mol"
+    ],
+    "correct_index": 0,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "aad84c55-a3b3-42e3-afcc-e30a5a2ed9dd",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 1.8 g di un composto con massa molare 98 g/mol?",
+    "opzioni": [
+      "0.018 mol",
+      "0.002 mol",
+      "0.036 mol",
+      "0.18 mol",
+      "0.009 mol"
+    ],
+    "correct_index": 0,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "27f42e5f-138c-4651-b5af-97c71a6936cf",
     "materia": "Chimica",
     "tipo": "completamento",
-    "testo": "Un orbitale che può contenere al massimo 2 elettroni con spin opposto è detto __________.",
     "tag": [
-      "Struttura della materia e teoria atomica"
+      "Termodinamica e spontaneità"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Per principio di Pauli, ogni orbitale ospita massimo 2 elettroni con spin opposto.",
-    "risposte": [
-      "orbitale"
-    ],
-    "created_at": "2026-01-31T00:43:13.245710"
+    "testo": "La variazione di entalpia si indica con Δ______.",
+    "correct_text": "H",
+    "spiegazione": "ΔH misura calore a pressione costante."
   },
   {
-    "id": "d4ed2957-1262-471e-9170-8058d7e2e3cb",
-    "materia": "Fisica",
+    "id": "0048763d-12c3-42cb-b976-1d3ff5bf8b4e",
+    "materia": "Biologia",
     "tipo": "scelta",
-    "testo": "Qual è l’unità SI della pressione?",
     "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
+      "Membrana: mosaico fluido, trasporti"
     ],
-    "difficolta": "Base",
-    "spiegazione": "La pressione è forza/superficie: N/m², chiamata pascal (Pa).",
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
     "opzioni": [
-      "J",
-      "Pa",
-      "N",
-      "W",
-      "C"
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
     ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:43:53.418611"
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
   },
   {
-    "id": "b56dd90e-b6cf-4ab3-bed5-22f506345299",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Secondo la legge di Ohm, la relazione corretta è:",
+    "id": "cd37a51e-ae90-4b05-8851-fc504fa94047",
+    "materia": "Biologia",
+    "tipo": "completamento",
     "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
+      "Codice genetico e traduzione (concetto)"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Legge di Ohm: V=I·R.",
-    "opzioni": [
-      "V=IR",
-      "I=VR",
-      "R=VI",
-      "V=I/R",
-      "R=I/V"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.418686"
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
   },
   {
-    "id": "a2645451-f378-46be-8ac1-a9225df2f3f2",
-    "materia": "Fisica",
+    "id": "028cde37-125b-4c6f-8637-a7b08b20f992",
+    "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "La potenza elettrica dissipata da un resistore può essere espressa come:",
     "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
+      "Stechiometria e bilanciamento reazioni"
     ],
-    "difficolta": "Media",
-    "spiegazione": "Una forma corretta è P=IV (e anche P=I²R e P=V²/R).",
+    "testo": "Quante moli ci sono in 1.8 g di un composto con massa molare 18 g/mol?",
     "opzioni": [
-      "P=IV",
-      "P=I/R",
-      "P=V/R",
-      "P=IR",
-      "P=V/I"
+      "0.01 mol",
+      "0.2 mol",
+      "1 mol",
+      "0.1 mol",
+      "0.05 mol"
     ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.418746"
+    "correct_index": 3,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
   },
   {
-    "id": "3ee4e4e3-b6d2-4ac4-bf19-f31fdae635de",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Nell’effetto Doppler, se la sorgente si avvicina all’osservatore la frequenza percepita:",
+    "id": "2752e7a3-550e-4c60-b61b-78d289ec9f48",
+    "materia": "Biologia",
+    "tipo": "completamento",
     "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
+      "Macromolecole: zuccheri, lipidi, proteine, nucleotidi"
     ],
-    "difficolta": "Media",
-    "spiegazione": "Avvicinamento → onde compresse → frequenza percepita maggiore.",
-    "opzioni": [
-      "diminuisce",
-      "aumenta",
-      "rimane uguale",
-      "diventa zero",
-      "dipende dall’intensità"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:43:53.418999"
+    "testo": "La trascrizione produce una molecola di ______ a partire dal DNA.",
+    "correct_text": "mRNA",
+    "spiegazione": "RNA messaggero."
   },
   {
-    "id": "8e983b36-a035-449f-b42c-725fa0f43b12",
+    "id": "01ffd4e3-0bb2-4270-b593-772577d2f1cd",
     "materia": "Fisica",
     "tipo": "scelta",
-    "testo": "In un moto rettilineo uniforme, l’accelerazione è:",
     "tag": [
       "Cinematica: moto, velocità, accelerazione"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Nel moto uniforme la velocità è costante → accelerazione 0.",
+    "testo": "Un corpo parte con v₀=0 m/s e accelera uniformemente con a=2 m/s² per t=3 s. Qual è la velocità finale?",
     "opzioni": [
-      "costante e non nulla",
-      "variabile",
-      "nulla",
-      "uguale alla velocità",
-      "uguale a g"
+      "6 m/s",
+      "8 m/s",
+      "4 m/s",
+      "12 m/s",
+      "3 m/s"
     ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:43:53.419105"
+    "correct_index": 0,
+    "spiegazione": "v = v₀ + a·t."
   },
   {
-    "id": "e563872f-ddde-4d79-a106-bed22f27a1e1",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Un resistore è attraversato da una corrente di 2 A quando ai suoi capi ci sono 12 V. Quanto vale la resistenza?",
+    "id": "5218a624-779b-4cf8-8e18-6010b257b56d",
+    "materia": "Biologia",
+    "tipo": "completamento",
     "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
+      "Virus: struttura e classi"
     ],
-    "difficolta": "Base",
-    "spiegazione": "R=V/I.",
-    "opzioni": [
-      "6 Ω",
-      "12 Ω",
-      "3 Ω",
-      "9 Ω",
-      "4.8 Ω"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.419449"
+    "testo": "L'ATP viene prodotto principalmente nei mitocondri tramite fosforilazione ______.",
+    "correct_text": "ossidativa",
+    "spiegazione": "Catena di trasporto elettroni + ATP sintasi."
   },
   {
-    "id": "2557873f-44c6-45b0-a45c-342ff7e87e69",
-    "materia": "Fisica",
+    "id": "9e7e4179-00c3-4bc0-ad3c-3d1d62b8b8a0",
+    "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "Un resistore è attraversato da una corrente di 3 A quando ai suoi capi ci sono 9 V. Quanto vale la resistenza?",
     "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
+      "Acidi-basi, pH, tamponi"
     ],
-    "difficolta": "Base",
-    "spiegazione": "R=V/I.",
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-02 M. Qual è il pH (approssimato)?",
     "opzioni": [
-      "3 Ω",
-      "6 Ω",
-      "1.5 Ω",
-      "4.5 Ω",
-      "2.4 Ω"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.419605"
-  },
-  {
-    "id": "35a32049-aad8-4536-9a51-24e4aae19c29",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Un resistore è attraversato da una corrente di 0.5 A quando ai suoi capi ci sono 5 V. Quanto vale la resistenza?",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "R=V/I.",
-    "opzioni": [
-      "10 Ω",
-      "20 Ω",
-      "5 Ω",
-      "15 Ω",
-      "8 Ω"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.419748"
-  },
-  {
-    "id": "92e5b165-2bb2-4528-9d53-b235f3f45795",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Un resistore è attraversato da una corrente di 4 A quando ai suoi capi ci sono 24 V. Quanto vale la resistenza?",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "R=V/I.",
-    "opzioni": [
-      "6 Ω",
-      "12 Ω",
-      "3 Ω",
-      "9 Ω",
-      "4.8 Ω"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.419838"
-  },
-  {
-    "id": "8b960320-e481-411f-a3be-70e3e28da4f2",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Qual è la potenza dissipata da un resistore di 5 Ω attraversato da 2 A?",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "P=I²R.",
-    "opzioni": [
-      "20 W",
-      "40 W",
-      "10 W",
-      "30 W",
-      "16 W"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.420322"
-  },
-  {
-    "id": "b1e3be21-1254-48d1-906a-2a66b3250427",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Qual è la potenza dissipata da un resistore di 20 Ω attraversato da 0.5 A?",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "P=I²R.",
-    "opzioni": [
-      "5 W",
-      "10 W",
-      "2.5 W",
-      "7.5 W",
-      "4 W"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.420364"
-  },
-  {
-    "id": "a340c83a-755d-4f61-a4cf-e12083df875f",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Qual è la potenza dissipata da un resistore di 4 Ω attraversato da 3 A?",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "P=I²R.",
-    "opzioni": [
-      "36 W",
-      "72 W",
-      "18 W",
-      "54 W",
-      "28.8 W"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.420426"
-  },
-  {
-    "id": "f0536991-7e94-4aeb-b964-0d459f96d1b0",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Qual è la potenza dissipata da un resistore di 8 Ω attraversato da 1.5 A?",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "P=I²R.",
-    "opzioni": [
-      "18 W",
-      "36 W",
-      "9 W",
-      "27 W",
-      "14.4 W"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.420466"
-  },
-  {
-    "id": "c0086141-dc61-4ef7-9a6f-e03cd8ddc1b7",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Nella legge di Poiseuille, la portata Q è proporzionale al raggio r elevato alla:",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Q ∝ r⁴: piccole variazioni del raggio cambiano molto la portata.",
-    "opzioni": [
-      "1",
+      "0",
       "2",
+      "4",
       "3",
-      "4",
-      "5"
-    ],
-    "corretta_index": 3,
-    "created_at": "2026-01-31T00:43:53.420556"
-  },
-  {
-    "id": "0cec59e5-a414-48d0-94ff-6ba5284a39b8",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "La legge di Laplace per un vaso cilindrico lega la tensione di parete T a pressione P e raggio r come:",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Per cilindro: T = P·r (in forma semplificata).",
-    "opzioni": [
-      "T=P/r",
-      "T=Pr",
-      "T=r/P",
-      "T=P²r",
-      "T=Pr²"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:43:53.420618"
-  },
-  {
-    "id": "ee4325a3-4e99-4227-a72a-b9696c31c805",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "L’energia cinetica di una massa 2 kg che si muove a 3 m/s vale:",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Ek=½mv².",
-    "opzioni": [
-      "9 J",
-      "18 J",
-      "4.5 J",
-      "13.5 J",
-      "7.2 J"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.420781"
-  },
-  {
-    "id": "0d3c9761-c09d-4589-95a7-f71244fbc094",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "L’energia cinetica di una massa 1.5 kg che si muove a 4 m/s vale:",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Ek=½mv².",
-    "opzioni": [
-      "12 J",
-      "24 J",
-      "6 J",
-      "18 J",
-      "9.6 J"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.420810"
-  },
-  {
-    "id": "1f00bda6-1428-4298-99e0-c2a2b6058246",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "L’energia cinetica di una massa 5 kg che si muove a 2 m/s vale:",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Ek=½mv².",
-    "opzioni": [
-      "10 J",
-      "20 J",
-      "5 J",
-      "15 J",
-      "8 J"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:43:53.420823"
-  },
-  {
-    "id": "bc3d1d16-2310-488f-8987-c7c4a849b7cf",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Un’onda sonora con frequenza 20 kHz è:",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "20 kHz è sopra il limite superiore dell’udibile (~20 kHz): ultrasuono.",
-    "opzioni": [
-      "infrasuono",
-      "ultrasuono",
-      "udibile",
-      "radiazione ionizzante",
-      "luce visibile"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:43:53.421029"
-  },
-  {
-    "id": "b62dcd86-8069-4084-87fe-29464964efdf",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "In un conduttore ohmico, se raddoppio la tensione V la corrente I:",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "I=V/R: a R costante, I raddoppia.",
-    "opzioni": [
-      "si dimezza",
-      "raddoppia",
-      "quadruplica",
-      "diventa zero",
-      "non cambia"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:43:53.421042"
-  },
-  {
-    "id": "7c5720e4-a9c7-4966-89a5-a24606017e20",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "La grandezza che misura la carica elettrica è il:",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Unità SI della carica: coulomb (C).",
-    "opzioni": [
-      "watt",
-      "coulomb",
-      "tesla",
-      "pascal",
-      "joule"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:43:53.421053"
-  },
-  {
-    "id": "5ff37a5f-3d96-43a1-98ae-c7281bde16e1",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Nei raggi X l’energia dei fotoni è, in media, rispetto alla luce visibile:",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "I raggi X hanno frequenza più alta → energia più alta (E=hf).",
-    "opzioni": [
-      "minore",
-      "maggiore",
-      "uguale",
-      "zero",
-      "dipende dall’ampiezza"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:43:53.421062"
-  },
-  {
-    "id": "eddcd504-f5d4-410f-8335-a1b58f586bad",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "La capacità elettrica C di un condensatore piano aumenta se:",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "C=εA/d: un dielettrico aumenta ε quindi aumenta C.",
-    "opzioni": [
-      "aumento la distanza tra le piastre",
-      "riduzione l’area delle piastre",
-      "inserisco un dielettrico",
-      "aumento la resistenza",
-      "diminuisco la carica"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:43:53.421073"
-  },
-  {
-    "id": "00d0ea24-403f-4cca-bf7e-3befa48f3df9",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Una forza di 10 N agisce su una superficie di 0.5 m². La pressione vale:",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "P=F/A.",
-    "opzioni": [
-      "20 Pa",
-      "40 Pa",
-      "10 Pa",
-      "30 Pa",
-      "16 Pa"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.545693"
-  },
-  {
-    "id": "ec3a7aa4-afb6-4c38-9f69-d821583d18f1",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Una forza di 50 N agisce su una superficie di 2 m². La pressione vale:",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "P=F/A.",
-    "opzioni": [
-      "25 Pa",
-      "50 Pa",
-      "12.5 Pa",
-      "37.5 Pa",
-      "20 Pa"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.546060"
-  },
-  {
-    "id": "ea954564-0bab-49ee-891c-1e3bf5b17981",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Una forza di 100 N agisce su una superficie di 0.25 m². La pressione vale:",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "P=F/A.",
-    "opzioni": [
-      "400 Pa",
-      "800 Pa",
-      "200 Pa",
-      "600 Pa",
-      "320 Pa"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.546284"
-  },
-  {
-    "id": "84fea3bb-9ef3-4ba4-9719-0c82a46dddf7",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Un’onda con lunghezza d’onda 0.5 m si propaga a 4 m/s. La frequenza è:",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "f=v/λ.",
-    "opzioni": [
-      "8 Hz",
-      "16 Hz",
-      "4 Hz",
-      "12 Hz",
-      "6.4 Hz"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.546708"
-  },
-  {
-    "id": "34706697-ec50-4210-8d00-5da2cc609036",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Un’onda con lunghezza d’onda 0.2 m si propaga a 10 m/s. La frequenza è:",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "f=v/λ.",
-    "opzioni": [
-      "50 Hz",
-      "100 Hz",
-      "25 Hz",
-      "75 Hz",
-      "40 Hz"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.546905"
-  },
-  {
-    "id": "5a309641-df68-43c7-9148-6834e9306032",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Un’onda con lunghezza d’onda 0.8 m si propaga a 3 m/s. La frequenza è:",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "f=v/λ.",
-    "opzioni": [
-      "3.75 Hz",
-      "7.5 Hz",
-      "1.875 Hz",
-      "5.625 Hz",
-      "3 Hz"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.547007"
-  },
-  {
-    "id": "b58fd9d5-f05f-4d67-bb27-95113067b392",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Una forza costante di 20 N compie uno spostamento di 3 m nella stessa direzione. Il lavoro è:",
-    "tag": [
-      "Lavoro, energia, potenza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "W=F·s.",
-    "opzioni": [
-      "60 J",
-      "120 J",
-      "30 J",
-      "90 J",
-      "48 J"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.547257"
-  },
-  {
-    "id": "0df2a9b3-cbce-41d7-be5c-8bebc155c474",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Una forza costante di 5 N compie uno spostamento di 10 m nella stessa direzione. Il lavoro è:",
-    "tag": [
-      "Lavoro, energia, potenza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "W=F·s.",
-    "opzioni": [
-      "50 J",
-      "100 J",
-      "25 J",
-      "75 J",
-      "40 J"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.547285"
-  },
-  {
-    "id": "a828a528-50f8-449d-93d7-37e0e1abd384",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "Una forza costante di 12 N compie uno spostamento di 2 m nella stessa direzione. Il lavoro è:",
-    "tag": [
-      "Lavoro, energia, potenza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "W=F·s.",
-    "opzioni": [
-      "24 J",
-      "48 J",
-      "12 J",
-      "36 J",
-      "19.2 J"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.547296"
-  },
-  {
-    "id": "d152697e-bd93-4d86-aa6f-c4da20c990cb",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "In un cilindro con raggio 2 mm, se il raggio raddoppia (Poiseuille), la portata Q cambia di un fattore:",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Poiseuille: Q∝r⁴, quindi (2)⁴=16.",
-    "opzioni": [
-      "16",
-      "2",
-      "4",
-      "8",
       "1"
     ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.547370"
+    "correct_index": 1,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
   },
   {
-    "id": "de212ff1-959b-48ca-89ad-e6aecd5b36e5",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "In un cilindro con raggio 2 mm, se il raggio raddoppia (Poiseuille), la portata Q cambia di un fattore:",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Poiseuille: Q∝r⁴, quindi (2)⁴=16.",
-    "opzioni": [
-      "16",
-      "2",
-      "4",
-      "8",
-      "1"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.547377"
-  },
-  {
-    "id": "c0f56259-1c1d-4ab7-adbb-c23053f28949",
-    "materia": "Fisica",
-    "tipo": "scelta",
-    "testo": "In un cilindro con raggio 2 mm, se il raggio raddoppia (Poiseuille), la portata Q cambia di un fattore:",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Poiseuille: Q∝r⁴, quindi (2)⁴=16.",
-    "opzioni": [
-      "16",
-      "2",
-      "4",
-      "8",
-      "1"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:44:08.547383"
-  },
-  {
-    "id": "339c96e1-0c77-493d-8c31-88f256df0466",
+    "id": "4b29083e-17ed-4307-818d-fba00dd54c20",
     "materia": "Fisica",
     "tipo": "completamento",
-    "testo": "L’unità SI della forza è il __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Forza → newton (N).",
-    "risposte": [
-      "newton"
-    ],
-    "created_at": "2026-01-31T00:45:20.846481"
-  },
-  {
-    "id": "97472d8a-2895-48b1-9c1a-b3eec64c52b2",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "L’unità SI della pressione è il __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Pressione → pascal (Pa).",
-    "risposte": [
-      "pascal"
-    ],
-    "created_at": "2026-01-31T00:45:20.846584"
-  },
-  {
-    "id": "862cc810-9807-4876-ad6c-9cee1f81c823",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La resistenza elettrica si misura in __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "R in ohm (Ω).",
-    "risposte": [
-      "ohm"
-    ],
-    "created_at": "2026-01-31T00:45:20.846598"
-  },
-  {
-    "id": "4624c8a7-7e65-4c50-bfd6-0777733e5629",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La differenza di potenziale si misura in __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "V in volt (V).",
-    "risposte": [
-      "volt"
-    ],
-    "created_at": "2026-01-31T00:45:20.846761"
-  },
-  {
-    "id": "df304b01-2a74-4de1-897c-b88109133a47",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La carica elettrica si misura in __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Q in coulomb (C).",
-    "risposte": [
-      "coulomb"
-    ],
-    "created_at": "2026-01-31T00:45:20.846871"
-  },
-  {
-    "id": "d605d814-b7d2-403a-88c9-ca5a6e3219e6",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "Nel Sistema Internazionale l’energia si misura in __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Energia → joule (J).",
-    "risposte": [
-      "joule"
-    ],
-    "created_at": "2026-01-31T00:45:20.846926"
-  },
-  {
-    "id": "991bf719-fcef-4f98-b8f6-06450d17ed7b",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La potenza si misura in __________.",
-    "tag": [
-      "Lavoro, energia, potenza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Potenza → watt (W).",
-    "risposte": [
-      "watt"
-    ],
-    "created_at": "2026-01-31T00:45:20.847049"
-  },
-  {
-    "id": "dee04215-70ae-4fd7-a79d-d7b96a558ed8",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "Nel moto rettilineo uniforme l’accelerazione è __________.",
-    "tag": [
-      "Cinematica: moto, velocità, accelerazione"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "MRU: a=0.",
-    "risposte": [
-      "nulla"
-    ],
-    "created_at": "2026-01-31T00:45:20.847289"
-  },
-  {
-    "id": "36aeb22a-f089-44d9-8c13-0bc3c494ce29",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La relazione tra frequenza f e periodo T è f=1/__________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Definizione di frequenza.",
-    "risposte": [
-      "T"
-    ],
-    "created_at": "2026-01-31T00:45:20.847322"
-  },
-  {
-    "id": "83731e5e-1aba-4df8-91dc-2f2bc13f7b17",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La relazione delle onde è v = f__________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "v=fλ.",
-    "risposte": [
-      "λ"
-    ],
-    "created_at": "2026-01-31T00:45:20.847341"
-  },
-  {
-    "id": "44e2ac42-aa43-456e-90f1-8e26c5fdee61",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "Se V=12 V e R=6 Ω, la corrente vale __________ A.",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "I=V/R=2 A.",
-    "risposte": [
-      "2"
-    ],
-    "created_at": "2026-01-31T00:45:20.847360"
-  },
-  {
-    "id": "41efc1ac-7c90-48fc-b249-2047fb900f68",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "Se I=3 A e R=4 Ω, la tensione vale __________ V.",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "V=IR=12 V.",
-    "risposte": [
-      "12"
-    ],
-    "created_at": "2026-01-31T00:45:20.847371"
-  },
-  {
-    "id": "b45cf4f3-df72-4c5c-9f2c-0a4f184daf1b",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "Se P=IV con I=2 A e V=9 V, P vale __________ W.",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "P=IV=18 W.",
-    "risposte": [
-      "18"
-    ],
-    "created_at": "2026-01-31T00:45:20.847378"
-  },
-  {
-    "id": "8e5e784d-bdbd-4f47-b43b-023fb41d6bfb",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La densità si indica con la lettera greca __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Densità: rho (ρ).",
-    "risposte": [
-      "ρ"
-    ],
-    "created_at": "2026-01-31T00:45:20.847384"
-  },
-  {
-    "id": "9cad9e86-f4bb-4d35-9dc7-19dc339d238f",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La legge di Poiseuille dice che la portata è proporzionale alla quarta potenza del __________.",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Q∝r⁴.",
-    "risposte": [
-      "raggio"
-    ],
-    "created_at": "2026-01-31T00:45:20.847393"
-  },
-  {
-    "id": "1a184d1c-b1cb-43ea-baa1-59fea7d2a491",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "Nella legge di Laplace per un cilindro, la tensione di parete cresce con il __________ del vaso.",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "T≈P·r: r maggiore → tensione maggiore.",
-    "risposte": [
-      "raggio"
-    ],
-    "created_at": "2026-01-31T00:45:20.847408"
-  },
-  {
-    "id": "9d12e930-2981-4dea-aaa0-1d5c4ab55b13",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "L’ultrasuono è un suono con frequenza superiore a __________ kHz.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Sopra 20 kHz è ultrasuono.",
-    "risposte": [
-      "20"
-    ],
-    "created_at": "2026-01-31T00:45:20.847420"
-  },
-  {
-    "id": "24563d22-fc65-4e70-8970-947f999bad01",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "Nell’effetto Doppler, se la sorgente si avvicina la frequenza percepita __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Avvicinamento → f maggiore.",
-    "risposte": [
-      "aumenta"
-    ],
-    "created_at": "2026-01-31T00:45:20.847450"
-  },
-  {
-    "id": "2f625e33-7b1b-40a3-ba2d-a219d3bc3a86",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "Il lavoro di una forza costante lungo lo spostamento è W=F·__________.",
-    "tag": [
-      "Lavoro, energia, potenza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "W=F·s (stessa direzione).",
-    "risposte": [
-      "s"
-    ],
-    "created_at": "2026-01-31T00:45:20.847457"
-  },
-  {
-    "id": "03a516e5-0dc7-43fd-a476-84bb07f9ea8b",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "L’energia cinetica è Ek=½·m·__________².",
-    "tag": [
-      "Lavoro, energia, potenza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Ek=½mv².",
-    "risposte": [
-      "v"
-    ],
-    "created_at": "2026-01-31T00:45:20.847540"
-  },
-  {
-    "id": "43b1000b-d8a8-4a45-b77f-7fd9fa0d8c2b",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "L’accelerazione di gravità sulla Terra è circa 9,8 m/__________².",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "g≈9,8 m/s².",
-    "risposte": [
-      "s"
-    ],
-    "created_at": "2026-01-31T00:45:20.847550"
-  },
-  {
-    "id": "f2e4e5c3-3243-424e-96a5-760df5afa512",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La legge di Ohm si scrive V=I·__________.",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "V=IR.",
-    "risposte": [
-      "R"
-    ],
-    "created_at": "2026-01-31T00:45:20.847558"
-  },
-  {
-    "id": "ee011791-34b1-4cdc-a738-f0ab1bf63002",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "In un circuito in serie, la resistenza equivalente è la __________ delle resistenze.",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "In serie: Req=R1+R2+...",
-    "risposte": [
-      "somma"
-    ],
-    "created_at": "2026-01-31T00:45:20.847564"
-  },
-  {
-    "id": "96299598-07d4-4efb-b65e-38cae1e61d17",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "In un circuito in parallelo, la tensione ai capi di ogni ramo è la __________.",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "In parallelo V è uguale su ogni ramo.",
-    "risposte": [
-      "stessa"
-    ],
-    "created_at": "2026-01-31T00:45:20.847569"
-  },
-  {
-    "id": "9fe5a082-c535-4830-9a80-95ed368605eb",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La potenza meccanica è lavoro diviso per __________.",
-    "tag": [
-      "Lavoro, energia, potenza"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "P=W/t.",
-    "risposte": [
-      "tempo"
-    ],
-    "created_at": "2026-01-31T00:45:20.847576"
-  },
-  {
-    "id": "6f5b9640-e95c-4633-9451-8c32d7754783",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "Un campo elettrico uniforme si misura in N/__________.",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "E in N/C (anche V/m).",
-    "risposte": [
-      "C"
-    ],
-    "created_at": "2026-01-31T00:45:20.847581"
-  },
-  {
-    "id": "16a55bf6-051e-43ac-bef8-8801d49ebd07",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "Il simbolo della lunghezza d’onda è la lettera greca __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Lambda (λ).",
-    "risposte": [
-      "λ"
-    ],
-    "created_at": "2026-01-31T00:45:20.847586"
-  },
-  {
-    "id": "aef245ad-0ff1-415d-93da-aa3704698236",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "I raggi X sono radiazioni __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Raggi X hanno energia sufficiente per ionizzare.",
-    "risposte": [
-      "ionizzanti"
-    ],
-    "created_at": "2026-01-31T00:45:20.847592"
-  },
-  {
-    "id": "06c556ba-d2c6-4a4e-b2d7-d100ebc10994",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La frequenza è misurata in __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Unità: Hz.",
-    "risposte": [
-      "hertz"
-    ],
-    "created_at": "2026-01-31T00:45:20.847597"
-  },
-  {
-    "id": "a7a5a47e-f115-4a1f-8831-2ddb1e60cda7",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La legge di Coulomb riguarda la forza tra cariche __________.",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Formulata per cariche puntiformi.",
-    "risposte": [
-      "puntiformi"
-    ],
-    "created_at": "2026-01-31T00:45:20.847602"
-  },
-  {
-    "id": "be3321b4-2199-47ef-8312-7706654b8d18",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "Un aumento della sezione di un condotto (Poiseuille) tende a ridurre la __________ al flusso.",
-    "tag": [
-      "Dinamica: leggi di Newton"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "R idraulica diminuisce se r aumenta.",
-    "risposte": [
-      "resistenza"
-    ],
-    "created_at": "2026-01-31T00:45:20.847610"
-  },
-  {
-    "id": "1eb61ee8-062c-45b1-bf8d-6ca7ba41179d",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La velocità è lo spostamento diviso per __________.",
-    "tag": [
-      "Cinematica: moto, velocità, accelerazione"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "v=s/t.",
-    "risposte": [
-      "tempo"
-    ],
-    "created_at": "2026-01-31T00:45:20.847616"
-  },
-  {
-    "id": "a3bbfd7a-a401-4d2e-ab77-077fa989118f",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "L’intensità sonora in decibel misura un livello __________.",
-    "tag": [
-      "Grandezze fisiche, SI, conversioni, ordini di grandezza"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "dB è una scala logaritmica.",
-    "risposte": [
-      "logaritmico"
-    ],
-    "created_at": "2026-01-31T00:45:20.847621"
-  },
-  {
-    "id": "4622adc0-604e-48be-b324-4dae7b777e0f",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "In un condensatore, la capacità si misura in __________.",
-    "tag": [
-      "Elettromagnetismo: induzione (Faraday)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Unità: F.",
-    "risposte": [
-      "farad"
-    ],
-    "created_at": "2026-01-31T00:45:20.847627"
-  },
-  {
-    "id": "f0d7d2c7-51e7-4941-8040-632f3bf2de77",
-    "materia": "Fisica",
-    "tipo": "completamento",
-    "testo": "La relazione tra pressione, densità e profondità in un fluido è ΔP=ρ·g·__________.",
     "tag": [
       "Fluidi: pressione e densità"
     ],
-    "difficolta": "Media",
-    "spiegazione": "Pressione idrostatica: ΔP=ρgh.",
-    "risposte": [
-      "h"
-    ],
-    "created_at": "2026-01-31T00:45:30.476077"
+    "testo": "In un urto perfettamente ______ l'energia cinetica totale si conserva.",
+    "correct_text": "elastico",
+    "spiegazione": "Negli urti elastici si conservano quantità di moto ed energia cinetica."
   },
   {
-    "id": "d034a822-1bb2-4f31-9745-381dddc37d1e",
-    "materia": "Biologia",
+    "id": "6bd66179-25fc-418f-ac7f-9c95927e0ae4",
+    "materia": "Fisica",
     "tipo": "scelta",
-    "testo": "In una cellula eucariotica, il DNA nucleare è organizzato in:",
     "tag": [
-      "Cellula eucariotica e endomembrane"
+      "Cinematica: moto, velocità, accelerazione"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Il DNA nel nucleo è condensato in cromosomi (cromatina).",
+    "testo": "Un corpo parte con v₀=5 m/s e accelera uniformemente con a=2 m/s² per t=2 s. Qual è la velocità finale?",
     "opzioni": [
-      "ribosomi",
-      "cromosomi",
-      "lisosomi",
-      "centrioli",
-      "fosfolipidi"
+      "4.5 m/s",
+      "11 m/s",
+      "18 m/s",
+      "7 m/s",
+      "9 m/s"
     ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:03.261862"
+    "correct_index": 4,
+    "spiegazione": "v = v₀ + a·t."
   },
   {
-    "id": "5318860f-a45d-49df-b748-a47329b06d04",
+    "id": "cd150be9-009b-4c1f-9f59-5e7c6a7398e0",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "Macromolecole: zuccheri, lipidi, proteine, nucleotidi"
+    ],
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
+  },
+  {
+    "id": "6ace8b19-2658-43cb-9c9a-ee053c1c22dc",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=2 m/s e accelera uniformemente con a=1 m/s² per t=2 s. Qual è la velocità finale?",
+    "opzioni": [
+      "4 m/s",
+      "5 m/s",
+      "3 m/s",
+      "2 m/s",
+      "8 m/s"
+    ],
+    "correct_index": 0,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "a6433d86-c024-4929-8a5c-3e1b913e9184",
     "materia": "Biologia",
     "tipo": "scelta",
-    "testo": "Quale organello è la sede principale della produzione di ATP tramite fosforilazione ossidativa?",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "f078cce3-ec38-4dd0-b343-55113dacfb6f",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=5 m/s e accelera uniformemente con a=1 m/s² per t=2 s. Qual è la velocità finale?",
+    "opzioni": [
+      "8 m/s",
+      "6 m/s",
+      "3.5 m/s",
+      "14 m/s",
+      "7 m/s"
+    ],
+    "correct_index": 4,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "c248fa2e-045c-4012-9ce3-f5ba280b7430",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "fc3b1916-c5ba-4bb8-8532-33ffeaefa1a1",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "42032ace-66a3-4a0e-8102-2c5f1c5a43c9",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Il trasporto attraverso membrana che richiede ATP è detto:",
+    "opzioni": [
+      "Diffusione semplice",
+      "Diffusione facilitata",
+      "Osmosi",
+      "Trasporto attivo",
+      "Filtrazione"
+    ],
+    "correct_index": 3,
+    "spiegazione": "Il trasporto attivo usa energia (ATP o gradienti) per muovere contro gradiente."
+  },
+  {
+    "id": "84adbc07-2194-484e-8828-54d6ee5eaab3",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. talassemia), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "25%",
+      "0%",
+      "100%",
+      "75%",
+      "50%"
+    ],
+    "correct_index": 0,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "9150195f-84ab-4b82-9564-db67f993e247",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Idrostatica: Stevino, Pascal, Archimede"
+    ],
+    "testo": "In un liquido con densità ρ=1200 kg/m³, qual è l'aumento di pressione a profondità h=0.5 m? (g=9,8 m/s²)",
+    "opzioni": [
+      "588 Pa",
+      "58800 Pa",
+      "2940 Pa",
+      "11760 Pa",
+      "5880 Pa"
+    ],
+    "correct_index": 4,
+    "spiegazione": "Δp = ρ g h (legge di Stevino)."
+  },
+  {
+    "id": "8dcdb5e5-eae2-4268-82bb-3b9f74d2aa6d",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=0 m/s e accelera uniformemente con a=1 m/s² per t=2 s. Qual è la velocità finale?",
+    "opzioni": [
+      "2 m/s",
+      "4 m/s",
+      "3 m/s",
+      "1 m/s",
+      "5 m/s"
+    ],
+    "correct_index": 0,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "2cc2d175-aba4-4682-98d8-543902ff0a93",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Legami chimici e geometria molecolare"
+    ],
+    "testo": "In una soluzione 0,10 M di NaCl (elettrolita forte), la concentrazione di ioni Cl⁻ è:",
+    "opzioni": [
+      "0,05 M",
+      "0,10 M",
+      "0,20 M",
+      "1,0 M",
+      "Dipende dal pH"
+    ],
+    "correct_index": 1,
+    "spiegazione": "NaCl dissocia 1:1 → [Cl⁻] = 0,10 M."
+  },
+  {
+    "id": "b4508e27-9013-49bf-8b38-5a2d4c037677",
+    "materia": "Biologia",
+    "tipo": "completamento",
+    "tag": [
+      "DNA/RNA: struttura, replicazione, trascrizione"
+    ],
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
+  },
+  {
+    "id": "86f233dc-b9fd-4e76-ac7f-2bde2cbee2fa",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. talassemia), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "50%",
+      "100%",
+      "0%",
+      "75%",
+      "25%"
+    ],
+    "correct_index": 4,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "630422d3-9b2e-48dc-b810-a8c52e0080ba",
+    "materia": "Chimica",
+    "tipo": "completamento",
+    "tag": [
+      "Biomolecole: carboidrati, lipidi, proteine, acidi nucleici"
+    ],
+    "testo": "Il numero di ossidazione dell'ossigeno nei perossidi è ______.",
+    "correct_text": "-1",
+    "spiegazione": "Nei perossidi (es. H₂O₂) l'O è a −1."
+  },
+  {
+    "id": "1e90ad93-56aa-4600-baa8-d139afa94dee",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Membrana: mosaico fluido, trasporti"
+    ],
+    "testo": "Una cellula animale posta in una soluzione ipotonica tende a:",
+    "opzioni": [
+      "Gonfiarsi e poter andare in lisi",
+      "Raggrinzirsi (crenazione)",
+      "Restare identica sempre",
+      "Produrre più ATP",
+      "Perdere solo proteine"
+    ],
+    "correct_index": 0,
+    "spiegazione": "In ipotonica l'acqua entra per osmosi → rigonfiamento/lysis."
+  },
+  {
+    "id": "7cefb17f-7715-4bd0-831f-d44547bd002d",
+    "materia": "Chimica",
+    "tipo": "completamento",
+    "tag": [
+      "Termodinamica e spontaneità"
+    ],
+    "testo": "Il pH è definito come -log₁₀ della concentrazione di ______.",
+    "correct_text": "H3O+",
+    "spiegazione": "Per definizione pH = -log[H₃O⁺]."
+  },
+  {
+    "id": "5d45e4aa-4bf1-4201-8e13-846e06aa2ce6",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. albinismo), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "25%",
+      "75%",
+      "100%",
+      "0%",
+      "50%"
+    ],
+    "correct_index": 0,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "8c97cde5-da42-4db9-b004-c07d913f0343",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Codice genetico e traduzione (concetto)"
+    ],
+    "testo": "Quale struttura è tipica dei procarioti ma assente negli eucarioti?",
+    "opzioni": [
+      "Mitocondri",
+      "Nucleo delimitato da membrana",
+      "Ribosomi",
+      "Membrana plasmatica",
+      "Citoplasma"
+    ],
+    "correct_index": 1,
+    "spiegazione": "I procarioti non hanno nucleo membranoso."
+  },
+  {
+    "id": "4d6d3461-416b-41f1-a96c-73cdce29ff24",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Stechiometria e bilanciamento reazioni"
+    ],
+    "testo": "Quante moli ci sono in 5.85 g di un composto con massa molare 98 g/mol?",
+    "opzioni": [
+      "0.006 mol",
+      "0.06 mol",
+      "0.12 mol",
+      "0.6 mol",
+      "0.03 mol"
+    ],
+    "correct_index": 1,
+    "spiegazione": "n = m/M (m in g, M in g/mol)."
+  },
+  {
+    "id": "335a67ab-4c32-4a36-85ab-d4999253230f",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Equilibri chimici"
+    ],
+    "testo": "Quale particella determina il numero atomico Z di un elemento?",
+    "opzioni": [
+      "Neutroni",
+      "Protoni",
+      "Elettroni di valenza",
+      "Isotopi",
+      "Nucleoni totali"
+    ],
+    "correct_index": 1,
+    "spiegazione": "Z coincide con il numero di protoni nel nucleo."
+  },
+  {
+    "id": "866a66ee-c224-4479-8843-f7b639bd97ac",
+    "materia": "Biologia",
+    "tipo": "completamento",
     "tag": [
       "Metabolismo: anabolismo/catabolismo, condensazione/idrolisi"
     ],
-    "difficolta": "Base",
-    "spiegazione": "La catena respiratoria e l’ATP sintasi sono nella membrana interna del mitocondrio.",
+    "testo": "L'organello responsabile della sintesi di ATP è il ______.",
+    "correct_text": "mitocondrio",
+    "spiegazione": "La fosforilazione ossidativa avviene nei mitocondri."
+  },
+  {
+    "id": "fb25eda2-1ed6-4a91-9d1e-693e419262f4",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Quantità di moto e urti"
+    ],
+    "testo": "L'unità SI della pressione è:",
     "opzioni": [
-      "Ribosoma",
-      "Mitocondrio",
-      "Apparato di Golgi",
+      "J",
+      "W",
+      "Pa",
+      "N",
+      "C"
+    ],
+    "correct_index": 2,
+    "spiegazione": "La pressione è forza/superficie → pascal (Pa)."
+  },
+  {
+    "id": "bac3025b-bfdf-482f-9090-4b06ab9265b1",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=2 m/s e accelera uniformemente con a=2 m/s² per t=2 s. Qual è la velocità finale?",
+    "opzioni": [
+      "8 m/s",
+      "4 m/s",
+      "12 m/s",
+      "6 m/s",
+      "3 m/s"
+    ],
+    "correct_index": 3,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "d2229fb0-2265-4de1-a0c7-376d1f25bf40",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Un corpo parte con v₀=0 m/s e accelera uniformemente con a=1 m/s² per t=2 s. Qual è la velocità finale?",
+    "opzioni": [
+      "5 m/s",
+      "2 m/s",
+      "3 m/s",
+      "4 m/s",
+      "1 m/s"
+    ],
+    "correct_index": 1,
+    "spiegazione": "v = v₀ + a·t."
+  },
+  {
+    "id": "984eac0f-f4eb-408f-88b2-f3dbf90b9f4f",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Genetica mendeliana e non-mendeliana"
+    ],
+    "testo": "Per un carattere autosomico recessivo (es. fibrosi cistica), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
+    "opzioni": [
+      "0%",
+      "50%",
+      "25%",
+      "100%",
+      "75%"
+    ],
+    "correct_index": 2,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
+  },
+  {
+    "id": "cbdc4c37-f3b8-45bb-844d-b551049ea5b2",
+    "materia": "Chimica",
+    "tipo": "scelta",
+    "tag": [
+      "Acidi-basi, pH, tamponi"
+    ],
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-12 M. Qual è il pH (approssimato)?",
+    "opzioni": [
+      "12",
+      "14",
+      "13",
+      "10",
+      "11"
+    ],
+    "correct_index": 0,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
+  },
+  {
+    "id": "91c78d74-a1b3-4335-a552-2c5481c9d639",
+    "materia": "Biologia",
+    "tipo": "scelta",
+    "tag": [
+      "Albero della vita e teoria cellulare"
+    ],
+    "testo": "Negli eucarioti, la traduzione delle proteine avviene principalmente nel:",
+    "opzioni": [
       "Nucleo",
-      "Perossisoma"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:03.261946"
-  },
-  {
-    "id": "1be39887-efe3-496a-ae6f-70e78ebd6e3e",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "La membrana plasmatica è costituita principalmente da un doppio strato di:",
-    "tag": [
-      "Cellula eucariotica e endomembrane"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Modello a mosaico fluido: bilayer di fosfolipidi con proteine.",
-    "opzioni": [
-      "polisaccaridi",
-      "trigliceridi",
-      "fosfolipidi",
-      "nucleotidi",
-      "amminoacidi"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:03.261965"
-  },
-  {
-    "id": "e630f54c-6c2f-4e0e-9a6f-e18992626796",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "L’enzima che sintetizza RNA a partire da DNA stampo è:",
-    "tag": [
-      "DNA→RNA→Proteina (concetto)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Trascrizione: RNA polimerasi.",
-    "opzioni": [
-      "DNA polimerasi",
-      "RNA polimerasi",
-      "Ligasi",
-      "Elicasi",
-      "Topoisomerasi"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:03.262020"
-  },
-  {
-    "id": "c902c773-f956-4c0b-ae48-a85410ae76d6",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "In meiosi, la riduzione del numero di cromosomi avviene perché:",
-    "tag": [
-      "Divisione cellulare (concetto)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Meiosi I separa gli omologhi, dimezzando la ploidia.",
-    "opzioni": [
-      "c'è una sola divisione",
-      "si separano cromatidi in meiosi I",
-      "si separano cromosomi omologhi in meiosi I",
-      "non avviene alcuna separazione",
-      "si duplica il DNA due volte"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:03.262064"
-  },
-  {
-    "id": "636896c1-d4cb-4432-aa8a-50b21208ed2d",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Quale base azotata è presente nell’RNA ma non nel DNA?",
-    "tag": [
-      "DNA→RNA→Proteina (concetto)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Nell’RNA la timina è sostituita dall’uracile.",
-    "opzioni": [
-      "Timina",
-      "Uracile",
-      "Guanina",
-      "Adenina",
-      "Citosina"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:03.262450"
-  },
-  {
-    "id": "825be8e2-a351-4f48-a10a-40ac8632ffc4",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Il trasporto di molecole contro gradiente di concentrazione richiede:",
-    "tag": [
-      "Cellula eucariotica e endomembrane"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Contro gradiente serve energia (ATP) → trasporto attivo.",
-    "opzioni": [
-      "diffusione semplice",
-      "osmosi",
-      "trasporto attivo",
-      "diffusione facilitata",
-      "capillarità"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:03.262555"
-  },
-  {
-    "id": "939ef56b-2151-486b-8feb-d7079f527250",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Quale molecola è un monosaccaride?",
-    "tag": [
-      "Macromolecole: zuccheri, lipidi, proteine, nucleotidi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Il glucosio è un monosaccaride; gli altri sono di-/polisaccaridi.",
-    "opzioni": [
-      "Saccarosio",
-      "Glicogeno",
-      "Glucosio",
-      "Amido",
-      "Cellulosa"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:03.262718"
-  },
-  {
-    "id": "1e43e8ba-8872-4711-8841-c9f071222b83",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "La funzione principale dei ribosomi è:",
-    "tag": [
-      "DNA→RNA→Proteina (concetto)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Traduzione: assemblaggio di amminoacidi in proteine.",
-    "opzioni": [
-      "replicare il DNA",
-      "sintetizzare proteine",
-      "produrre ATP",
-      "degradare lipidi",
-      "secrezione di ormoni"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:03.262939"
-  },
-  {
-    "id": "12b2e9bd-7962-475f-bd26-dd4f2a48010d",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Un anticorpo appartiene alla classe delle:",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Gli anticorpi sono immunoglobuline prodotte dai linfociti B/plasmacellule.",
-    "opzioni": [
-      "lipoproteine",
-      "immunoglobuline",
-      "fosfatasi",
-      "citochine",
-      "chaperonine"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:03.262970"
-  },
-  {
-    "id": "85962705-d8cf-4a0e-a168-e6892cd1df78",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "La struttura che collega due cromatidi fratelli è il:",
-    "tag": [
-      "Nucleo e cromosomi eucariotici"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Il centromero è la regione di unione dei cromatidi fratelli.",
-    "opzioni": [
-      "centrosoma",
-      "centromero",
-      "nucleolo",
-      "flagello",
-      "reticolo endoplasmatico"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:03.262984"
-  },
-  {
-    "id": "52d6e29e-a7dc-45b7-879b-d4bc96d219cb",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Quale processo produce due cellule figlie geneticamente identiche (in condizioni normali)?",
-    "tag": [
-      "Divisione cellulare (concetto)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "La mitosi mantiene lo stesso patrimonio genetico.",
-    "opzioni": [
-      "Meiosi",
-      "Mitosi",
-      "Crossing-over",
-      "Fecondazione",
-      "Trascrizione"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:03.262996"
-  },
-  {
-    "id": "37f4fa17-d7c7-44ad-9481-8d11c84de4f9",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Il ciclo di Krebs avviene principalmente nel:",
-    "tag": [
-      "Metabolismo: anabolismo/catabolismo, condensazione/idrolisi"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Negli eucarioti, il ciclo di Krebs è nella matrice mitocondriale.",
-    "opzioni": [
-      "citoplasma",
-      "matrice mitocondriale",
-      "nucleo",
-      "lisosoma",
-      "Golgi"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:03.263007"
-  },
-  {
-    "id": "b095e023-c160-427b-815a-a15ef6e0acf4",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Quale organello modifica e smista proteine destinate alla secrezione?",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Il Golgi effettua modifiche post-traduzionali e smistamento.",
-    "opzioni": [
-      "Nucleo",
-      "Apparato di Golgi",
       "Mitocondrio",
       "Ribosoma",
-      "Citoscheletro"
+      "Apparato di Golgi",
+      "Lisosome"
     ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:03.263025"
+    "correct_index": 2,
+    "spiegazione": "I ribosomi traducono mRNA in polipeptidi."
   },
   {
-    "id": "8dcab62c-a5f4-4bf0-a120-d9a3a3a97144",
-    "materia": "Biologia",
+    "id": "7d451826-bba8-407c-ab97-4d30757f1d44",
+    "materia": "Fisica",
     "tipo": "scelta",
-    "testo": "I batteri sono in genere organismi:",
     "tag": [
-      "Cellula procariotica (membrana/parete)"
+      "Idrodinamica: portata, continuità, Bernoulli"
     ],
-    "difficolta": "Base",
-    "spiegazione": "I batteri sono procarioti: DNA non racchiuso in un nucleo.",
+    "testo": "L'unità SI della pressione è:",
     "opzioni": [
-      "eucarioti",
-      "privi di DNA",
-      "procarioti",
-      "pluricellulari",
-      "con nucleo"
+      "J",
+      "W",
+      "Pa",
+      "N",
+      "C"
     ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:03.263031"
+    "correct_index": 2,
+    "spiegazione": "La pressione è forza/superficie → pascal (Pa)."
   },
   {
-    "id": "6855543f-b57b-4c16-b48f-f0e804ffd365",
+    "id": "b511278a-5d29-4f6d-b906-1a892d802757",
     "materia": "Biologia",
     "tipo": "scelta",
-    "testo": "Nel DNA, le basi complementari sono A con T e C con:",
     "tag": [
-      "Albero della vita e teoria cellulare"
+      "Genetica mendeliana e non-mendeliana"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Regole di appaiamento: C si appaia con G.",
+    "testo": "Per un carattere autosomico recessivo (es. talassemia), due eterozigoti (Aa × Aa) hanno probabilità di avere un figlio affetto (aa) pari a:",
     "opzioni": [
-      "A",
-      "U",
-      "G",
-      "T",
-      "R"
+      "50%",
+      "0%",
+      "75%",
+      "100%",
+      "25%"
     ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:41.424113"
+    "correct_index": 4,
+    "spiegazione": "Dal quadrato di Punnett: aa = 1/4 = 25%."
   },
   {
-    "id": "15420209-a623-4c55-942a-6ca2a1494c8a",
-    "materia": "Biologia",
+    "id": "65d58106-c969-47d1-8944-4d4f467d2394",
+    "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "Nel modello a mosaico fluido, le proteine di membrana sono:",
     "tag": [
-      "Cellula eucariotica e endomembrane"
+      "Acidi-basi, pH, tamponi"
     ],
-    "difficolta": "Media",
-    "spiegazione": "Lipidi e molte proteine possono diffondere lateralmente.",
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-02 M. Qual è il pH (approssimato)?",
     "opzioni": [
-      "statiche e fisse",
-      "inserite in un bilayer lipidico con mobilità laterale",
-      "solo all'esterno",
-      "solo all'interno",
-      "assenti"
+      "2",
+      "0",
+      "1",
+      "4",
+      "3"
     ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.424261"
+    "correct_index": 0,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
   },
   {
-    "id": "dda1405d-f156-45bf-8d75-4814bc5bbf54",
+    "id": "30c283e5-e929-4b27-8ee0-0ff443e5a8e7",
     "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Il processo che porta da mRNA a proteina è chiamato:",
+    "tipo": "completamento",
     "tag": [
-      "DNA→RNA→Proteina (concetto)"
+      "Enzimi: sito attivo, specificità, denaturazione"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Traduzione: lettura dei codoni mRNA e sintesi proteica.",
+    "testo": "Il complesso proteico che sintetizza ATP sfruttando un gradiente protonico è l'ATP ______.",
+    "correct_text": "sintasi",
+    "spiegazione": "ATP sintasi usa il gradiente di H+ per fosforilare ADP."
+  },
+  {
+    "id": "fe00d03e-b734-48cc-855e-b138823fa83c",
+    "materia": "Fisica",
+    "tipo": "scelta",
+    "tag": [
+      "Cinematica: moto, velocità, accelerazione"
+    ],
+    "testo": "Se raddoppio la forza risultante su una massa costante, l'accelerazione:",
     "opzioni": [
-      "replicazione",
-      "trascrizione",
-      "traduzione",
-      "splicing",
-      "mutazione"
+      "Si dimezza",
+      "Raddoppia",
+      "Resta uguale",
+      "Diventa zero",
+      "Diventa negativa"
     ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:41.424290"
+    "correct_index": 1,
+    "spiegazione": "Seconda legge di Newton: a = F/m."
   },
   {
-    "id": "0fabb630-be7d-402c-9ad4-b136782d85f4",
-    "materia": "Biologia",
+    "id": "f85f8808-cb08-40f8-8638-3c0384ffeade",
+    "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "Quale tra questi è un nucleotide del DNA?",
     "tag": [
-      "Nucleo e cromosomi eucariotici"
+      "Soluzioni: concentrazioni, osmolarità"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Un nucleotide = zucchero + fosfato + base azotata.",
+    "testo": "Quale composto contiene il gruppo funzionale aldeidico?",
     "opzioni": [
-      "Ribosio",
-      "Desossiribosio+fosfato+base",
-      "Glicerolo",
-      "Acido grasso",
-      "Amminoacido"
+      "Propanone",
+      "Etanolo",
+      "Etanale",
+      "Acido etanoico",
+      "Etere dietilico"
     ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.424413"
+    "correct_index": 2,
+    "spiegazione": "Un'aldeide ha il gruppo –CHO: etanale = CH₃–CHO."
   },
   {
-    "id": "633f3ec7-7f01-4e4f-8267-b9154be23359",
-    "materia": "Biologia",
+    "id": "97a8b84c-e211-4e71-9443-c917b61d02be",
+    "materia": "Chimica",
     "tipo": "scelta",
-    "testo": "Gli enzimi aumentano la velocità di reazione perché:",
     "tag": [
-      "Macromolecole: zuccheri, lipidi, proteine, nucleotidi"
+      "Acidi-basi, pH, tamponi"
     ],
-    "difficolta": "Base",
-    "spiegazione": "Catalisi enzimatica: diminuisce Ea.",
-    "opzioni": [
-      "aumentano ΔG",
-      "abbassano l’energia di attivazione",
-      "consumano substrato",
-      "spostano l’equilibrio",
-      "aumentano la temperatura"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.424524"
-  },
-  {
-    "id": "af0e256f-8ff1-483e-9924-911d7208e960",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Il trasporto di acqua attraverso una membrana semipermeabile è detto:",
-    "tag": [
-      "Cellula eucariotica e endomembrane"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Osmosi: movimento dell’acqua secondo gradiente di potenziale.",
-    "opzioni": [
-      "diffusione facilitata",
-      "osmosi",
-      "fagocitosi",
-      "pinocitosi",
-      "esocitosi"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.424591"
-  },
-  {
-    "id": "a032499f-2008-4910-a083-258893028563",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Un globulo rosso maturo umano è privo di:",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Gli eritrociti maturi non hanno nucleo per massimizzare spazio per Hb.",
-    "opzioni": [
-      "membrana",
-      "emoglobina",
-      "nucleo",
-      "citoplasma",
-      "proteine"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:41.424733"
-  },
-  {
-    "id": "530eec3e-bcb3-4e80-95a7-fb1658d62712",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "La fase del ciclo cellulare in cui avviene la duplicazione del DNA è:",
-    "tag": [
-      "Divisione cellulare (concetto)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "In fase S (sintesi) si replica il DNA.",
-    "opzioni": [
-      "G1",
-      "S",
-      "G2",
-      "M",
-      "G0"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.424884"
-  },
-  {
-    "id": "ac0794c0-3ead-4c7d-95fc-d5baabf80561",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Il crossing-over avviene durante:",
-    "tag": [
-      "Divisione cellulare (concetto)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Il crossing-over avviene in profase I (pachitene).",
-    "opzioni": [
-      "profase I della meiosi",
-      "anafase II",
-      "metafase mitotica",
-      "telofase I",
-      "citodieresi"
-    ],
-    "corretta_index": 0,
-    "created_at": "2026-01-31T00:46:41.424943"
-  },
-  {
-    "id": "17c44bc2-9e70-40f3-b43b-66ba8edbd7d8",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Un codone è una tripletta di basi sull’:",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Il codone è sull’mRNA e codifica un amminoacido.",
-    "opzioni": [
-      "DNA",
-      "mRNA",
-      "tRNA",
-      "rRNA",
-      "lipide"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.424966"
-  },
-  {
-    "id": "1d31f103-5a69-4e54-9180-da8d3b0eae6d",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "La risposta immunitaria specifica umorale è mediata principalmente da:",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Umorale: anticorpi prodotti dai linfociti B.",
-    "opzioni": [
-      "linfociti T citotossici",
-      "anticorpi",
-      "neutrofili",
-      "macrofagi",
-      "complemento solo"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.424989"
-  },
-  {
-    "id": "38bd87e5-1fe0-43d1-9b8c-1859fcb36f6e",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "L’organo che filtra il sangue e produce urina è il:",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Il rene contiene nefroni che filtrano plasma e regolano equilibrio idrico.",
-    "opzioni": [
-      "polmone",
-      "fegato",
-      "rene",
-      "pancreas",
-      "milza"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:41.424995"
-  },
-  {
-    "id": "2baa2043-45a2-4bb7-a0ef-30bce5c6dbdf",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Nella glicolisi, la molecola di partenza è:",
-    "tag": [
-      "Metabolismo: anabolismo/catabolismo, condensazione/idrolisi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Glicolisi: scinde il glucosio in due piruvati.",
-    "opzioni": [
-      "acetil-CoA",
-      "glucosio",
-      "lattato",
-      "piruvato",
-      "glicogeno"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.425002"
-  },
-  {
-    "id": "65a0fca7-fb55-46f5-8997-5b2a14c0d87e",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Un virus è costituito essenzialmente da:",
-    "tag": [
-      "Virus: struttura e classi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Virus: genoma (DNA o RNA) + capside; talvolta envelope.",
-    "opzioni": [
-      "cellula completa",
-      "membrana e ribosomi",
-      "acido nucleico e capside proteico",
-      "solo DNA",
-      "solo RNA e mitocondri"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:41.425018"
-  },
-  {
-    "id": "4a814fc9-c94c-43fc-8ebf-cd1917f4a334",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "I mitocondri possiedono:",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "I mitocondri derivano da endosimbiosi e hanno DNA proprio.",
-    "opzioni": [
-      "solo DNA nucleare",
-      "DNA proprio circolare",
-      "nessun ribosoma",
-      "solo cromosomi lineari",
-      "solo RNA"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.425029"
-  },
-  {
-    "id": "dde1e1a5-c4d5-4971-b6f3-12e1dfd7e1c1",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Il principale gas di scarto della respirazione cellulare è:",
-    "tag": [
-      "Metabolismo: anabolismo/catabolismo, condensazione/idrolisi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "La respirazione produce CO2 (e H2O) come prodotti finali.",
-    "opzioni": [
-      "O2",
-      "CO2",
-      "N2",
-      "H2",
-      "CO"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.425040"
-  },
-  {
-    "id": "07f9e53b-662d-4e9c-a885-77a12537db77",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Il trasporto di grossi materiali verso l’esterno della cellula è:",
-    "tag": [
-      "Cellula eucariotica e endomembrane"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Esocitosi: vescicole fondono con la membrana e rilasciano contenuto.",
-    "opzioni": [
-      "endocitosi",
-      "esocitosi",
-      "osmosi",
-      "diffusione",
-      "chemiosmosi"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.425051"
-  },
-  {
-    "id": "125cacd3-534a-4c0b-84bc-2a91608d65d6",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Il locus genico indica:",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Locus = posizione fisica del gene sul cromosoma.",
-    "opzioni": [
-      "un cromosoma intero",
-      "la posizione di un gene su un cromosoma",
-      "una mutazione",
-      "un allele dominante",
-      "un introne"
-    ],
-    "corretta_index": 1,
-    "created_at": "2026-01-31T00:46:41.425070"
-  },
-  {
-    "id": "aec39b44-c7a8-4a57-a2f8-6a85dc302455",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Il tessuto che riveste superfici e cavità del corpo è l’:",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "L’epitelio riveste e protegge superfici/cavità.",
-    "opzioni": [
-      "muscolare",
-      "connettivo",
-      "epiteliale",
-      "nervoso",
-      "osseo"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:41.425171"
-  },
-  {
-    "id": "49a1ed59-3961-4840-bfc5-e2b9f5fdfb69",
-    "materia": "Biologia",
-    "tipo": "scelta",
-    "testo": "Il pH ottimale di molti enzimi umani è circa:",
-    "tag": [
-      "Macromolecole: zuccheri, lipidi, proteine, nucleotidi"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Molti enzimi citosolici lavorano vicino a pH fisiologico ~7,4.",
+    "testo": "Una soluzione ha [H₃O⁺] = 1e-02 M. Qual è il pH (approssimato)?",
     "opzioni": [
       "1",
-      "3",
-      "7",
-      "11",
-      "14"
-    ],
-    "corretta_index": 2,
-    "created_at": "2026-01-31T00:46:41.425182"
-  },
-  {
-    "id": "0c2bb395-6e3e-4195-b267-0a5d7ed9b1d7",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "L’organello che contiene il DNA nelle cellule eucariotiche è il __________.",
-    "tag": [
-      "Nucleo e cromosomi eucariotici"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Il nucleo racchiude la maggior parte del DNA eucariotico.",
-    "risposte": [
-      "nucleo"
-    ],
-    "created_at": "2026-01-31T00:47:19.975782"
-  },
-  {
-    "id": "3300009e-2f4e-43b2-8c51-fff70c9cd9fd",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La molecola che trasporta amminoacidi al ribosoma è il __________.",
-    "tag": [
-      "DNA→RNA→Proteina (concetto)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Il tRNA riconosce il codone e porta l’amminoacido.",
-    "risposte": [
-      "tRNA"
-    ],
-    "created_at": "2026-01-31T00:47:19.975859"
-  },
-  {
-    "id": "145dfb56-12f4-48e6-b525-3d39b176b20d",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "L’unità funzionale del rene è il __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Il nefrone filtra e modifica il filtrato per formare urina.",
-    "risposte": [
-      "nefrone"
-    ],
-    "created_at": "2026-01-31T00:47:19.975875"
-  },
-  {
-    "id": "961cbea7-4bbf-47d8-9c36-64379b10f0da",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La sequenza di tre basi sull’mRNA è detta __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Il codone specifica un amminoacido o uno stop.",
-    "risposte": [
-      "codone"
-    ],
-    "created_at": "2026-01-31T00:47:19.975919"
-  },
-  {
-    "id": "8e8f890b-04da-44d2-9e1e-bcf222f17246",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La base presente nell’RNA al posto della timina è __________.",
-    "tag": [
-      "DNA→RNA→Proteina (concetto)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "RNA usa U invece di T.",
-    "risposte": [
-      "uracile"
-    ],
-    "created_at": "2026-01-31T00:47:19.975945"
-  },
-  {
-    "id": "c51a6598-be0d-4717-9ba2-a83e15ec6059",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "L’ATP è prodotto principalmente nei __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Fosforilazione ossidativa nel mitocondrio.",
-    "risposte": [
-      "mitocondri"
-    ],
-    "created_at": "2026-01-31T00:47:19.976141"
-  },
-  {
-    "id": "aa9ece52-6143-464c-8337-eb82081fe75d",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Il processo di duplicazione del DNA si chiama __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Copia fedele del DNA prima della divisione cellulare.",
-    "risposte": [
-      "replicazione"
-    ],
-    "created_at": "2026-01-31T00:47:19.976210"
-  },
-  {
-    "id": "781ae08e-7c50-4c43-92e3-dfcb48ef0024",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La divisione cellulare che produce gameti è la __________.",
-    "tag": [
-      "Divisione cellulare (concetto)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Meiosi: riduzione cromosomica e variabilità genetica.",
-    "risposte": [
-      "meiosi"
-    ],
-    "created_at": "2026-01-31T00:47:19.976486"
-  },
-  {
-    "id": "6b6ca59f-b1c4-4654-b8c7-0340414a5e17",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Il passaggio da DNA a RNA si chiama __________.",
-    "tag": [
-      "DNA→RNA→Proteina (concetto)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "RNA polimerasi sintetizza RNA da DNA.",
-    "risposte": [
-      "trascrizione"
-    ],
-    "created_at": "2026-01-31T00:47:19.976785"
-  },
-  {
-    "id": "bd8089d8-7110-44e4-8f79-d5d4e37ddf9d",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Il passaggio da mRNA a proteina si chiama __________.",
-    "tag": [
-      "DNA→RNA→Proteina (concetto)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Ribosomi traducono codoni in amminoacidi.",
-    "risposte": [
-      "traduzione"
-    ],
-    "created_at": "2026-01-31T00:47:19.976823"
-  },
-  {
-    "id": "528a2368-9f21-4d62-9932-3e2681d9ae9c",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Le proteine sono polimeri di __________.",
-    "tag": [
-      "Macromolecole: zuccheri, lipidi, proteine, nucleotidi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Catene polipeptidiche formate da amminoacidi.",
-    "risposte": [
-      "amminoacidi"
-    ],
-    "created_at": "2026-01-31T00:47:19.976834"
-  },
-  {
-    "id": "c25cdefd-6ec8-4c8c-b668-6df7850a6372",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La struttura che delimita la cellula è la membrana __________.",
-    "tag": [
-      "Cellula eucariotica e endomembrane"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Membrana plasmatica = bilayer fosfolipidico.",
-    "risposte": [
-      "plasmatica"
-    ],
-    "created_at": "2026-01-31T00:47:19.976842"
-  },
-  {
-    "id": "44351fc8-d923-45e9-8c08-7213140a41f6",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Il trasporto di acqua attraverso una membrana è l’__________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Movimento dell’acqua secondo gradiente di potenziale.",
-    "risposte": [
-      "osmosi"
-    ],
-    "created_at": "2026-01-31T00:47:19.976854"
-  },
-  {
-    "id": "82a3f171-fa19-4cb1-b7d5-52e1138dc00a",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Un anticorpo è anche chiamato __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Anticorpi = immunoglobuline.",
-    "risposte": [
-      "immunoglobulina"
-    ],
-    "created_at": "2026-01-31T00:47:19.976863"
-  },
-  {
-    "id": "41985da2-c1cc-4378-b494-182449ae9d24",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "I ribosomi sono sede della sintesi __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Ribosomi assemblano proteine.",
-    "risposte": [
-      "proteica"
-    ],
-    "created_at": "2026-01-31T00:47:19.976875"
-  },
-  {
-    "id": "ebd9e33e-4d80-497f-bb85-6d33d871d191",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Il principale zucchero usato dalle cellule per ottenere energia è il __________.",
-    "tag": [
-      "Metabolismo: anabolismo/catabolismo, condensazione/idrolisi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Glicolisi parte dal glucosio.",
-    "risposte": [
-      "glucosio"
-    ],
-    "created_at": "2026-01-31T00:47:19.976881"
-  },
-  {
-    "id": "2f380d7f-8cb6-4e35-b52e-aec8c8fd1e0d",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Il numero di cromosomi nelle cellule somatiche umane è __________.",
-    "tag": [
-      "Nucleo e cromosomi eucariotici"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "2n=46 nell’uomo.",
-    "risposte": [
-      "46"
-    ],
-    "created_at": "2026-01-31T00:47:19.976888"
-  },
-  {
-    "id": "f408d2b8-19f4-44e4-a57d-d760fe396aab",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Nel DNA, la guanina si appaia con la __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "G-C (3 legami a idrogeno).",
-    "risposte": [
-      "citosina"
-    ],
-    "created_at": "2026-01-31T00:47:19.976995"
-  },
-  {
-    "id": "360613f1-8254-48d7-a716-c9296dae7b2a",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La fase del ciclo cellulare in cui avviene la sintesi del DNA è la fase __________.",
-    "tag": [
-      "Divisione cellulare (concetto)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Fase S: duplicazione del DNA.",
-    "risposte": [
-      "S"
-    ],
-    "created_at": "2026-01-31T00:47:19.977021"
-  },
-  {
-    "id": "e75bcf50-1e0c-4c18-afcd-c1fd7ea0fb06",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Il reticolo endoplasmatico __________ è coinvolto nella sintesi proteica.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "RER con ribosomi sintetizza proteine di membrana/secrezione.",
-    "risposte": [
-      "ruvido"
-    ],
-    "created_at": "2026-01-31T00:47:19.977062"
-  },
-  {
-    "id": "c44708a9-38b1-40c4-b9d9-53191766127f",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "L’apparato che modifica e smista proteine è l’apparato di __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Golgi: maturazione e sorting.",
-    "risposte": [
-      "Golgi"
-    ],
-    "created_at": "2026-01-31T00:47:19.977082"
-  },
-  {
-    "id": "74f88412-4ea7-4c75-8979-3202ad752465",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "I lisosomi contengono enzimi __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Degradazione di macromolecole con idrolasi acide.",
-    "risposte": [
-      "idrolitici"
-    ],
-    "created_at": "2026-01-31T00:47:19.977099"
-  },
-  {
-    "id": "7b322499-b3aa-4a30-a667-4f32f7f24267",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Un virus ha un rivestimento proteico chiamato __________.",
-    "tag": [
-      "Virus: struttura e classi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Capside protegge il genoma.",
-    "risposte": [
-      "capside"
-    ],
-    "created_at": "2026-01-31T00:47:19.977111"
-  },
-  {
-    "id": "2a5d63bb-5383-4da0-ad09-0d55a39a9f12",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La fotosintesi avviene nei __________ (nelle cellule vegetali).",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Cloroplasti: clorofilla e reazioni fotosintetiche.",
-    "risposte": [
-      "cloroplasti"
-    ],
-    "created_at": "2026-01-31T00:47:19.977121"
-  },
-  {
-    "id": "9acd602f-a22c-4758-a4b8-9d632c35ce7c",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Le mutazioni che cambiano un singolo nucleotide sono dette mutazioni __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Sostituzione/insert/delezione di un nucleotide.",
-    "risposte": [
-      "puntiformi"
-    ],
-    "created_at": "2026-01-31T00:47:19.977138"
-  },
-  {
-    "id": "814fa990-a27e-45bf-bb1a-0e023487648f",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La glicolisi avviene nel __________.",
-    "tag": [
-      "Metabolismo: anabolismo/catabolismo, condensazione/idrolisi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "La glicolisi è citosolica.",
-    "risposte": [
-      "citoplasma"
-    ],
-    "created_at": "2026-01-31T00:47:19.977145"
-  },
-  {
-    "id": "c4c37b5b-aa7a-4038-a425-210fd1c445a8",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Il ciclo di Krebs avviene nella matrice __________.",
-    "tag": [
-      "Metabolismo: anabolismo/catabolismo, condensazione/idrolisi"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Negli eucarioti è nella matrice del mitocondrio.",
-    "risposte": [
-      "mitocondriale"
-    ],
-    "created_at": "2026-01-31T00:47:19.977178"
-  },
-  {
-    "id": "83d47898-dd00-4bff-bd7f-662d35d766c3",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Il gas di scarto principale della respirazione cellulare è la __________.",
-    "tag": [
-      "Metabolismo: anabolismo/catabolismo, condensazione/idrolisi"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Ossidazione completa produce CO2.",
-    "risposte": [
-      "CO2"
-    ],
-    "created_at": "2026-01-31T00:47:19.977191"
-  },
-  {
-    "id": "97d2c694-b6b0-40f3-bde5-00a50a47ce97",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Le cellule procariotiche non possiedono un vero __________.",
-    "tag": [
-      "Cellula procariotica (membrana/parete)"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Procarioti: nucleoide senza membrana nucleare.",
-    "risposte": [
-      "nucleo"
-    ],
-    "created_at": "2026-01-31T00:47:19.977200"
-  },
-  {
-    "id": "5ea5ca53-99b5-4820-b65d-e79d8f78af88",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La struttura che conferisce rigidità alle cellule vegetali è la parete __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Parete cellulare (cellulosa) dà supporto.",
-    "risposte": [
-      "cellulare"
-    ],
-    "created_at": "2026-01-31T00:47:19.977210"
-  },
-  {
-    "id": "2322bf50-be93-477d-b801-2206ad584d81",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Il trasporto vescicolare verso l’esterno della cellula è l’__________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Base",
-    "spiegazione": "Esocitosi rilascia contenuto.",
-    "risposte": [
-      "esocitosi"
-    ],
-    "created_at": "2026-01-31T00:47:19.977217"
-  },
-  {
-    "id": "bf9fdd68-ba88-458c-8e58-fa7b8b75652f",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La componente del sangue che trasporta ossigeno è l’__________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Hb lega O2 nei globuli rossi.",
-    "risposte": [
-      "emoglobina"
-    ],
-    "created_at": "2026-01-31T00:47:19.977224"
-  },
-  {
-    "id": "a1fd4f69-d087-4358-9c2f-d8071886dffa",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "Il sistema di riconoscimento specifico dell’immunità adattativa usa recettori dei linfociti __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Linfociti B: recettori/anticorpi specifici (umorale).",
-    "risposte": [
-      "B"
-    ],
-    "created_at": "2026-01-31T00:47:19.977233"
-  },
-  {
-    "id": "65b786ef-747e-44a7-826e-bcea111073d1",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La morte cellulare programmata è detta __________.",
-    "tag": [
-      "Albero della vita e teoria cellulare"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Apoptosi: processo regolato di eliminazione cellulare.",
-    "risposte": [
-      "apoptosi"
-    ],
-    "created_at": "2026-01-31T00:47:19.977241"
-  },
-  {
-    "id": "cb4418e2-253b-4ba9-b890-1ff867375661",
-    "materia": "Biologia",
-    "tipo": "completamento",
-    "testo": "La sequenza di basi sul tRNA che riconosce il codone è l’__________.",
-    "tag": [
-      "DNA→RNA→Proteina (concetto)"
-    ],
-    "difficolta": "Media",
-    "spiegazione": "Anticodone del tRNA appaia con il codone dell’mRNA.",
-    "risposte": [
-      "anticodone"
-    ],
-    "created_at": "2026-01-31T00:47:26.688173"
+      "4",
+      "0",
+      "2",
+      "3"
+    ],
+    "correct_index": 3,
+    "spiegazione": "pH = −log₁₀[H₃O⁺]."
   }
 ]
