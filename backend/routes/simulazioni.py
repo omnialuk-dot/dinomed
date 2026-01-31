@@ -313,6 +313,41 @@ def submit(session_id: str, payload: SubmitPayload):
     }
 
 
+
+
+# =========================
+# Compat: session fetch (per SimulazioniRun)
+# =========================
+try:
+    from routes.sessioni import SESSIONS as BANK_SESSIONS  # type: ignore
+except Exception:
+    BANK_SESSIONS = {}
+
+@router.get("/session/{session_id}")
+@router.get("/session/{session_id}/")
+def get_session_proxy(session_id: str):
+    # prova prima le sessioni "vere" (/api/sim), poi quelle mock
+    s = None
+    try:
+        s = BANK_SESSIONS.get(session_id)
+    except Exception:
+        s = None
+    if not s:
+        s = SESSIONS.get(session_id)
+    if not s:
+        raise HTTPException(status_code=404, detail="Sessione non trovata")
+    return {
+        "session_id": session_id,
+        "duration_min": int(s.get("duration_min") or 0),
+        "order": s.get("order") or [],
+        "questions": s.get("questions") or [],
+    }
+
+@router.get("/{session_id}")
+@router.get("/{session_id}/")
+def get_session_proxy2(session_id: str):
+    return get_session_proxy(session_id)
+
 @router.get("/ping")
 def ping():
     return {"ok": True, "msg": "simulazioni alive"}

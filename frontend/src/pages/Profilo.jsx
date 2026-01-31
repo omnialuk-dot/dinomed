@@ -88,7 +88,7 @@ export default function Profilo() {
       <section className="pr-hero">
         <div className="pr-kicker">
           <span className="pr-dot" aria-hidden="true" />
-          <span className="pr-brand">DinoMed</span>
+          <span className="pr-brand" aria-label="DinoMed"><span className="pr-dino">Dino</span><span className="pr-med">Med</span></span>
           <span className="pr-sep">•</span>
           <span className="pr-kickerText">Profilo</span>
         </div>

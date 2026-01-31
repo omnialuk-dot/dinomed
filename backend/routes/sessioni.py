@@ -132,17 +132,15 @@ def start(req: StartRequest):
     # ordine: se non fornito, usa l'ordine delle sections
     order = req.order or [s.materia for s in req.sections]
 
-    # costruisci pool per sezione.
-    # REQUISITO: ordine per materia fisso (in base a req.order), domande casuali all'interno della materia.
+    # REQUISITO: ordine per materia fisso (req.order), domande casuali all'interno della materia.
     picked_full: List[Dict[str, Any]] = []
-    diagnostics = []
+    diagnostics: List[str] = []
 
     for materia in order:
         sec = next((s for s in req.sections if s.materia == materia), None)
         if not sec:
             continue
 
-        # raccogli per la singola materia, poi shuffle locale
         picked_this: List[Dict[str, Any]] = []
 
         # scelta multipla
@@ -186,41 +184,14 @@ def start(req: StartRequest):
         "created_at": datetime.utcnow().isoformat(),
         "duration_min": int(req.duration_min or 0),
         "order": order,
-        # salva FULL (con soluzioni) per correzione
-        "questions_full": picked_full,
-        # pubblico
-        "questions": [_public_question(q) for q in picked_full],
+        "questions_full": picked_full,  # con soluzioni (per correzione)
+        "questions": [_public_question(q) for q in picked_full],  # senza soluzioni
         "answers": {},
         "finished": False,
     }
     SESSIONS[session_id] = session
 
-    
-    # salva run per utente autenticato (se presente Authorization: Bearer <userToken>)
-    try:
-        userp = try_get_user(request)
-        if userp and userp.get("email"):
-            run_id = uuid.uuid4().hex
-            runs = _runs_read()
-            runs.insert(0, {
-                "id": run_id,
-                "email": str(userp.get("email")),
-                "created_at": datetime.utcnow().isoformat(),
-                "title": "Simulazione",
-                "session_id": session_id,
-                "score_total": round(total_vote, 2),
-                "score_max": round(max_vote, 0),
-                "per_subject": per_subject_out,
-                "details": details,
-            })
-            # keep last 200 per user to avoid file blowup
-            if len(runs) > 1000:
-                runs = runs[:1000]
-            _runs_write(runs)
-    except Exception:
-        pass
-
-return {
+    return {
         "session_id": session_id,
         "duration_min": session["duration_min"],
         "questions": session["questions"],
@@ -228,6 +199,7 @@ return {
     }
 
 @router.get("/{session_id}")
+
 def get_session(session_id: str):
     s = SESSIONS.get(session_id)
     if not s:
