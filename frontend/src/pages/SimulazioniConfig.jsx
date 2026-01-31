@@ -1063,18 +1063,16 @@ const css = `
   align-items: flex-start;
 }
 
-/* CHIP: non devono “allargarsi” a tutta la card */
+/* 2 per riga + testo leggibile (ellipsis a DESTRA) */
 .scx-topic{
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;   /* <<< NON più center (tagliava a sinistra) */
 
-  /* <<< QUESTA È LA CHIAVE >>> */
-  flex: 0 0 auto;            /* non si “stira” */
-  max-width: 240px;          /* così ne entrano più per riga */
-  min-width: 120px;          /* evita chip microscopici */
+  /* <<< CHIAVE: 2 chip per riga >>> */
+  flex: 0 1 calc(50% - 8px);
 
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-radius: 999px;
   border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.86);
@@ -1086,9 +1084,19 @@ const css = `
   color: rgba(15,23,42,0.78);
   cursor:pointer;
 
-  white-space: nowrap;        /* non va su due righe */
-  overflow: hidden;           /* taglia */
-  text-overflow: ellipsis;    /* … */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;      /* <<< … a DESTRA */
+}
+
+/* su schermi molto larghi: 3 per riga (più “premium”) */
+@media (min-width: 1100px){
+  .scx-topic{ flex-basis: calc(33.333% - 8px); }
+}
+
+/* su mobile: 1 per riga (sennò diventano troppo stretti) */
+@media (max-width: 520px){
+  .scx-topic{ flex-basis: 100%; }
 }
 
 .scx-topic.isOn{
