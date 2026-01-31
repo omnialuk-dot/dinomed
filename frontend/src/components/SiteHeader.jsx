@@ -32,10 +32,12 @@ export default function SiteHeader() {
           <NavLink to="/chi-siamo" className="sh-link" onClick={close}>Chi siamo</NavLink>
           <NavLink to="/contatti" className="sh-link" onClick={close}>Contatti</NavLink>
 
-          <NavLink to="/simulazioni" className="sh-link sh-cta" onClick={close}>
+          <NavLink to="/simulazioni/config" className="sh-link sh-cta" onClick={close}>
             Inizia
             <span className="sh-ctaShine" aria-hidden="true" />
           </NavLink>
+
+          <NavLink to="/profilo" className="sh-link" onClick={close}>Profilo</NavLink>
         </nav>
 
         {/* Mobile burger */}
@@ -60,7 +62,9 @@ export default function SiteHeader() {
           <NavLink to="/chi-siamo" className="sh-mLink" onClick={close}>Chi siamo</NavLink>
           <NavLink to="/contatti" className="sh-mLink" onClick={close}>Contatti</NavLink>
 
-          <NavLink to="/simulazioni" className="sh-mLink sh-mCta" onClick={close}>
+          <NavLink to="/profilo" className="sh-mLink" onClick={close}>Profilo</NavLink>
+
+          <NavLink to="/simulazioni/config" className="sh-mLink sh-mCta" onClick={close}>
             Inizia
             <span className="sh-ctaShine" aria-hidden="true" />
           </NavLink>
@@ -129,13 +133,14 @@ const css = `
   position:relative;
   display:inline-flex;
   align-items:baseline;
+  white-space:nowrap;
   font-weight:1000;
   font-size:18px;
   letter-spacing:-0.02em;
   line-height:1;
 }
 .sh-dino{ color:var(--dino); text-shadow:0 6px 14px rgba(34,197,94,0.12); }
-.sh-med{ color:var(--med); margin-left:2px; text-shadow:0 6px 14px rgba(56,189,248,0.12); }
+.sh-med{ color:var(--med); margin-left:0; text-shadow:0 6px 14px rgba(56,189,248,0.12); }
 
 /* glow MOLTO ridotto */
 .sh-brandGlow{

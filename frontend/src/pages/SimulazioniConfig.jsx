@@ -261,7 +261,7 @@ export default function SimulazioniConfig() {
     setTopicErrors({});
 
     if (!activeOrder.length) {
-      setErr("Seleziona almeno 1 materia.");
+      setErr("Seleziona almeno 1 materia, per continuare.");
       return;
     }
 
