@@ -1075,6 +1075,7 @@ const css = `
   gap: 8px;
   width: 100%;
 }
+
 .scx-topic{
   padding: 10px 10px;
   border-radius: 999px;
