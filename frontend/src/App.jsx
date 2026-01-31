@@ -4,11 +4,12 @@ import SiteHeader from "./components/SiteHeader";
 
 import Home from "./pages/Home";
 import Dispense from "./pages/Dispense";
-import Simulazioni from "./pages/Simulazioni";
-import SimulazioniConfig from "./pages/SimulazioniConfig";
 import SimulazioniRun from "./pages/SimulazioniRun";
 import ChiSiamo from "./pages/ChiSiamo";
 import Contatti from "./pages/Contatti";
+import SimulazioniRun from "./pages/SimulazioniRun.jsx";
+import SimulazioniConfig from "./pages/SimulazioniConfig.jsx";
+import SimulazioniRisultato from "./pages/SimulazioniRisultato.jsx";
 
 import AdminLogin from "./pages/AdminLogin";
 import AdminPanel from "./pages/AdminPanel";
@@ -24,9 +25,10 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/dispense" element={<Dispense />} />
         <Route path="/simulazioni" element={<Simulazioni />} />
+        <Route path="/chi-siamo" element={<ChiSiamo />} />
         <Route path="/simulazioni/config" element={<SimulazioniConfig />} />
         <Route path="/simulazioni/run" element={<SimulazioniRun />} />
-        <Route path="/chi-siamo" element={<ChiSiamo />} />
+        <Route path="/simulazioni/risultato" element={<SimulazioniRisultato />} />
         <Route path="/contatti" element={<Contatti />} />
 
         {/* ADMIN */}
