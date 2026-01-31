@@ -167,7 +167,7 @@ export default function SimulazioniConfig() {
     });
 
     setTimedMode(true);
-    setDurationMin(135);
+    setDurationMin(45);
   }
 
   function moveOrder(m, dir) {
@@ -1043,11 +1043,15 @@ const css = `
 /* TOPICS */
 .scx-topicWrap{
   margin-top: 12px;
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
+  display: grid;
+  grid-template-columns: 1fr;   /* ✅ una card per riga */
   gap: 12px;
 }
-@media (max-width: 980px){ .scx-topicWrap{ grid-template-columns: 1fr; } }
+
+/* se vuoi che su desktop resti comunque 1 colonna, non serve media query */
+@media (max-width: 980px){
+  .scx-topicWrap{ grid-template-columns: 1fr; }
+}
 
 .scx-topicCard{
   border-radius: 18px;
@@ -1096,6 +1100,7 @@ const css = `
   display:flex;
   flex-wrap: wrap;
   gap: 8px;
+  width: 100%;
 }
 .scx-topic{
   padding: 10px 10px;
