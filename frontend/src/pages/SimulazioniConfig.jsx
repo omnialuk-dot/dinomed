@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
@@ -121,6 +121,16 @@ export default function SimulazioniConfig() {
     return o;
   });
 
+  // ✅ errori per materia (mostrati dentro la card giusta)
+  const [topicErrors, setTopicErrors] = useState(() => {
+    const o = {};
+    for (const m of ALL_SUBJECTS) o[m] = "";
+    return o;
+  });
+
+  // refs per scroll “forzato” sulla card
+  const topicCardRefs = useRef({});
+
   // UI helper: modifica formato per "tutte" o per una materia
   const [formatScope, setFormatScope] = useState("Tutte"); // Tutte | Chimica | Fisica | Biologia
 
@@ -131,12 +141,11 @@ export default function SimulazioniConfig() {
 
   // Mantieni order sempre coerente con subjects
   const activeOrder = useMemo(() => {
-    const normalized = normalizeOrder(activeSubjects, order);
-    return normalized;
+    return normalizeOrder(activeSubjects, order);
   }, [activeSubjects, order]);
 
   function toggleSubject(m) {
-    if (murActive) return; // con MUR attivo, le materie sono "bloccate"
+    if (murActive) return;
     setSubjects((prev) => {
       const on = prev.includes(m);
       const next = on ? prev.filter((x) => x !== m) : [...prev, m];
@@ -144,17 +153,12 @@ export default function SimulazioniConfig() {
     });
   }
 
-  /* =========================
-     ✅ MUR TOGGLE VERO
-     - click ON: imposta preset
-     - click OFF: sblocca e NON resetta il resto (tranne murActive)
-     ========================= */
+  // ✅ MUR toggle vero
   function toggleMUR() {
     setMurActive((prev) => {
       const next = !prev;
 
       if (next) {
-        // Attivo MUR → auto seleziona tutto e imposta il formato
         const murSubjects = ["Chimica", "Fisica", "Biologia"];
         setSubjects(murSubjects);
         setOrder(murSubjects);
@@ -167,10 +171,9 @@ export default function SimulazioniConfig() {
 
         setTimedMode(true);
         setDurationMin(45);
-        // argomenti restano liberi (non tocchiamo topicMode/pickedTopics)
+        // argomenti restano liberi
       }
 
-      // Se lo spengo → semplicemente sblocco la UI (non resetto nulla)
       return next;
     });
   }
@@ -218,6 +221,30 @@ export default function SimulazioniConfig() {
     });
   }
 
+  // per UI: valori mostrati negli input quando scope è “Tutte”
+  const scopeKey = formatScope === "Tutte" ? activeOrder[0] : formatScope;
+
+  // ✅ helper: imposta mode e pulisci errori
+  function setModeFor(m, mode) {
+    setTopicMode((p) => ({ ...p, [m]: mode }));
+    setTopicErrors((p) => ({ ...p, [m]: "" })); // quando cambi, sparisce
+  }
+
+  // ✅ helper: toggle topic e pulisci errore se ora >=1
+  function toggleTopic(m, t) {
+    setPickedTopics((prev) => {
+      const cur = prev[m] || [];
+      const on = cur.includes(t);
+      const next = on ? cur.filter((x) => x !== t) : [...cur, t];
+
+      // pulisci errore se ha almeno 1 argomento selezionato
+      if (next.length > 0) {
+        setTopicErrors((p) => ({ ...p, [m]: "" }));
+      }
+      return { ...prev, [m]: next };
+    });
+  }
+
   async function startExam() {
     if (starting) return;
     setErr("");
@@ -227,12 +254,31 @@ export default function SimulazioniConfig() {
       return;
     }
 
-    // ✅ Regola: se “Scelgo io” (pick) deve selezionare almeno 1 argomento
+    // ✅ Regola: se “Scelgo io” deve selezionare almeno 1 argomento (per materia)
+    const newTopicErrors = { ...topicErrors };
+    let firstBad = null;
+
     for (const m of activeOrder) {
       if (topicMode[m] === "pick" && (pickedTopics[m] || []).length === 0) {
-        setErr(`In ${m} hai scelto “Scelgo io” ma non hai selezionato argomenti.`);
-        return;
+        newTopicErrors[m] = "Hai scelto “Scelgo io” ma non hai selezionato argomenti.";
+        if (!firstBad) firstBad = m;
+      } else {
+        newTopicErrors[m] = "";
       }
+    }
+
+    if (firstBad) {
+      setTopicErrors(newTopicErrors);
+      // scroll forzato sulla materia “colpevole”
+      const el = topicCardRefs.current?.[firstBad];
+      if (el?.scrollIntoView) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        // focus “soft” per evidenziare su mobile
+        try {
+          el.focus?.();
+        } catch {}
+      }
+      return;
     }
 
     // valida: ogni materia deve avere almeno 1 domanda
@@ -309,9 +355,6 @@ export default function SimulazioniConfig() {
 
   const showOrder = activeOrder.length > 1;
 
-  // per UI: valori mostrati negli input quando scope è “Tutte”
-  const scopeKey = formatScope === "Tutte" ? activeOrder[0] : formatScope;
-
   return (
     <main className="scx">
       <style>{css}</style>
@@ -346,7 +389,6 @@ export default function SimulazioniConfig() {
                 <span className="scx-shine" aria-hidden="true" />
               </button>
 
-              {/* ✅ MUR toggle vero + resta “selezionato” */}
               <button
                 className={`scx-btn scx-soft ${murActive ? "isActive" : ""}`}
                 type="button"
@@ -494,9 +536,7 @@ export default function SimulazioniConfig() {
                 min="0"
                 max="200"
                 value={countsBySubject[scopeKey]?.completamento ?? 16}
-                onChange={(e) =>
-                  setCounts(formatScope, { completamento: clampInt(e.target.value, 0, 200, 16) })
-                }
+                onChange={(e) => setCounts(formatScope, { completamento: clampInt(e.target.value, 0, 200, 16) })}
                 disabled={murActive}
               />
             </div>
@@ -558,15 +598,22 @@ export default function SimulazioniConfig() {
             </div>
           </div>
 
+          {/* ✅ Materie in colonna (3 colonne desktop), argomenti orizzontali compatti */}
           <div className="scx-topicWrap">
             {activeOrder.map((m) => {
               const mode = topicMode[m];
               const topics = TOPICS[m] || [];
               const picked = pickedTopics[m] || [];
               const pickedCount = picked.length;
+              const inlineErr = topicErrors[m];
 
               return (
-                <div className="scx-topicCard" key={m}>
+                <div
+                  className={`scx-topicCard ${inlineErr ? "isErr" : ""}`}
+                  key={m}
+                  ref={(el) => (topicCardRefs.current[m] = el)}
+                  tabIndex={-1}
+                >
                   <div className="scx-topicHead">
                     <div className="scx-topicName">{m}</div>
 
@@ -574,7 +621,7 @@ export default function SimulazioniConfig() {
                       <button
                         type="button"
                         className={`scx-miniBtn ${mode === "all" ? "isOn" : ""}`}
-                        onClick={() => setTopicMode((p) => ({ ...p, [m]: "all" }))}
+                        onClick={() => setModeFor(m, "all")}
                       >
                         Tutti
                       </button>
@@ -582,7 +629,7 @@ export default function SimulazioniConfig() {
                       <button
                         type="button"
                         className={`scx-miniBtn ${mode === "pick" ? "isOn" : ""}`}
-                        onClick={() => setTopicMode((p) => ({ ...p, [m]: "pick" }))}
+                        onClick={() => setModeFor(m, "pick")}
                       >
                         Scelgo io
                       </button>
@@ -595,23 +642,15 @@ export default function SimulazioniConfig() {
                     </div>
                   </div>
 
+                  {/* ✅ errore visibile dentro la materia */}
+                  {inlineErr ? <div className="scx-inlineErr">{inlineErr}</div> : null}
+
                   {mode === "pick" ? (
                     <div className="scx-topicList">
                       {topics.map((t) => {
                         const on = picked.includes(t);
                         return (
-                          <button
-                            key={t}
-                            type="button"
-                            className={`scx-topic ${on ? "isOn" : ""}`}
-                            onClick={() =>
-                              setPickedTopics((prev) => {
-                                const cur = prev[m] || [];
-                                const next = on ? cur.filter((x) => x !== t) : [...cur, t];
-                                return { ...prev, [m]: next };
-                              })
-                            }
-                          >
+                          <button key={t} type="button" className={`scx-topic ${on ? "isOn" : ""}`} onClick={() => toggleTopic(m, t)}>
                             {t}
                           </button>
                         );
@@ -750,9 +789,7 @@ const css = `
   border: 1px solid rgba(255,255,255,0.18);
   background: linear-gradient(90deg, var(--dino2), var(--med2));
 }
-.scx-soft{
-  background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(56,189,248,0.10));
-}
+.scx-soft{ background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(56,189,248,0.10)); }
 .scx-soft.isActive{
   border-color: rgba(34,197,94,0.30);
   box-shadow: 0 16px 44px rgba(2,6,23,0.12);
@@ -979,7 +1016,13 @@ const css = `
   background: rgba(255,255,255,0.76);
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
   padding: 12px;
+  outline: none;
 }
+.scx-topicCard.isErr{
+  border-color: rgba(185,28,28,0.25);
+  box-shadow: 0 18px 46px rgba(185,28,28,0.08);
+}
+
 .scx-topicHead{
   display:flex;
   align-items:center;
@@ -999,20 +1042,41 @@ const css = `
   color: rgba(15,23,42,0.70);
 }
 
+/* ✅ errore per materia (super visibile) */
+.scx-inlineErr{
+  margin-top: 10px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(185,28,28,0.22);
+  background: rgba(185,28,28,0.06);
+  color: #b91c1c;
+  font-weight: 950;
+  line-height: 1.25;
+}
+
+/* ✅ LISTA ARGOMENTI: ORIZZONTALE + COMPATTA */
 .scx-topicList{
   margin-top: 10px;
   display:flex;
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* ✅ chip più piccoli, non “colonnoni” */
 .scx-topic{
-  padding: 10px 10px;
+  padding: 8px 10px;
   border-radius: 999px;
   border: 1px solid rgba(15,23,42,0.10);
   background: rgba(255,255,255,0.86);
   font-weight: 900;
+  font-size: 0.86rem;
+  line-height: 1;
   color: rgba(15,23,42,0.78);
   cursor:pointer;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .scx-topic.isOn{
   border-color: rgba(34,197,94,0.35);
