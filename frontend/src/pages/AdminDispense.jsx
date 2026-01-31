@@ -26,6 +26,15 @@ function normalizePdfUrl(link) {
   return absUrl(link);
 }
 
+// Salva sempre un path relativo (/uploads/...) per evitare che resti "localhost" nel DB
+function normalizeStoredLink(link) {
+  const s = String(link || "").trim();
+  if (!s) return "";
+  const i = s.indexOf("/uploads/");
+  if (i >= 0) return s.slice(i);
+  return s;
+}
+
 function Modal({ open, onClose, title, children }) {
   if (!open) return null;
   return (
@@ -192,7 +201,7 @@ export default function AdminDispense() {
       pagine: parseInt(current.pagine, 10) || 1,
       tag: tagArr,
       filename: (current.filename || "").trim() || null,
-      link: (current.link || "").trim() || null,
+      link: normalizeStoredLink(current.link) || null,
       pubblicata: !!current.pubblicata,
     };
   }
@@ -270,13 +279,14 @@ export default function AdminDispense() {
       const originalName = data.filename || pdfFile.name;
       const filePath = data.file_path || data.path || data.url || "";
 
-      const url = normalizePdfUrl(filePath);
+      // ✅ salvo nel DB SOLO il path relativo (così non resta il link locale)
+      const stored = normalizeStoredLink(filePath);
 
-      // ✅ aggiorna lo state: questi valori poi vengono inviati in "Salva"
+      // aggiorna lo state: questi valori poi vengono inviati in "Salva"
       setCurrent((c) => ({
         ...c,
         filename: originalName,
-        link: url,
+        link: stored,
       }));
 
       setPdfFile(null);

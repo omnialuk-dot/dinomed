@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { api, clearToken } from "../lib/api";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AdminDispense from "./AdminDispense";
-import AdminSimulazioni from "./AdminSimulazioni";
 import AdminDomande from "./AdminDomande";
 
 export default function AdminPanel() {
   const nav = useNavigate();
+  const location = useLocation();
   const [me, setMe] = useState(null);
-  const [tab, setTab] = useState("dispense"); // dispense | domande | simulazioni
+  const [tab, setTab] = useState("dispense"); // dispense | domande
 
   useEffect(() => {
     api.me()
@@ -18,6 +18,13 @@ export default function AdminPanel() {
         nav("/admin", { replace: true });
       });
   }, [nav]);
+
+  // route alias: /admin/domande e /admin/dispense
+  useEffect(() => {
+    const p = location?.pathname || "";
+    if (p.startsWith("/admin/domande")) setTab("domande");
+    if (p.startsWith("/admin/dispense")) setTab("dispense");
+  }, [location?.pathname]);
 
   function logout() {
     clearToken();
@@ -81,11 +88,10 @@ export default function AdminPanel() {
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
         {tabBtn("dispense", "Dispense")}
         {tabBtn("domande", "Domande")}
-        {tabBtn("simulazioni", "Simulazioni")}
       </div>
 
       {/* Contenuto */}
-      {tab === "dispense" ? <AdminDispense /> : tab === "domande" ? <AdminDomande /> : <AdminSimulazioni />}
+      {tab === "dispense" ? <AdminDispense /> : <AdminDomande />}
     </main>
   );
 }

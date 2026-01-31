@@ -185,18 +185,6 @@ export default function SimulazioniRisultato() {
               <button className="sr2-btn" onClick={() => nav("/simulazioni/config")}>
                 Nuova prova
               </button>
-              <button
-                className="sr2-btn sr2-primary"
-                onClick={() => {
-                  try {
-                    navigator.clipboard.writeText(
-                      `Risultato DinoMed\nCorrette: ${summary.correct}\nErrate: ${summary.wrong}\nOmesse: ${summary.blank}\nPunteggio: ${summary.score}\nVoto/30: ${summary.vote30 ?? "—"}`
-                    );
-                  } catch {}
-                }}
-              >
-                Copia risultato
-              </button>
             </div>
           </aside>
         </section>

@@ -42,6 +42,24 @@ export default function App() {
           }
         />
 
+        {/* Alias comodi (evita 404 se qualcuno salva il link) */}
+        <Route
+          path="/admin/domande"
+          element={
+            <AdminGuard>
+              <AdminPanel />
+            </AdminGuard>
+          }
+        />
+        <Route
+          path="/admin/dispense"
+          element={
+            <AdminGuard>
+              <AdminPanel />
+            </AdminGuard>
+          }
+        />
+
         {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

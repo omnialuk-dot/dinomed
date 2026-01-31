@@ -120,6 +120,7 @@ export default function SimulazioniConfig() {
 
   // Timer (universale)
   const [timedMode, setTimedMode] = useState(true);
+  // range richiesto: 1–250
   const [durationMin, setDurationMin] = useState(45);
 
   // Conteggio domande PER MATERIA
@@ -183,7 +184,8 @@ export default function SimulazioniConfig() {
 
     // Timer resta modificabile (imposto default MUR)
     setTimedMode(true);
-    setDurationMin(45);
+    // ✅ MUR: 135 minuti (2h15)
+    setDurationMin(135);
 
     setErr("");
   }
@@ -203,17 +205,17 @@ export default function SimulazioniConfig() {
 
   const totalQuestions = useMemo(() => {
     return activeOrder.reduce((sum, m) => {
-      const sc = clampInt(countsBySubject[m]?.scelta ?? 0, 0, 200, 15);
-      const co = clampInt(countsBySubject[m]?.completamento ?? 0, 0, 200, 16);
+      const sc = clampInt(countsBySubject[m]?.scelta ?? 0, 0, 99, 15);
+      const co = clampInt(countsBySubject[m]?.completamento ?? 0, 0, 99, 16);
       return sum + sc + co;
     }, 0);
   }, [activeOrder, countsBySubject]);
 
   const formatChip = useMemo(() => {
-    const t = timedMode ? `${clampInt(durationMin, 5, 240, 45)} min` : "senza timer";
+    const t = timedMode ? `${clampInt(durationMin, 1, 250, 45)} min` : "senza timer";
     const first = activeOrder[0];
-    const s = clampInt(countsBySubject[first]?.scelta ?? 15, 0, 200, 15);
-    const c = clampInt(countsBySubject[first]?.completamento ?? 16, 0, 200, 16);
+    const s = clampInt(countsBySubject[first]?.scelta ?? 15, 0, 99, 15);
+    const c = clampInt(countsBySubject[first]?.completamento ?? 16, 0, 99, 16);
     const multi = activeOrder.length > 1 ? "• formato per materia" : "";
     return `${s} crocette • ${c} completamento • ${t} ${multi}`.trim();
   }, [activeOrder, countsBySubject, timedMode, durationMin]);
@@ -265,8 +267,8 @@ export default function SimulazioniConfig() {
 
     // valida: ogni materia deve avere almeno 1 domanda
     for (const m of activeOrder) {
-      const sc = clampInt(countsBySubject[m]?.scelta ?? 0, 0, 200, 15);
-      const co = clampInt(countsBySubject[m]?.completamento ?? 0, 0, 200, 16);
+      const sc = clampInt(countsBySubject[m]?.scelta ?? 0, 0, 99, 15);
+      const co = clampInt(countsBySubject[m]?.completamento ?? 0, 0, 99, 16);
       if (sc + co <= 0) {
         setErr(`In ${m} metti almeno 1 domanda (crocette o completamento).`);
         return;
@@ -296,12 +298,12 @@ export default function SimulazioniConfig() {
       return;
     }
 
-    const duration_min = timedMode ? clampInt(durationMin, 5, 240, 45) : 0;
+    const duration_min = timedMode ? clampInt(durationMin, 1, 250, 45) : 0;
 
     const sections = activeOrder.map((materia) => ({
       materia,
-      scelta: clampInt(countsBySubject[materia]?.scelta ?? 15, 0, 200, 15),
-      completamento: clampInt(countsBySubject[materia]?.completamento ?? 16, 0, 200, 16),
+      scelta: clampInt(countsBySubject[materia]?.scelta ?? 15, 0, 99, 15),
+      completamento: clampInt(countsBySubject[materia]?.completamento ?? 16, 0, 99, 16),
       tag: topicMode[materia] === "all" ? [] : pickedTopics[materia] || [],
       difficolta: "Base",
     }));
@@ -527,9 +529,9 @@ export default function SimulazioniConfig() {
                 className="scx-input"
                 type="number"
                 min="0"
-                max="200"
+                max="99"
                 value={countsBySubject[formatScope === "Tutte" ? activeOrder[0] : formatScope]?.scelta ?? 15}
-                onChange={(e) => setCounts(formatScope, { scelta: clampInt(e.target.value, 0, 200, 15) })}
+                onChange={(e) => setCounts(formatScope, { scelta: clampInt(e.target.value, 0, 99, 15) })}
                 disabled={murActive}
               />
             </div>
@@ -540,9 +542,9 @@ export default function SimulazioniConfig() {
                 className="scx-input"
                 type="number"
                 min="0"
-                max="200"
+                max="99"
                 value={countsBySubject[formatScope === "Tutte" ? activeOrder[0] : formatScope]?.completamento ?? 16}
-                onChange={(e) => setCounts(formatScope, { completamento: clampInt(e.target.value, 0, 200, 16) })}
+                onChange={(e) => setCounts(formatScope, { completamento: clampInt(e.target.value, 0, 99, 16) })}
                 disabled={murActive}
               />
             </div>
@@ -564,14 +566,14 @@ export default function SimulazioniConfig() {
               <input
                 className="scx-input"
                 type="number"
-                min="5"
-                max="240"
+                min="1"
+                max="250"
                 value={timedMode ? durationMin : ""}
                 placeholder={timedMode ? "" : "— —"}
-                onChange={(e) => setDurationMin(clampInt(e.target.value, 5, 240, 45))}
+                onChange={(e) => setDurationMin(clampInt(e.target.value, 1, 250, 45))}
                 disabled={!timedMode}
               />
-              <div className="scx-hint">{timedMode ? "5–240" : "timer spento"}</div>
+              <div className="scx-hint">{timedMode ? "1–250" : "timer spento"}</div>
             </div>
           </div>
 
@@ -626,13 +628,19 @@ export default function SimulazioniConfig() {
                         type="button"
                         className={`scx-miniBtn ${mode === "all" ? "isOn" : ""}`}
                         onClick={() => {
+                          // ✅ se passo a "Tutti":
+                          // 1) non devo più mostrare l'errore "Completa gli argomenti..."
+                          // 2) non deve restare l'errore locale
+                          // 3) tengo pulito lo state dei pick (così non rimane memoria "fantasma")
                           setTopicMode((p) => ({ ...p, [m]: "all" }));
+                          setPickedTopics((pt) => ({ ...pt, [m]: [] }));
                           setTopicErrors((pe) => {
                             if (!pe[m]) return pe;
                             const nn = { ...pe };
                             delete nn[m];
                             return nn;
                           });
+                          setErr((e) => (e.startsWith("Completa gli argomenti") ? "" : e));
                         }}
                       >
                         Tutti
