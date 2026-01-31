@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
@@ -64,11 +64,9 @@ function clampInt(v, min, max, fallback) {
   if (!Number.isFinite(n)) return fallback;
   return Math.max(min, Math.min(max, n));
 }
-
 function uniq(arr) {
   return Array.from(new Set(arr));
 }
-
 function normalizeOrder(subjects, prevOrder) {
   const keep = (prevOrder || []).filter((m) => subjects.includes(m));
   const add = subjects.filter((m) => !keep.includes(m));
@@ -81,14 +79,14 @@ export default function SimulazioniConfig() {
   const preset = location?.state?.preset || null;
 
   const [err, setErr] = useState("");
-  const [errType, setErrType] = useState(""); // "" | "topics" | "other"
   const [starting, setStarting] = useState(false);
 
-  // errori per materia (solo per “Scelgo io” senza selezioni)
-  const [topicErrBySubject, setTopicErrBySubject] = useState({}); // { Fisica:true, ... }
-
-  // Stato preset MUR (deve "rimanere selezionato")
+  // preset MUR toggle (deve rimanere “selezionato” se attivo)
   const [murActive, setMurActive] = useState(false);
+
+  // per evidenziare errori argomenti (scelgo io ma 0 selezionati)
+  const [topicErrors, setTopicErrors] = useState({}); // { Chimica:true, ... }
+  const topicCardRef = useRef({}); // refs per scroll
 
   // Materie (multi)
   const [subjects, setSubjects] = useState(() => {
@@ -125,7 +123,7 @@ export default function SimulazioniConfig() {
     return o;
   });
 
-  // UI helper: modifica formato per "tutte" o per una materia
+  // UI helper: modifica formato per “tutte” o per una materia
   const [formatScope, setFormatScope] = useState("Tutte"); // Tutte | Chimica | Fisica | Biologia
 
   const activeSubjects = useMemo(() => {
@@ -133,13 +131,10 @@ export default function SimulazioniConfig() {
     return s.length ? s : ["Chimica"];
   }, [subjects]);
 
-  // Mantieni order sempre coerente con subjects
-  const activeOrder = useMemo(() => {
-    return normalizeOrder(activeSubjects, order);
-  }, [activeSubjects, order]);
+  const activeOrder = useMemo(() => normalizeOrder(activeSubjects, order), [activeSubjects, order]);
 
   function toggleSubject(m) {
-    if (murActive) return;
+    if (murActive) return; // con MUR attivo: materie fisse
     setSubjects((prev) => {
       const on = prev.includes(m);
       const next = on ? prev.filter((x) => x !== m) : [...prev, m];
@@ -147,27 +142,32 @@ export default function SimulazioniConfig() {
     });
   }
 
-  function applyMUR() {
-    // toggle: se è già attivo -> disattiva (e torna modificabile)
+  function toggleMUR() {
+    // Toggle vero: se è attivo → lo disattivi e torni libero
     if (murActive) {
       setMurActive(false);
+      setErr("");
       return;
     }
 
+    // Attiva preset + auto seleziona tutto
     setMurActive(true);
-
     const murSubjects = ["Chimica", "Fisica", "Biologia"];
     setSubjects(murSubjects);
     setOrder(murSubjects);
 
+    // Domande MUR per ciascuna
     setCountsBySubject({
       Chimica: { scelta: 15, completamento: 16 },
       Fisica: { scelta: 15, completamento: 16 },
       Biologia: { scelta: 15, completamento: 16 },
     });
 
+    // Timer resta modificabile (imposto default MUR)
     setTimedMode(true);
     setDurationMin(45);
+
+    setErr("");
   }
 
   function moveOrder(m, dir) {
@@ -204,6 +204,7 @@ export default function SimulazioniConfig() {
     setCountsBySubject((prev) => {
       const next = { ...prev };
       const targets = scope === "Tutte" ? activeSubjects : [scope];
+
       for (const m of targets) {
         const cur = next[m] || { scelta: 15, completamento: 16 };
         next[m] = { ...cur, ...patch };
@@ -212,55 +213,35 @@ export default function SimulazioniConfig() {
     });
   }
 
-  // ✅ helper: scroll al primo errore argomenti
-  function scrollToTopicCard(subject) {
-    const el = document.querySelector(`[data-topic-card="${subject}"]`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  // ✅ quando selezioni/togli un topic -> cancella l’errore “rosso sopra” se era un topic-error
-  function clearTopicErrorIfSolved(nextPickedTopics) {
-    setTopicErrBySubject((prev) => {
-      let changed = false;
-      const next = { ...prev };
-
-      for (const m of activeOrder) {
-        if (topicMode[m] !== "pick") {
-          if (next[m]) {
-            delete next[m];
-            changed = true;
-          }
-          continue;
-        }
-        const picked = (nextPickedTopics?.[m] ?? pickedTopics[m] ?? []);
-        if ((picked?.length || 0) > 0) {
-          if (next[m]) {
-            delete next[m];
-            changed = true;
-          }
-        }
-      }
-
-      // se non restano errori per topic -> pulisci banner rosso
-      const stillAny = Object.keys(next).length > 0;
-      if (!stillAny && errType === "topics") {
-        setErr("");
-        setErrType("");
-      }
-
-      return changed ? next : prev;
+  function setTopicPick(m, t) {
+    setPickedTopics((prev) => {
+      const cur = prev[m] || [];
+      const on = cur.includes(t);
+      const next = on ? cur.filter((x) => x !== t) : [...cur, t];
+      return { ...prev, [m]: next };
     });
+
+    // appena seleziona 1 argomento → sparisce l’errore locale
+    setTopicErrors((p) => {
+      if (!p[m]) return p;
+      const nn = { ...p };
+      delete nn[m];
+      return nn;
+    });
+
+    // e pulisco anche il banner rosso generale se era solo quello
+    setErr((e) => (e.startsWith("Completa gli argomenti") ? "" : e));
   }
 
   async function startExam() {
     if (starting) return;
     setErr("");
-    setErrType("");
-    setTopicErrBySubject({});
+
+    // reset errori argomenti
+    setTopicErrors({});
 
     if (!activeOrder.length) {
       setErr("Seleziona almeno 1 materia.");
-      setErrType("other");
       return;
     }
 
@@ -270,12 +251,11 @@ export default function SimulazioniConfig() {
       const co = clampInt(countsBySubject[m]?.completamento ?? 0, 0, 200, 16);
       if (sc + co <= 0) {
         setErr(`In ${m} metti almeno 1 domanda (crocette o completamento).`);
-        setErrType("other");
         return;
       }
     }
 
-    // ✅ valida: se “Scelgo io” ma 0 argomenti -> evidenzia materia + banner sopra
+    // valida: se “Scelgo io” → deve avere almeno 1 argomento selezionato
     const missing = [];
     for (const m of activeOrder) {
       if (topicMode[m] === "pick") {
@@ -283,14 +263,18 @@ export default function SimulazioniConfig() {
         if (picked.length === 0) missing.push(m);
       }
     }
-    if (missing.length > 0) {
-      const map = {};
-      for (const m of missing) map[m] = true;
-      setTopicErrBySubject(map);
+    if (missing.length) {
+      const local = {};
+      for (const m of missing) local[m] = true;
+      setTopicErrors(local);
 
-      setErrType("topics");
-      setErr(`Hai scelto "Scelgo io" ma non hai selezionato nessun argomento in: ${missing.join(", ")}.`);
-      scrollToTopicCard(missing[0]);
+      // errore “chiaro” + scroll sulla prima materia che manca
+      const first = missing[0];
+      setErr(`Completa gli argomenti selezionati prima di avviare la prova. (${first})`);
+      const el = topicCardRef.current?.[first];
+      if (el && typeof el.scrollIntoView === "function") {
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+      }
       return;
     }
 
@@ -300,17 +284,13 @@ export default function SimulazioniConfig() {
       materia,
       scelta: clampInt(countsBySubject[materia]?.scelta ?? 15, 0, 200, 15),
       completamento: clampInt(countsBySubject[materia]?.completamento ?? 16, 0, 200, 16),
-      tag: topicMode[materia] === "all" ? [] : (pickedTopics[materia] || []),
+      tag: topicMode[materia] === "all" ? [] : pickedTopics[materia] || [],
       difficolta: "Base",
     }));
 
-    const body = {
-      duration_min,
-      sections,
-      order: activeOrder,
-    };
+    const body = { duration_min, sections, order: activeOrder };
 
-    const candidates = ["/api/sim/start", "/api/sim/start/"];
+    const candidates = ["/api/sim/start", "/api/sim/start/", "/api/simulazioni/start", "/api/simulazioni/start/"];
     let lastInfo = "";
 
     setStarting(true);
@@ -328,7 +308,7 @@ export default function SimulazioniConfig() {
 
           if (!res.ok) {
             if (res.status === 404) continue;
-            throw new Error(lastInfo);
+            throw new Error(txt || `Errore backend (${res.status})`);
           }
 
           let data = null;
@@ -339,9 +319,22 @@ export default function SimulazioniConfig() {
           }
 
           const sessionId = data?.session_id || data?.id || data?.sessionId;
+
+          // se backend non ritorna la struttura, evito crash
           if (!sessionId) throw new Error("Risposta OK ma manca session_id.\n" + lastInfo);
 
-          nav("/simulazioni/prova", { state: { session: data, config: body } });
+          // ✅ FIX IMPORTANTISSIMO: route corretta è /simulazioni/run (non /simulazioni/prova)
+          nav("/simulazioni/run", {
+            state: {
+              session: {
+                ...data,
+                session_id: sessionId,
+                duration_min,
+              },
+              config: body,
+            },
+          });
+
           return;
         } catch (e) {
           if (String(e?.message || "").includes("[404]")) continue;
@@ -351,7 +344,6 @@ export default function SimulazioniConfig() {
       throw new Error("Nessun endpoint start trovato.\nUltimo tentativo:\n" + lastInfo);
     } catch (e) {
       setErr(String(e?.message || e || "Errore sconosciuto"));
-      setErrType("other");
     } finally {
       setStarting(false);
     }
@@ -396,8 +388,7 @@ export default function SimulazioniConfig() {
               <button
                 className={`scx-btn scx-soft ${murActive ? "isActive" : ""}`}
                 type="button"
-                onClick={applyMUR}
-                title={murActive ? "Clicca per disattivare" : "Clicca per attivare"}
+                onClick={toggleMUR}
               >
                 Formato MUR 2025/26 {murActive ? "✓" : ""}
               </button>
@@ -548,18 +539,10 @@ export default function SimulazioniConfig() {
             <div className="scx-field">
               <div className="scx-label">Timer</div>
               <div className="scx-toggleRow">
-                <button
-                  type="button"
-                  className={`scx-miniBtn ${timedMode ? "isOn" : ""}`}
-                  onClick={() => setTimedMode(true)}
-                >
+                <button type="button" className={`scx-miniBtn ${timedMode ? "isOn" : ""}`} onClick={() => setTimedMode(true)}>
                   On
                 </button>
-                <button
-                  type="button"
-                  className={`scx-miniBtn ${!timedMode ? "isOn" : ""}`}
-                  onClick={() => setTimedMode(false)}
-                >
+                <button type="button" className={`scx-miniBtn ${!timedMode ? "isOn" : ""}`} onClick={() => setTimedMode(false)}>
                   Off
                 </button>
               </div>
@@ -616,10 +599,14 @@ export default function SimulazioniConfig() {
               const topics = TOPICS[m] || [];
               const picked = pickedTopics[m] || [];
               const pickedCount = picked.length;
-              const hasTopicErr = Boolean(topicErrBySubject[m]);
+              const showLocalErr = Boolean(topicErrors[m]);
 
               return (
-                <div className={`scx-topicCard ${hasTopicErr ? "isErr" : ""}`} key={m} data-topic-card={m}>
+                <div
+                  className={`scx-topicCard ${showLocalErr ? "isErr" : ""}`}
+                  key={m}
+                  ref={(el) => (topicCardRef.current[m] = el)}
+                >
                   <div className="scx-topicHead">
                     <div className="scx-topicName">{m}</div>
 
@@ -629,15 +616,11 @@ export default function SimulazioniConfig() {
                         className={`scx-miniBtn ${mode === "all" ? "isOn" : ""}`}
                         onClick={() => {
                           setTopicMode((p) => ({ ...p, [m]: "all" }));
-                          setTopicErrBySubject((prev) => {
-                            if (!prev[m]) return prev;
-                            const n = { ...prev };
-                            delete n[m];
-                            if (errType === "topics" && Object.keys(n).length === 0) {
-                              setErr("");
-                              setErrType("");
-                            }
-                            return n;
+                          setTopicErrors((pe) => {
+                            if (!pe[m]) return pe;
+                            const nn = { ...pe };
+                            delete nn[m];
+                            return nn;
                           });
                         }}
                       >
@@ -660,36 +643,30 @@ export default function SimulazioniConfig() {
                     </div>
                   </div>
 
-                  {hasTopicErr && (
-                    <div className="scx-topicErr">
-                      Hai scelto <b>“Scelgo io”</b> ma non hai selezionato nessun argomento.
-                    </div>
-                  )}
-
                   {mode === "pick" ? (
-                    <div className="scx-topicList">
-                      {topics.map((t) => {
-                        const on = picked.includes(t);
-                        return (
-                          <button
-                            key={t}
-                            type="button"
-                            className={`scx-topic ${on ? "isOn" : ""}`}
-                            onClick={() => {
-                              setPickedTopics((prev) => {
-                                const cur = prev[m] || [];
-                                const nextArr = on ? cur.filter((x) => x !== t) : [...cur, t];
-                                const next = { ...prev, [m]: nextArr };
-                                clearTopicErrorIfSolved(next); // ✅ qui pulisce anche l’errore rosso in alto se risolto
-                                return next;
-                              });
-                            }}
-                          >
-                            {t}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <>
+                      {showLocalErr && (
+                        <div className="scx-localErr">
+                          Hai scelto <b>Scelgo io</b>, ma non hai selezionato nessun argomento in <b>{m}</b>.
+                        </div>
+                      )}
+
+                      <div className="scx-topicList">
+                        {topics.map((t) => {
+                          const on = picked.includes(t);
+                          return (
+                            <button
+                              key={t}
+                              type="button"
+                              className={`scx-topic ${on ? "isOn" : ""}`}
+                              onClick={() => setTopicPick(m, t)}
+                            >
+                              {t}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
                   ) : (
                     <div className="scx-topicFoot">✔ Tutti gli argomenti</div>
                   )}
@@ -995,10 +972,7 @@ const css = `
   color: rgba(15,23,42,0.86);
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
 }
-.scx-input:disabled{
-  background: rgba(255,255,255,0.60);
-  color: rgba(15,23,42,0.55);
-}
+.scx-input:disabled{ background: rgba(255,255,255,0.60); color: rgba(15,23,42,0.55); }
 .scx-hint{ font-weight: 850; color: rgba(15,23,42,0.62); }
 
 .scx-toggleRow{ display:flex; gap: 8px; }
@@ -1017,7 +991,7 @@ const css = `
   background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(56,189,248,0.14));
 }
 
-/* Summary per materia */
+/* Summary */
 .scx-summary{
   margin-top: 12px;
   border-radius: 18px;
@@ -1043,15 +1017,11 @@ const css = `
 /* TOPICS */
 .scx-topicWrap{
   margin-top: 12px;
-  display: grid;
-  grid-template-columns: 1fr;   /* ✅ una card per riga */
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
   gap: 12px;
 }
-
-/* se vuoi che su desktop resti comunque 1 colonna, non serve media query */
-@media (max-width: 980px){
-  .scx-topicWrap{ grid-template-columns: 1fr; }
-}
+@media (max-width: 980px){ .scx-topicWrap{ grid-template-columns: 1fr; } }
 
 .scx-topicCard{
   border-radius: 18px;
@@ -1061,8 +1031,8 @@ const css = `
   padding: 12px;
 }
 .scx-topicCard.isErr{
-  border-color: rgba(185,28,28,0.30);
-  box-shadow: 0 18px 40px rgba(185,28,28,0.08);
+  border-color: rgba(185,28,28,0.22);
+  background: rgba(185,28,28,0.04);
 }
 
 .scx-topicHead{
@@ -1084,7 +1054,7 @@ const css = `
   color: rgba(15,23,42,0.70);
 }
 
-.scx-topicErr{
+.scx-localErr{
   margin-top: 10px;
   padding: 10px 10px;
   border-radius: 14px;
@@ -1092,7 +1062,6 @@ const css = `
   background: rgba(185,28,28,0.06);
   color: #b91c1c;
   font-weight: 900;
-  line-height: 1.25;
 }
 
 .scx-topicList{
@@ -1100,7 +1069,6 @@ const css = `
   display:flex;
   flex-wrap: wrap;
   gap: 8px;
-  width: 100%;
 }
 .scx-topic{
   padding: 10px 10px;
