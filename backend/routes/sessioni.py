@@ -453,6 +453,52 @@ def finish(req: FinishRequest, request: Request):
         total_vote += vote30
         max_vote += 30.0
 
+
+    # =========================
+    # Persist user run (if logged in)
+    # =========================
+    user = try_get_user(request)
+    if user and user.get("email"):
+        email = str(user.get("email"))
+        runs = _runs_read()
+        # avoid duplicates: update if same session_id already saved for this user
+        existing_idx = next((i for i, r in enumerate(runs)
+                             if str(r.get("email")) == email and str(r.get("session_id")) == session_id), None)
+        run_id = runs[existing_idx].get("id") if existing_idx is not None else uuid4().hex
+
+        # build per_subject with stable keys for frontend profile
+        per_subject_profile = {}
+        for mat, st in per_subject_out.items():
+            per_subject_profile[mat] = {
+                **st,
+                "vote": float(st.get("vote30", 0.0)),
+                "max_vote": 30.0,
+            }
+
+        title_parts = [m for m in (s.get("order") or [])]
+        title = "Simulazione • " + " + ".join(title_parts) if title_parts else "Simulazione"
+
+        run_record = {
+            "id": run_id,
+            "session_id": session_id,
+            "email": email,
+            "title": title,
+            "created_at": datetime.utcnow().isoformat(),
+            "score_total": round(total_vote, 2),
+            "score_max": round(max_vote, 0),
+            "per_subject": per_subject_profile,
+            "details": details,
+            # keep also raw metrics (optional)
+            "correct": correct,
+            "wrong": wrong,
+            "blank": blank,
+        }
+
+        if existing_idx is not None:
+            runs[existing_idx] = run_record
+        else:
+            runs.insert(0, run_record)
+        _runs_write(runs)
     return {
         "session_id": session_id,
         "total": total,
