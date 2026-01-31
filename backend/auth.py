@@ -39,3 +39,30 @@ def admin_required(request: Request):
         except Exception:
             pass
         raise HTTPException(status_code=401, detail="Invalid token")
+
+
+
+def try_get_user(request: Request):
+    """Ritorna payload utente se presente e valido, altrimenti None (NON alza)."""
+    auth = request.headers.get("authorization", "")
+    if not auth.lower().startswith("bearer "):
+        return None
+    token = auth.split(" ", 1)[1].strip()
+    if not token:
+        return None
+    try:
+        import jwt
+        payload = jwt.decode(token, os.getenv("JWT_SECRET", ""), algorithms=["HS256"])
+        if payload.get("role") != "user":
+            return None
+        return payload
+    except Exception:
+        return None
+
+
+def user_required(request: Request):
+    """FastAPI dependency: richiede token utente valido."""
+    p = try_get_user(request)
+    if not p:
+        raise HTTPException(status_code=401, detail="Missing/invalid user token")
+    return p

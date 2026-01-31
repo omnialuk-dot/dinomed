@@ -9,6 +9,7 @@ import Simulazioni from "./pages/Simulazioni";
 import ChiSiamo from "./pages/ChiSiamo";
 import Contatti from "./pages/Contatti";
 import Profilo from "./pages/Profilo";
+import ProfiloProva from "./pages/ProfiloProva.jsx";
 import Login from "./pages/Login";
 import SimulazioniRun from "./pages/SimulazioniRun.jsx";
 import SimulazioniConfig from "./pages/SimulazioniConfig.jsx";
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/simulazioni" element={<Simulazioni />} />
           <Route path="/chi-siamo" element={<ChiSiamo />} />
           <Route path="/profilo" element={<Profilo />} />
+          <Route path="/profilo/prove/:id" element={<ProfiloProva />} />
           <Route path="/simulazioni/config" element={<SimulazioniConfig />} />
           <Route path="/simulazioni/run" element={<SimulazioniRun />} />
           <Route path="/simulazioni/risultato" element={<SimulazioniRisultato />} />

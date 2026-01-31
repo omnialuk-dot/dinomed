@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { getUser } from "../lib/userSession";
 import { Link, NavLink } from "react-router-dom";
 import logo from "../assets/photos/logo.png";
 
 export default function SiteHeader() {
+  const user = useMemo(() => getUser(), []);
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
 
@@ -17,10 +19,14 @@ export default function SiteHeader() {
           </span>
 
           <span className="sh-text" aria-label="DinoMed">
-            <span className="sh-dino">Dino</span>
-            <span className="sh-med">Med</span>
+            <span className="sh-dinom">DinoMed</span>
             {/* glow SUPER soft */}
-            <span className="sh-brandGlow" aria-hidden="true" />
+            <span className="sh-brandGlow" ari
+        {/* User email (logged) */}
+        {user?.email ? (
+          <div className="sh-user" title={user.email}>{user.email}</div>
+        ) : null}
+a-hidden="true" />
           </span>
         </Link>
 
@@ -109,7 +115,7 @@ const css = `
   gap:12px;
 }
 
-.sh-brand{
+ .sh-brand{
   display:flex;
   align-items:center;
   gap:12px;
@@ -285,5 +291,33 @@ const css = `
 .sh-mLink:focus-visible{
   outline: 3px solid rgba(56,189,248,0.35);
   outline-offset: 3px;
+}
+
+.sh-text{ white-space:nowrap; }
+.sh-dinom{
+  font-weight:900;
+  letter-spacing:-0.5px;
+  background: linear-gradient(135deg, rgba(34,197,94,0.95), rgba(56,189,248,0.95));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color: transparent;
+}
+.sh-user{
+  margin-left: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--bd);
+  background: rgba(255,255,255,0.62);
+  box-shadow: 0 10px 30px rgba(2,6,23,0.06);
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(2,6,23,0.70);
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 880px){
+  .sh-user{ display:none; }
 }
 `;

@@ -79,6 +79,7 @@ simulazioni = _import_router("simulazioni")
 domande = _import_router("domande")
 sessioni = _import_router("sessioni")
 auth_google = _import_router("auth_google")
+user = _import_router("user")
 
 # =========================
 # Register routers
@@ -101,6 +102,8 @@ if sessioni is not None:
 
 if auth_google is not None:
     app.include_router(auth_google.router)
+if user is not None:
+    app.include_router(user.router)
 
 # =========================
 # Static files: uploads

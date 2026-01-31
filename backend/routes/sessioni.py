@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 from typing import List, Optional, Literal, Dict, Any
 from uuid import uuid4
@@ -6,6 +6,8 @@ from datetime import datetime
 from pathlib import Path
 import json
 import random
+
+from auth import try_get_user
 
 router = APIRouter(prefix="/api/sim", tags=["sim"])
 
@@ -19,6 +21,22 @@ SESSIONS: Dict[str, Dict[str, Any]] = {}
 # =========================
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 BANK_FILE = DATA_DIR / "domande.json"
+
+USER_RUNS_FILE = DATA_DIR / "user_runs.json"
+
+def _runs_read():
+    try:
+        raw = USER_RUNS_FILE.read_text(encoding="utf-8")
+        data = json.loads(raw or "[]")
+        return data if isinstance(data, list) else []
+    except FileNotFoundError:
+        return []
+    except Exception:
+        return []
+
+def _runs_write(items):
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    USER_RUNS_FILE.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
 
 def _load_bank() -> List[Dict[str, Any]]:
     try:
@@ -177,7 +195,32 @@ def start(req: StartRequest):
     }
     SESSIONS[session_id] = session
 
-    return {
+    
+    # salva run per utente autenticato (se presente Authorization: Bearer <userToken>)
+    try:
+        userp = try_get_user(request)
+        if userp and userp.get("email"):
+            run_id = uuid.uuid4().hex
+            runs = _runs_read()
+            runs.insert(0, {
+                "id": run_id,
+                "email": str(userp.get("email")),
+                "created_at": datetime.utcnow().isoformat(),
+                "title": "Simulazione",
+                "session_id": session_id,
+                "score_total": round(total_vote, 2),
+                "score_max": round(max_vote, 0),
+                "per_subject": per_subject_out,
+                "details": details,
+            })
+            # keep last 200 per user to avoid file blowup
+            if len(runs) > 1000:
+                runs = runs[:1000]
+            _runs_write(runs)
+    except Exception:
+        pass
+
+return {
         "session_id": session_id,
         "duration_min": session["duration_min"],
         "questions": session["questions"],
@@ -308,7 +351,7 @@ def _letter_to_index(v: Any) -> Optional[int]:
 @router.post("/finish/")
 @router.post("/end")
 @router.post("/end/")
-def finish(req: FinishRequest):
+def finish(req: FinishRequest, request: Request):
     # accetta sia session_id nel body sia nell'url (frontend invia nel body)
     session_id = req.session_id
     s = SESSIONS.get(session_id)

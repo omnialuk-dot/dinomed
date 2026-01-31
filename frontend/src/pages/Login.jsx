@@ -32,7 +32,7 @@ export default function Login() {
             if (!data?.token) throw new Error("no_token");
 
             setUserSession({ token: data.token, user: data.user });
-            nav("/profilo", { replace: true });
+            nav("/", { replace: true });
           } catch {
             setErr("Accesso fallito. Riprova.");
           }

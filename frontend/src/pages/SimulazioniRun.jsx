@@ -1,3 +1,4 @@
+import { getUserToken } from "../lib/userSession";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -571,7 +572,14 @@ export default function SimulazioniRun() {
       try {
         const res = await fetch(`${API_BASE}${path}`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          headers: (() => {
+          const t = getUserToken();
+          return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            ...(t ? { Authorization: `Bearer ${t}` } : {}),
+          };
+        })(),
           body: JSON.stringify(body),
         });
         const txt = await res.text();
