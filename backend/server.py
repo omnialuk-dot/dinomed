@@ -30,7 +30,6 @@ app.add_middleware(
     allow_origins=[
         # Local dev
         "https://dinomed-api.onrender.com",
-        "http://127.0.0.1:5173",
     ],
     # Consenti i deploy Vercel (Preview + Production). Se usi un dominio custom, aggiungilo in allow_origins.
     allow_origin_regex=r"^https://.*\.vercel\.app$",
