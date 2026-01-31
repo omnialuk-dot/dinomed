@@ -102,7 +102,7 @@ export default function SimulazioniConfig() {
   const [timedMode, setTimedMode] = useState(true);
   const [durationMin, setDurationMin] = useState(45);
 
-  // Conteggio domande PER MATERIA (serve per farlo serio)
+  // Conteggio domande PER MATERIA
   const [countsBySubject, setCountsBySubject] = useState(() => ({
     Chimica: { scelta: 15, completamento: 16 },
     Fisica: { scelta: 15, completamento: 16 },
@@ -126,7 +126,6 @@ export default function SimulazioniConfig() {
 
   const activeSubjects = useMemo(() => {
     const s = subjects.filter((m) => ALL_SUBJECTS.includes(m));
-    // sicurezza: almeno 1 materia
     return s.length ? s : ["Chimica"];
   }, [subjects]);
 
@@ -145,25 +144,35 @@ export default function SimulazioniConfig() {
     });
   }
 
-  function applyMUR() {
-    // Attiva preset + auto seleziona tutto
-    setMurActive(true);
+  /* =========================
+     ✅ MUR TOGGLE VERO
+     - click ON: imposta preset
+     - click OFF: sblocca e NON resetta il resto (tranne murActive)
+     ========================= */
+  function toggleMUR() {
+    setMurActive((prev) => {
+      const next = !prev;
 
-    // Materie tutte
-    const murSubjects = ["Chimica", "Fisica", "Biologia"];
-    setSubjects(murSubjects);
-    setOrder(murSubjects);
+      if (next) {
+        // Attivo MUR → auto seleziona tutto e imposta il formato
+        const murSubjects = ["Chimica", "Fisica", "Biologia"];
+        setSubjects(murSubjects);
+        setOrder(murSubjects);
 
-    // Domande MUR per ciascuna
-    setCountsBySubject({
-      Chimica: { scelta: 15, completamento: 16 },
-      Fisica: { scelta: 15, completamento: 16 },
-      Biologia: { scelta: 15, completamento: 16 },
+        setCountsBySubject({
+          Chimica: { scelta: 15, completamento: 16 },
+          Fisica: { scelta: 15, completamento: 16 },
+          Biologia: { scelta: 15, completamento: 16 },
+        });
+
+        setTimedMode(true);
+        setDurationMin(45);
+        // argomenti restano liberi (non tocchiamo topicMode/pickedTopics)
+      }
+
+      // Se lo spengo → semplicemente sblocco la UI (non resetto nulla)
+      return next;
     });
-
-    // Timer resta modificabile ma imposto default MUR
-    setTimedMode(true);
-    setDurationMin(45);
   }
 
   function moveOrder(m, dir) {
@@ -189,19 +198,12 @@ export default function SimulazioniConfig() {
 
   const formatChip = useMemo(() => {
     const t = timedMode ? `${clampInt(durationMin, 5, 240, 45)} min` : "senza timer";
-    // mini descrizione: mostra per la prima materia selezionata (pulito, non confusionario)
     const first = activeOrder[0];
     const s = clampInt(countsBySubject[first]?.scelta ?? 15, 0, 200, 15);
     const c = clampInt(countsBySubject[first]?.completamento ?? 16, 0, 200, 16);
     const multi = activeOrder.length > 1 ? "• formato per materia" : "";
     return `${s} crocette • ${c} completamento • ${t} ${multi}`.trim();
   }, [activeOrder, countsBySubject, timedMode, durationMin]);
-
-  const effectiveTopics = useMemo(() => {
-    const out = {};
-    for (const m of activeOrder) out[m] = topicMode[m] === "all" ? [] : pickedTopics[m] || [];
-    return out;
-  }, [activeOrder, topicMode, pickedTopics]);
 
   function setCounts(scope, patch) {
     setCountsBySubject((prev) => {
@@ -223,6 +225,14 @@ export default function SimulazioniConfig() {
     if (!activeOrder.length) {
       setErr("Seleziona almeno 1 materia.");
       return;
+    }
+
+    // ✅ Regola: se “Scelgo io” (pick) deve selezionare almeno 1 argomento
+    for (const m of activeOrder) {
+      if (topicMode[m] === "pick" && (pickedTopics[m] || []).length === 0) {
+        setErr(`In ${m} hai scelto “Scelgo io” ma non hai selezionato argomenti.`);
+        return;
+      }
     }
 
     // valida: ogni materia deve avere almeno 1 domanda
@@ -299,6 +309,9 @@ export default function SimulazioniConfig() {
 
   const showOrder = activeOrder.length > 1;
 
+  // per UI: valori mostrati negli input quando scope è “Tutte”
+  const scopeKey = formatScope === "Tutte" ? activeOrder[0] : formatScope;
+
   return (
     <main className="scx">
       <style>{css}</style>
@@ -333,10 +346,12 @@ export default function SimulazioniConfig() {
                 <span className="scx-shine" aria-hidden="true" />
               </button>
 
+              {/* ✅ MUR toggle vero + resta “selezionato” */}
               <button
                 className={`scx-btn scx-soft ${murActive ? "isActive" : ""}`}
                 type="button"
-                onClick={applyMUR}
+                onClick={toggleMUR}
+                title={murActive ? "Clicca per disattivare" : "Clicca per attivare"}
               >
                 Formato MUR 2025/26 {murActive ? "✓" : ""}
               </button>
@@ -465,7 +480,7 @@ export default function SimulazioniConfig() {
                 type="number"
                 min="0"
                 max="200"
-                value={countsBySubject[formatScope === "Tutte" ? activeOrder[0] : formatScope]?.scelta ?? 15}
+                value={countsBySubject[scopeKey]?.scelta ?? 15}
                 onChange={(e) => setCounts(formatScope, { scelta: clampInt(e.target.value, 0, 200, 15) })}
                 disabled={murActive}
               />
@@ -478,8 +493,10 @@ export default function SimulazioniConfig() {
                 type="number"
                 min="0"
                 max="200"
-                value={countsBySubject[formatScope === "Tutte" ? activeOrder[0] : formatScope]?.completamento ?? 16}
-                onChange={(e) => setCounts(formatScope, { completamento: clampInt(e.target.value, 0, 200, 16) })}
+                value={countsBySubject[scopeKey]?.completamento ?? 16}
+                onChange={(e) =>
+                  setCounts(formatScope, { completamento: clampInt(e.target.value, 0, 200, 16) })
+                }
                 disabled={murActive}
               />
             </div>
@@ -487,18 +504,10 @@ export default function SimulazioniConfig() {
             <div className="scx-field">
               <div className="scx-label">Timer</div>
               <div className="scx-toggleRow">
-                <button
-                  type="button"
-                  className={`scx-miniBtn ${timedMode ? "isOn" : ""}`}
-                  onClick={() => setTimedMode(true)}
-                >
+                <button type="button" className={`scx-miniBtn ${timedMode ? "isOn" : ""}`} onClick={() => setTimedMode(true)}>
                   On
                 </button>
-                <button
-                  type="button"
-                  className={`scx-miniBtn ${!timedMode ? "isOn" : ""}`}
-                  onClick={() => setTimedMode(false)}
-                >
+                <button type="button" className={`scx-miniBtn ${!timedMode ? "isOn" : ""}`} onClick={() => setTimedMode(false)}>
                   Off
                 </button>
               </div>
@@ -520,7 +529,7 @@ export default function SimulazioniConfig() {
             </div>
           </div>
 
-          {/* Riassunto mini per materia (pulito, utile) */}
+          {/* Riassunto mini per materia */}
           {activeOrder.length > 1 && (
             <div className="scx-summary">
               {activeOrder.map((m) => {
@@ -578,7 +587,6 @@ export default function SimulazioniConfig() {
                         Scelgo io
                       </button>
 
-                      {/* MINI “selected count” sempre visibile quando pick */}
                       {mode === "pick" && (
                         <span className="scx-pickedPill">
                           Selezionati: <b>{pickedCount}</b>
@@ -618,7 +626,7 @@ export default function SimulazioniConfig() {
           </div>
         </div>
 
-        {/* BOTTONE FINALE (mobile-friendly, grande, centrato) */}
+        {/* BOTTONE FINALE */}
         <div className="scx-bottom">
           <button className="scx-btn scx-primary scx-bottomBtn" onClick={startExam} disabled={starting}>
             {starting ? "Avvio…" : "Avvia prova"} <span aria-hidden="true">→</span>
@@ -828,9 +836,7 @@ const css = `
   border-color: rgba(34,197,94,0.35);
   background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(56,189,248,0.14));
 }
-.scx-pill.isLock{
-  opacity: .92;
-}
+.scx-pill.isLock{ opacity: .92; }
 
 /* ORDER BOX */
 .scx-orderBox{
@@ -882,10 +888,7 @@ const css = `
   gap: 10px;
   flex-wrap: wrap;
 }
-.scx-scopeLabel{
-  font-weight: 950;
-  color: rgba(15,23,42,0.78);
-}
+.scx-scopeLabel{ font-weight: 950; color: rgba(15,23,42,0.78); }
 .scx-select{
   padding: 10px 12px;
   border-radius: 14px;
@@ -919,10 +922,7 @@ const css = `
   color: rgba(15,23,42,0.86);
   box-shadow: 0 14px 30px rgba(2,6,23,0.06);
 }
-.scx-input:disabled{
-  background: rgba(255,255,255,0.60);
-  color: rgba(15,23,42,0.55);
-}
+.scx-input:disabled{ background: rgba(255,255,255,0.60); color: rgba(15,23,42,0.55); }
 .scx-hint{ font-weight: 850; color: rgba(15,23,42,0.62); }
 
 .scx-toggleRow{ display:flex; gap: 8px; }
