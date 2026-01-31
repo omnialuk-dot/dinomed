@@ -414,10 +414,7 @@ async function startExam() {
               </button>
             </div>
 
-            {err ? <div className="scx-err">{err}</div> : null}
-{debugStart ? (
-) : null}
-          </div>
+          
 
           <div className="scx-right" aria-hidden="true">
             <div className="scx-mini">
