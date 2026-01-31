@@ -1,242 +1,185 @@
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, Field
-from typing import List, Optional, Literal, Dict, Any
-from datetime import datetime
-import uuid
-import os
+from __future__ import annotations
+
 import json
+import uuid
+from pathlib import Path
+from typing import List, Optional, Literal, Any
 
-from routes.admin import admin_required  # il tuo JWT guard
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
 
-router = APIRouter(tags=["domande"])
+from auth import admin_required
 
-# =========================
-# JSON storage
-# =========================
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # backend/
-DATA_DIR = os.path.join(BASE_DIR, "data")
-DATA_FILE = os.path.join(DATA_DIR, "domande.json")
+router = APIRouter(prefix="/api/admin/domande", tags=["admin-domande"])
 
-
-def _ensure_data_file():
-    os.makedirs(DATA_DIR, exist_ok=True)
-    if not os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "w", encoding="utf-8") as f:
-            f.write("[]")
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+DB_PATH = DATA_DIR / "domande.json"
 
 
-def _write_all(items):
-    _ensure_data_file()
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(items, f, ensure_ascii=False, indent=2)
+# ----------------- utils -----------------
+def _ensure_db():
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if not DB_PATH.exists():
+        DB_PATH.write_text("[]", encoding="utf-8")
 
 
-def _read_all():
-    _ensure_data_file()
+def _read_all() -> list[dict]:
+    _ensure_db()
     try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            txt = f.read().strip()
-            if not txt:
-                return []
-            return json.loads(txt)
+        return json.loads(DB_PATH.read_text(encoding="utf-8"))
     except Exception:
-        _write_all([])
         return []
 
 
-TipoDomanda = Literal["scelta", "completamento"]
-Materia = Literal["Chimica", "Fisica", "Biologia"]
+def _write_all(items: list[dict]):
+    _ensure_db()
+    DB_PATH.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-class DomandaBase(BaseModel):
-    materia: Materia
-    tipo: TipoDomanda
+def _norm_text(s: str) -> str:
+    return (s or "").strip()
+
+
+def _coerce_risposte(payload: dict) -> list[str]:
+    """Accetta sia 'risposta' (string) sia 'risposte' (lista). Restituisce lista pulita."""
+    if isinstance(payload.get("risposte"), list):
+        out = [str(x).strip() for x in payload["risposte"] if str(x).strip()]
+        return out
+    r = payload.get("risposta")
+    if isinstance(r, str) and r.strip():
+        return [r.strip()]
+    return []
+
+
+def validate_question(q: dict):
+    # campi base
+    if not _norm_text(q.get("testo", "")):
+        raise HTTPException(status_code=400, detail="testo mancante")
+
+    tipo = q.get("tipo")
+    if tipo not in ("scelta", "completamento"):
+        raise HTTPException(status_code=400, detail="tipo non valido")
+
+    if _norm_text(q.get("materia", "")) not in ("Chimica", "Fisica", "Biologia"):
+        raise HTTPException(status_code=400, detail="materia non valida")
+
+    # tags opzionali
+    if "tag" in q and q["tag"] is not None:
+        if not isinstance(q["tag"], list):
+            raise HTTPException(status_code=400, detail="tag deve essere lista")
+        q["tag"] = [str(x).strip() for x in q["tag"] if str(x).strip()]
+
+    # validazione specifica tipo
+    if tipo == "scelta":
+        opts = q.get("opzioni")
+        if not isinstance(opts, list) or len(opts) != 5:
+            raise HTTPException(status_code=400, detail="opzioni deve essere una lista di 5 elementi")
+        opts = [str(x).strip() for x in opts]
+        if any(not x for x in opts):
+            raise HTTPException(status_code=400, detail="opzioni non valide")
+        q["opzioni"] = opts
+
+        corretta = str(q.get("corretta", "")).strip().upper()
+        if corretta not in ("A", "B", "C", "D", "E"):
+            raise HTTPException(status_code=400, detail="corretta deve essere A/B/C/D/E")
+        q["corretta"] = corretta
+
+        # cleanup
+        q.pop("risposta", None)
+        q.pop("risposte", None)
+
+    else:
+        risposte = _coerce_risposte(q)
+        if len(risposte) == 0:
+            raise HTTPException(status_code=400, detail="risposta mancante")
+        q["risposte"] = risposte
+
+        # cleanup
+        q.pop("opzioni", None)
+        q.pop("corretta", None)
+        q.pop("risposta", None)
+
+    # normalizza testo/descrizione/spiegazione
+    for k in ("testo", "spiegazione"):
+        if k in q and q[k] is not None:
+            q[k] = str(q[k]).strip()
+
+
+# ----------------- schemas -----------------
+class QuestionIn(BaseModel):
+    materia: Literal["Chimica", "Fisica", "Biologia"]
+    tipo: Literal["scelta", "completamento"]
     testo: str = Field(..., min_length=1)
-    tag: List[str] = Field(default_factory=list)
-    difficolta: str = Field("Base", min_length=1)
-    spiegazione: str = Field(..., min_length=1)  # ✅ fondamentale
+    tag: Optional[List[str]] = None
 
-
-class DomandaSceltaCreate(DomandaBase):
-    tipo: Literal["scelta"]
-    opzioni: List[str] = Field(..., min_length=2)
-    corretta_index: int = Field(..., ge=0)
-
-
-class DomandaCompletamentoCreate(DomandaBase):
-    tipo: Literal["completamento"]
-    risposte: List[str] = Field(..., min_length=1)
-
-
-DomandaCreate = DomandaSceltaCreate | DomandaCompletamentoCreate
-
-
-class DomandaOut(BaseModel):
-    id: str
-    materia: Materia
-    tipo: TipoDomanda
-    testo: str
-    tag: List[str]
-    difficolta: str
-    spiegazione: str
+    # scelta multipla
     opzioni: Optional[List[str]] = None
-    corretta_index: Optional[int] = None
+    corretta: Optional[str] = None
+
+    # completamento
+    # supportiamo sia risposta (legacy) che risposte (nuovo)
+    risposta: Optional[str] = None
     risposte: Optional[List[str]] = None
-    created_at: str
+
+    spiegazione: Optional[str] = None
 
 
-def _normalize_tags(tags: List[str]) -> List[str]:
-    out = []
-    for t in tags or []:
-        s = str(t).strip()
-        if s:
-            out.append(s)
-    # unique per lowercase
-    seen = set()
-    uniq = []
-    for t in out:
-        k = t.lower()
-        if k in seen:
-            continue
-        seen.add(k)
-        uniq.append(t)
-    return uniq
+class QuestionOut(BaseModel):
+    id: str
+    materia: str
+    tipo: str
+    testo: str
+    tag: List[str] = []
+    opzioni: Optional[List[str]] = None
+    corretta: Optional[str] = None
+    risposte: Optional[List[str]] = None
+    spiegazione: Optional[str] = None
 
 
-def _validate(d: Dict[str, Any]):
-    if d["tipo"] == "scelta":
-        if not d.get("opzioni") or len(d["opzioni"]) < 2:
-            raise HTTPException(status_code=422, detail="Scelta: servono almeno 2 opzioni")
-        ci = d.get("corretta_index")
-        if ci is None:
-            raise HTTPException(status_code=422, detail="Scelta: corretta_index obbligatorio")
-        if ci < 0 or ci >= len(d["opzioni"]):
-            raise HTTPException(status_code=422, detail="Scelta: corretta_index fuori range")
-    else:
-        if not d.get("risposte") or len(d["risposte"]) < 1:
-            raise HTTPException(status_code=422, detail="Completamento: inserisci almeno 1 risposta")
+# ----------------- endpoints -----------------
+@router.get("", dependencies=[admin_required])
+def list_questions() -> list[dict]:
+    return _read_all()
 
 
-# =========================
-# ADMIN CRUD
-# =========================
-
-@router.get("/api/admin/domande", response_model=List[DomandaOut], dependencies=[Depends(admin_required)])
-async def admin_list_domande(
-    materia: Optional[str] = None,
-    tipo: Optional[str] = None,
-    tag: Optional[str] = None,
-    q: Optional[str] = None,
-):
+@router.post("", dependencies=[admin_required])
+def create_question(payload: QuestionIn):
     items = _read_all()
+    q = payload.model_dump()
+    q["id"] = uuid.uuid4().hex
 
-    def ok(x):
-        if materia and x.get("materia") != materia:
-            return False
-        if tipo and x.get("tipo") != tipo:
-            return False
-        if tag:
-            tags = x.get("tag") or []
-            if not any(str(t).strip() == tag for t in tags):
-                return False
-        if q:
-            s = q.lower().strip()
-            blob = " ".join([
-                str(x.get("testo", "")),
-                str(x.get("materia", "")),
-                str(x.get("tipo", "")),
-                " ".join(x.get("tag") or []),
-                str(x.get("difficolta", "")),
-            ]).lower()
-            if s not in blob:
-                return False
-        return True
+    # normalizza compatibilità (risposta -> risposte)
+    q["risposte"] = _coerce_risposte(q)
 
-    return [x for x in items if ok(x)]
-
-
-@router.post("/api/admin/domande", response_model=DomandaOut, dependencies=[Depends(admin_required)])
-async def admin_create_domanda(payload: DomandaCreate):
-    d = payload.model_dump()
-
-    d["id"] = str(uuid.uuid4())
-    d["created_at"] = datetime.utcnow().isoformat()
-    d["tag"] = _normalize_tags(d.get("tag") or [])
-
-    d["testo"] = d["testo"].strip()
-    d["spiegazione"] = d["spiegazione"].strip()
-    d["difficolta"] = (d.get("difficolta") or "Base").strip()
-
-    if d["tipo"] == "scelta":
-        d["opzioni"] = [str(x).strip() for x in d.get("opzioni") or []]
-    else:
-        d["risposte"] = [str(x).strip() for x in d.get("risposte") or [] if str(x).strip()]
-
-    _validate(d)
-
-    items = _read_all()
-    items.append(d)
+    validate_question(q)
+    items.append(q)
     _write_all(items)
-    return d
+    return q
 
 
-@router.put("/api/admin/domande/{domanda_id}", response_model=DomandaOut, dependencies=[Depends(admin_required)])
-async def admin_update_domanda(domanda_id: str, payload: DomandaCreate):
+@router.put("/{qid}", dependencies=[admin_required])
+def update_question(qid: str, payload: QuestionIn):
     items = _read_all()
-    idx = next((i for i, x in enumerate(items) if x.get("id") == domanda_id), None)
+    idx = next((i for i, x in enumerate(items) if x.get("id") == qid), None)
     if idx is None:
-        raise HTTPException(status_code=404, detail="Domanda non trovata")
+        raise HTTPException(status_code=404, detail="domanda non trovata")
 
-    d = payload.model_dump()
-    d["id"] = domanda_id
-    d["created_at"] = items[idx].get("created_at") or datetime.utcnow().isoformat()
-    d["tag"] = _normalize_tags(d.get("tag") or [])
+    q = payload.model_dump()
+    q["id"] = qid
+    q["risposte"] = _coerce_risposte(q)
 
-    d["testo"] = d["testo"].strip()
-    d["spiegazione"] = d["spiegazione"].strip()
-    d["difficolta"] = (d.get("difficolta") or "Base").strip()
-
-    if d["tipo"] == "scelta":
-        d["opzioni"] = [str(x).strip() for x in d.get("opzioni") or []]
-    else:
-        d["risposte"] = [str(x).strip() for x in d.get("risposte") or [] if str(x).strip()]
-
-    _validate(d)
-
-    items[idx] = d
+    validate_question(q)
+    items[idx] = q
     _write_all(items)
-    return d
+    return q
 
 
-@router.delete("/api/admin/domande/{domanda_id}", dependencies=[Depends(admin_required)])
-async def admin_delete_domanda(domanda_id: str):
+@router.delete("/{qid}", dependencies=[admin_required])
+def delete_question(qid: str):
     items = _read_all()
-    new_items = [x for x in items if x.get("id") != domanda_id]
-    if len(new_items) == len(items):
-        raise HTTPException(status_code=404, detail="Domanda non trovata")
-    _write_all(new_items)
-    return {"success": True}
-
-
-# =========================
-# PUBLIC HELPERS (filtri)
-# =========================
-
-@router.get("/api/domande/tags")
-async def public_tags():
-    items = _read_all()
-    tags = []
-    for x in items:
-        tags.extend(x.get("tag") or [])
-    uniq = sorted(set([str(t).strip() for t in tags if str(t).strip()]), key=lambda s: s.lower())
-    return {"tags": uniq}
-
-
-@router.get("/api/domande/counts")
-async def public_counts():
-    items = _read_all()
-    out = {}
-    for x in items:
-        key = f"{x.get('materia')}::{x.get('tipo')}"
-        out[key] = out.get(key, 0) + 1
-    return {"counts": out}
+    before = len(items)
+    items = [x for x in items if x.get("id") != qid]
+    if len(items) == before:
+        raise HTTPException(status_code=404, detail="domanda non trovata")
+    _write_all(items)
+    return {"ok": True}

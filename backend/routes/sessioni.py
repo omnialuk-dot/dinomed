@@ -1,185 +1,281 @@
+from __future__ import annotations
+
+import json
+import random
+import time
+import unicodedata
+import re
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
-from typing import List, Optional, Literal, Dict, Any
-from uuid import uuid4
-from datetime import datetime
+from pydantic import BaseModel
 
-router = APIRouter(prefix="/api/sim", tags=["sim"])
+router = APIRouter(prefix="/api/sim", tags=["simulazioni"])
 
-# =========================
-# STORE SESSIONI (GLOBAL!)
-# =========================
-SESSIONS: Dict[str, Dict[str, Any]] = {}   # <- non deve MAI stare dentro una funzione
 
-# =========================
-# MODELLI
-# =========================
-QuestionType = Literal["scelta", "completamento"]
+# ----------------- storage (file) -----------------
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+SESSIONS_PATH = DATA_DIR / "sessions.json"
+DOMANDE_PATH = DATA_DIR / "domande.json"
 
-class Section(BaseModel):
-    materia: str
-    scelta: int = Field(0, ge=0, le=200)
-    completamento: int = Field(0, ge=0, le=200)
-    tag: List[str] = []
-    difficolta: str = "Base"
 
-class StartBody(BaseModel):
-    duration_min: int = Field(0, ge=0, le=240)  # 0 => senza timer
-    sections: List[Section]
-    order: Optional[List[str]] = None
+def _ensure_files():
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if not SESSIONS_PATH.exists():
+        SESSIONS_PATH.write_text("{}", encoding="utf-8")
+    if not DOMANDE_PATH.exists():
+        DOMANDE_PATH.write_text("[]", encoding="utf-8")
 
-class AnswerIn(BaseModel):
-    id: str
-    tipo: QuestionType
-    answer_index: Optional[int] = None
-    answer_text: Optional[str] = None
 
-class SubmitBody(BaseModel):
-    answers: List[AnswerIn]
+def _read_sessions() -> dict:
+    _ensure_files()
+    try:
+        return json.loads(SESSIONS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
 
-# =========================
-# HELPERS
-# =========================
-def norm(s: Optional[str]) -> str:
-    return (s or "").strip().lower()
 
-def pick_questions_from_bank(sections: List[Section]) -> List[Dict[str, Any]]:
-    """
-    QUI devi usare la tua banca domande reale.
-    Io metto una versione "placeholder": deve essere collegata al tuo routes/domande.py o al tuo JSON.
-    
-    ⚠️ IMPORTANTISSIMO:
-    Ogni domanda deve avere:
-      - id
-      - materia
-      - tipo ("scelta" | "completamento")
-      - testo
-      - opzioni (solo per scelta)
-      - correct_answer (index per scelta, stringa per completamento)
-      - spiegazione
-      - tag (lista opzionale)
-    """
-    # --- ESEMPIO MINIMO (sostituisci con la tua fonte reale) ---
-    # Se hai già domande altrove, importale e filtrale qui.
-    out = []
-    for sec in sections:
-        # finta domanda scelta
-        for i in range(sec.scelta):
-            qid = f"{sec.materia}-S-{uuid4().hex[:10]}"
-            out.append({
-                "id": qid,
-                "materia": sec.materia,
-                "tipo": "scelta",
-                "testo": f"[DEMO] Domanda a scelta {i+1} di {sec.materia}",
-                "opzioni": ["A", "B", "C", "D", "E"],
-                "correct_answer": 0,
-                "spiegazione": "Demo: la risposta corretta è A perché è un esempio.",
-                "tag": sec.tag or [],
-            })
+def _write_sessions(obj: dict):
+    _ensure_files()
+    SESSIONS_PATH.write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding="utf-8")
 
-        # finta domanda completamento
-        for i in range(sec.completamento):
-            qid = f"{sec.materia}-C-{uuid4().hex[:10]}"
-            out.append({
-                "id": qid,
-                "materia": sec.materia,
-                "tipo": "completamento",
-                "testo": f"[DEMO] Completa con una parola ({sec.materia})",
-                "correct_answer": "demo",
-                "spiegazione": "Demo: la parola corretta è 'demo' perché è un esempio.",
-                "tag": sec.tag or [],
-            })
+
+def _load_domande() -> list[dict]:
+    _ensure_files()
+    try:
+        data = json.loads(DOMANDE_PATH.read_text(encoding="utf-8"))
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
+# ----------------- helpers -----------------
+def _norm_tag(s: str) -> str:
+    """Normalizza tag/argomenti per matching robusto (spazi, accenti, punteggiatura)."""
+    if not s:
+        return ""
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(ch for ch in s if not unicodedata.combining(ch))
+    s = s.lower().strip()
+    s = re.sub(r"[^a-z0-9]+", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def _norm_answer(s: str) -> str:
+    s = (s or "").strip().lower()
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(ch for ch in s if not unicodedata.combining(ch))
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def _choice_letter(val: Any) -> str:
+    if val is None:
+        return ""
+    v = str(val).strip().upper()
+    if len(v) == 1 and v in "ABCDE":
+        return v
+    # accetta anche 0-4
+    if v.isdigit():
+        i = int(v)
+        if 0 <= i <= 4:
+            return "ABCDE"[i]
+    return v
+
+
+def _sample(pool: list[dict], n: int) -> list[dict]:
+    if n <= 0:
+        return []
+    if len(pool) < n:
+        raise HTTPException(status_code=400, detail=f"Domande insufficienti: richieste {n}, disponibili {len(pool)}")
+    return random.sample(pool, n)
+
+
+def _filter_pool(bank: list[dict], materia: str, tipo: str, tags: list[str]) -> list[dict]:
+    pool = [q for q in bank if q.get("materia") == materia and q.get("tipo") == tipo]
+    if tags:
+        wanted = {_norm_tag(t) for t in tags if _norm_tag(t)}
+        if wanted:
+            out = []
+            for q in pool:
+                qtags = q.get("tag") or []
+                qset = {_norm_tag(t) for t in qtags if _norm_tag(t)}
+                if qset & wanted:
+                    out.append(q)
+            pool = out
+    return pool
+
+
+def _public_question(q: dict) -> dict:
+    """Rimuove soluzioni prima di inviare al client."""
+    out = {
+        "id": q.get("id"),
+        "materia": q.get("materia"),
+        "tipo": q.get("tipo"),
+        "testo": q.get("testo"),
+        "tag": q.get("tag") or [],
+        "spiegazione": q.get("spiegazione"),  # opzionale: puoi anche toglierla se non vuoi spoiler
+    }
+    if q.get("tipo") == "scelta":
+        out["opzioni"] = q.get("opzioni") or []
     return out
 
-# =========================
-# ROUTES
-# =========================
+
+# ----------------- schemas -----------------
+class SectionCfg(BaseModel):
+    materia: str
+    scelta: int = 15
+    completamento: int = 16
+    tag: List[str] = []
+    difficolta: Optional[str] = None
+
+
+class StartCfg(BaseModel):
+    duration_min: int = 45  # 0 = no timer
+    sections: List[SectionCfg]
+    order: List[str] = []
+
+
+class SubmitBody(BaseModel):
+    session_id: str
+    answers: Dict[str, Any]  # qid -> answer
+
+
+# ----------------- core -----------------
+def pick_questions_from_bank(sections: list[SectionCfg], order: list[str]) -> list[dict]:
+    bank = _load_domande()
+
+    # indicizza per id per evitare duplicati tra sezioni
+    used_ids = set()
+    picked: list[dict] = []
+
+    # usa order se fornito, altrimenti nell'ordine delle sections
+    ordered_sections = sections
+    if order:
+        by_m = {s.materia: s for s in sections}
+        ordered_sections = [by_m[m] for m in order if m in by_m]
+
+    for sec in ordered_sections:
+        materia = sec.materia
+        tags = sec.tag or []
+
+        # scelta multipla
+        if sec.scelta and sec.scelta > 0:
+            pool = _filter_pool(bank, materia, "scelta", tags)
+            pool = [q for q in pool if q.get("id") not in used_ids]
+            chosen = _sample(pool, sec.scelta)
+            for q in chosen:
+                used_ids.add(q.get("id"))
+            picked.extend(chosen)
+
+        # completamento
+        if sec.completamento and sec.completamento > 0:
+            pool = _filter_pool(bank, materia, "completamento", tags)
+            pool = [q for q in pool if q.get("id") not in used_ids]
+            chosen = _sample(pool, sec.completamento)
+            for q in chosen:
+                used_ids.add(q.get("id"))
+            picked.extend(chosen)
+
+        # se modalità "scelgo io" (tags non vuoti) ma non hai abbastanza domande, l'errore arriva da _sample
+
+    return picked
+
+
+# ----------------- routes -----------------
 @router.post("/start")
-async def start(body: StartBody):
-    if not body.sections or len(body.sections) == 0:
-        raise HTTPException(status_code=422, detail="sections obbligatorio")
+def start(cfg: StartCfg):
+    if not cfg.sections:
+        raise HTTPException(status_code=400, detail="sections mancanti")
 
-    # ordine: se arriva lo rispettiamo, altrimenti naturale
-    order = body.order or [s.materia for s in body.sections]
+    # crea domande
+    qs = pick_questions_from_bank(cfg.sections, cfg.order)
 
-    # crea domande (collega qui la tua banca domande vera)
-    questions = pick_questions_from_bank(body.sections)
-
-    sid = uuid4().hex
-    SESSIONS[sid] = {
-        "session_id": sid,
-        "created_at": datetime.utcnow().isoformat(),
-        "duration_min": int(body.duration_min or 0),
-        "order": order,
-        "questions": questions,  # contiene anche correct_answer+spiegazione (server side)
+    # session id
+    sid = f"s_{int(time.time()*1000)}_{random.randint(1000,9999)}"
+    sess = _read_sessions()
+    sess[sid] = {
+        "created_at": int(time.time()),
+        "duration_min": int(cfg.duration_min or 0),
+        "sections": [s.model_dump() for s in cfg.sections],
+        "order": cfg.order,
+        "questions": qs,  # include soluzioni (server-side)
+        "submitted": False,
     }
+    _write_sessions(sess)
 
-    # Al frontend NON mandiamo correct_answer/spiegazione (anti-cheat)
-    safe_questions = []
-    for q in questions:
-        safe = {k: v for k, v in q.items() if k not in ("correct_answer", "spiegazione")}
-        safe_questions.append(safe)
+    # ritorna al client senza soluzioni
+    public_qs = [_public_question(q) for q in qs]
+    return {"session_id": sid, "questions": public_qs}
 
-    return {
-        "session_id": sid,
-        "duration_min": int(body.duration_min or 0),
-        "questions": safe_questions,
-        "order": order,
-    }
+
+
+class SubmitLite(BaseModel):
+    answers: Dict[str, Any]
+
 
 @router.post("/{session_id}/submit")
-async def submit(session_id: str, body: SubmitBody):
-    sess = SESSIONS.get(session_id)
-    if not sess:
-        # QUI è esattamente il tuo errore
-        raise HTTPException(status_code=404, detail="Sessione non trovata")
+def submit_path(session_id: str, body: SubmitLite):
+    return _submit_internal(session_id, body.answers)
 
-    qmap = {q["id"]: q for q in sess["questions"]}
 
-    results = []
+@router.post("/submit")
+def submit(body: SubmitBody):
+    # compat: accetta anche session_id nel body
+    return _submit_internal(body.session_id, body.answers)
+
+
+def _submit_internal(session_id: str, answers: Dict[str, Any]):
+    sess = _read_sessions()
+    s = sess.get(session_id)
+    if not s:
+        raise HTTPException(status_code=404, detail="sessione non trovata")
+
+    if s.get("submitted"):
+        return s.get("result") or {"ok": True}
+
+    questions: list[dict] = s.get("questions") or []
+    ans = answers or {}
+
     correct = 0
-    total = 0
+    wrong = 0
+    omitted = 0
 
-    for a in body.answers:
-        q = qmap.get(a.id)
-        if not q:
-            continue
+    details = []
 
-        total += 1
-        ok = False
-        your_answer = None
-        correct_answer = q.get("correct_answer")
+    for q in questions:
+        qid = q.get("id")
+        tipo = q.get("tipo")
+        user_ans = ans.get(qid, None)
 
-        if q["tipo"] == "scelta":
-            your_answer = a.answer_index
-            ok = (isinstance(your_answer, int) and your_answer == correct_answer)
+        if user_ans is None or str(user_ans).strip() == "":
+            omitted += 1
+            ok = None
+        else:
+            if tipo == "scelta":
+                u = _choice_letter(user_ans)
+                c = _choice_letter(q.get("corretta"))
+                ok = (u == c)
+            else:
+                acceptable = q.get("risposte") or []
+                acceptable_norm = {_norm_answer(x) for x in acceptable if _norm_answer(x)}
+                ok = _norm_answer(str(user_ans)) in acceptable_norm if acceptable_norm else False
+
             if ok:
                 correct += 1
+            else:
+                wrong += 1
 
-        elif q["tipo"] == "completamento":
-            your_answer = a.answer_text or ""
-            ok = norm(your_answer) == norm(str(correct_answer))
-            if ok:
-                correct += 1
+        details.append({"id": qid, "materia": q.get("materia"), "tipo": tipo, "ok": ok})
 
-        results.append({
-            "id": q["id"],
-            "materia": q.get("materia", "Altro"),
-            "tipo": q["tipo"],
-            "testo": q.get("testo", ""),
-            "ok": ok,
-            "your_answer": your_answer,
-            "correct_answer": correct_answer,
-            "spiegazione": q.get("spiegazione", ""),
-        })
+    score = correct * 1.0 + wrong * (-0.1) + omitted * 0.0
+    result = {"correct": correct, "wrong": wrong, "omitted": omitted, "score": round(score, 2), "details": details}
 
-    percent = int(round((correct / total) * 100)) if total else 0
+    s["submitted"] = True
+    s["result"] = result
+    sess[session_id] = s
+    _write_sessions(sess)
 
-    return {
-        "score": {
-            "correct": correct,
-            "total": total,
-            "percent": percent,
-        },
-        "results": results,
-    }
+    return result
