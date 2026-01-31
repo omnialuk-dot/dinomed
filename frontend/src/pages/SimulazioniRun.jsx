@@ -20,7 +20,14 @@ export default function SimulazioniRun() {
   const nav = useNavigate();
   const location = useLocation();
 
-  const sessionId = location?.state?.sessionId || "";
+  const sessionIdFromState = location?.state?.sessionId || "";
+const sessionIdFromUrl = new URLSearchParams(location.search).get("s") || "";
+const sessionIdFromStorage = localStorage.getItem("dm_last_session_id") || "";
+useEffect(() => {
+  if (sessionId) localStorage.setItem("dm_last_session_id", sessionId);
+}, [sessionId]);
+
+const sessionId = sessionIdFromState || sessionIdFromUrl || sessionIdFromStorage || "";
   const config = location?.state?.config || null;
 
   const [loading, setLoading] = useState(true);
