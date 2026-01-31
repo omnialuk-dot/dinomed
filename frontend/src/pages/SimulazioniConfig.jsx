@@ -324,16 +324,9 @@ export default function SimulazioniConfig() {
           if (!sessionId) throw new Error("Risposta OK ma manca session_id.\n" + lastInfo);
 
           // ✅ FIX IMPORTANTISSIMO: route corretta è /simulazioni/run (non /simulazioni/prova)
-          nav("/simulazioni/run", {
-            state: {
-              session: {
-                ...data,
-                session_id: sessionId,
-                duration_min,
-              },
-              config: body,
-            },
-          });
+        nav(`/simulazioni/run?s=${encodeURIComponent(sessionId)}`, {
+  state: { sessionId, config: body },
+});
 
           return;
         } catch (e) {
