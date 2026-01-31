@@ -414,9 +414,7 @@ async function startExam() {
               </button>
             </div>
 
-          
-
-          <div className="scx-right" aria-hidden="true">
+ 
             <div className="scx-mini">
               <div className="scx-miniTitle">Suggerimento</div>
               <div className="scx-miniText">
