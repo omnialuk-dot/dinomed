@@ -1090,8 +1090,10 @@ export default function SimulazioniRun() {
     return (
       <div className="sr-brand">
         <span className="sr-dotBrand" aria-hidden="true" />
-        <span className="sr-b1">Dino</span>
-        <span className="sr-b2">Med</span>
+        <span className="sr-name">
+          <span className="sr-b1">Dino</span>
+          <span className="sr-b2">Med</span>
+        </span>
         <span className="sr-sep">•</span>
         <span className="sr-bTag">Prova</span>
       </div>
@@ -1148,6 +1150,7 @@ const css = `
   background: linear-gradient(90deg, var(--dino2), var(--med2));
   box-shadow: 0 10px 20px rgba(2,6,23,0.10);
 }
+.sr-name{ display:inline-flex; gap: 0; }
 .sr-b1{ color: var(--dino2); }
 .sr-b2{ color: var(--med2); }
 .sr-sep{ opacity: .55; padding: 0 2px; }

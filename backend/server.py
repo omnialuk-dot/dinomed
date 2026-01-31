@@ -5,11 +5,25 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os
 import logging
+import sys
+import importlib
 
 # =========================
 # Setup base
 # =========================
 ROOT_DIR = Path(__file__).parent
+# -------------------------------------------------
+# Import robustness (Render / uvicorn can start from
+# project root or from backend/). We force both the
+# backend folder and the project root into PYTHONPATH
+# so that imports like `routes.*` and `auth` work in
+# every deployment configuration.
+# -------------------------------------------------
+try:
+    sys.path.insert(0, str(ROOT_DIR))
+    sys.path.insert(0, str(ROOT_DIR.parent))
+except Exception:
+    pass
 load_dotenv(ROOT_DIR / ".env")
 
 ENV = os.getenv("ENV", "local")
@@ -30,7 +44,7 @@ app.add_middleware(
     allow_origins=[
         # Local dev
         "http://localhost:5173",
-        "https://dinomed-api.onrender.com",
+        "http://127.0.0.1:5173",
     ],
     # Consenti i deploy Vercel (Preview + Production). Se usi un dominio custom, aggiungilo in allow_origins.
     allow_origin_regex=r"^https://.*\.vercel\.app$",
@@ -42,38 +56,38 @@ app.add_middleware(
 
 # =========================
 # Import routers
-# ATTENZIONE: i nomi DEVONO combaciare con i file in /routes
 # =========================
-from routes import files, dispense, admin
 
-# Se esistono questi file, li includiamo (se no li saltiamo senza crash)
-try:
-    from routes import simulazioni
-except Exception as e:
-    simulazioni = None
-    if ENV == "local":
-        logger.warning("routes/simulazioni.py non importabile: %s", e)
+def _import_router(mod_name: str):
+    """Importa un router dalla cartella routes/.
 
-try:
-    from routes import domande
-except Exception as e:
-    domande = None
-    if ENV == "local":
-        logger.warning("routes/domande.py non importabile: %s", e)
+    In alcuni deploy (Render) il processo parte dal root del repo e i moduli
+    vengono risolti diversamente: per evitare 404 silenziosi, importiamo in modo
+    esplicito e logghiamo SEMPRE gli errori.
+    """
+    try:
+        return importlib.import_module(f"routes.{mod_name}")
+    except Exception as e:
+        logger.error("Impossibile importare routes/%s.py: %s", mod_name, e)
+        return None
 
-try:
-    from routes import sessioni
-except Exception as e:
-    sessioni = None
-    if ENV == "local":
-        logger.warning("routes/sessioni.py non importabile: %s", e)
+
+files = _import_router("files")
+dispense = _import_router("dispense")
+admin = _import_router("admin")
+simulazioni = _import_router("simulazioni")
+domande = _import_router("domande")
+sessioni = _import_router("sessioni")
 
 # =========================
 # Register routers
 # =========================
-app.include_router(files.router)
-app.include_router(dispense.router)
-app.include_router(admin.router)
+if files is not None:
+    app.include_router(files.router)
+if dispense is not None:
+    app.include_router(dispense.router)
+if admin is not None:
+    app.include_router(admin.router)
 
 if simulazioni is not None:
     app.include_router(simulazioni.router)

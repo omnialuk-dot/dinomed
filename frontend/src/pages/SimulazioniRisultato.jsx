@@ -87,6 +87,11 @@ export default function SimulazioniRisultato() {
     return r.details.filter((d) => d && d.ok === false);
   }, [r]);
 
+  const allDetails = useMemo(() => {
+    if (!r?.details || !Array.isArray(r.details)) return [];
+    return r.details.filter(Boolean);
+  }, [r]);
+
   if (!r || !summary) {
     return (
       <main className="sr2">
@@ -121,32 +126,15 @@ export default function SimulazioniRisultato() {
         <header className="sr2-top">
           <div className="sr2-brand">
             <span className="sr2-dot" />
-            <span className="sr2-b1">Dino</span>
-            <span className="sr2-b2">Med</span>
+            <span className="sr2-name">
+              <span className="sr2-b1">Dino</span>
+              <span className="sr2-b2">Med</span>
+            </span>
             <span className="sr2-sep">•</span>
             <span className="sr2-tag">Risultato</span>
           </div>
 
           <div className="sr2-actions">
-            <button className="sr2-btn" onClick={() => nav("/simulazioni/config")}>
-              Nuova prova
-            </button>
-            {wrongOnly.length > 0 && (
-              <button
-                className="sr2-btn"
-                onClick={() => {
-                  nav("/simulazioni/run", {
-                    state: {
-                      mode: "review",
-                      reviewQuestions: wrongOnly,
-                      reviewMeta: { sessionId: loaded.sessionId },
-                    },
-                  });
-                }}
-              >
-                Rivedi errori
-              </button>
-            )}
             <button className="sr2-btn sr2-primary" onClick={() => nav("/simulazioni/run", { state: { sessionId: loaded.sessionId } })}>
               Rifai la stessa prova →
             </button>
@@ -237,12 +225,54 @@ export default function SimulazioniRisultato() {
 
           <aside className="sr2-card sr2-side">
             <div className="sr2-sideTitle">Cosa fare adesso</div>
-            <div className="sr2-sideTxt">
-              • Se sei sotto 18: rifai la prova “senza rischiare”, salta le domande dubbie (0 è meglio di −0,1).<br />
-              • Se sei sopra 18: aumenta velocità e precisione, soprattutto sulle crocette.
+            <div className="sr2-sideBlocks">
+              <div className="sr2-tip">
+                <div className="sr2-tipT">🎯 Strategia</div>
+                <div className="sr2-tipB">
+                  Se sei sotto 18, rifai “senza rischiare”: 0 è meglio di −0,1 sulle dubbie.
+                </div>
+              </div>
+              <div className="sr2-tip">
+                <div className="sr2-tipT">⚡ Allenamento</div>
+                <div className="sr2-tipB">
+                  Se sei sopra 18, lavora su velocità e precisione (soprattutto crocette).
+                </div>
+              </div>
             </div>
 
-            <div className="sr2-row" style={{ marginTop: 12 }}>
+            <div className="sr2-row" style={{ marginTop: 12, flexWrap: "wrap" }}>
+              <button
+                className="sr2-btn"
+                onClick={() =>
+                  nav("/simulazioni/run", {
+                    state: {
+                      mode: "review",
+                      reviewQuestions: Array.isArray(r.details) ? r.details : [],
+                      reviewMeta: { sessionId: loaded.sessionId, label: "all" },
+                    },
+                  })
+                }
+              >
+                Rivedi domande
+              </button>
+
+              {wrongOnly.length > 0 && (
+                <button
+                  className="sr2-btn"
+                  onClick={() =>
+                    nav("/simulazioni/run", {
+                      state: {
+                        mode: "review",
+                        reviewQuestions: wrongOnly,
+                        reviewMeta: { sessionId: loaded.sessionId, label: "wrong" },
+                      },
+                    })
+                  }
+                >
+                  Rivedi errori
+                </button>
+              )}
+
               <button className="sr2-btn" onClick={() => nav("/simulazioni/config")}>
                 Nuova prova
               </button>
@@ -284,6 +314,7 @@ const css = `
   font-weight: 1000; color: rgba(15,23,42,0.82);
 }
 .sr2-dot{ width: 10px; height: 10px; border-radius: 999px; background: linear-gradient(90deg, var(--dino2), var(--med2)); }
+.sr2-name{ display:inline-flex; gap: 0; }
 .sr2-b1{ color: var(--dino2); } .sr2-b2{ color: var(--med2); }
 .sr2-sep{ opacity:.55; } .sr2-tag{ font-weight: 950; }
 

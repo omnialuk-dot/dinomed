@@ -53,7 +53,28 @@ def _normalize(x: dict) -> dict:
     """
     if not x.get("link") and x.get("file_url"):
         x["link"] = x.get("file_url")
+
+    # Normalizza link PDF: salva/ritorna sempre un path relativo (/uploads/..)
+    # per evitare che resti "localhost" o altri domini dentro al DB.
+    link = x.get("link")
+    if isinstance(link, str) and link.strip():
+        s = link.strip()
+        i = s.find("/uploads/")
+        if i >= 0:
+            x["link"] = s[i:]
     return x
+
+
+def _normalize_in_payload(link: Optional[str]) -> Optional[str]:
+    if not link:
+        return None
+    s = str(link).strip()
+    if not s:
+        return None
+    i = s.find("/uploads/")
+    if i >= 0:
+        return s[i:]
+    return s
 
 
 # =========================
@@ -133,7 +154,7 @@ async def create_dispensa(request: Request, payload: DispensaCreate, _payload=De
         "pagine": int(payload.pagine),
         "tag": tags_clean,
         "filename": payload.filename.strip() if payload.filename else None,
-        "link": payload.link.strip() if payload.link else None,   # ✅ SALVATO
+        "link": _normalize_in_payload(payload.link),
         "pubblicata": bool(payload.pubblicata),
         "created_at": datetime.utcnow().isoformat(),
     }
@@ -166,7 +187,7 @@ async def update_dispensa(request: Request, dispensa_id: str, payload: DispensaC
         "pagine": int(payload.pagine),
         "tag": tags_clean,
         "filename": payload.filename.strip() if payload.filename else None,
-        "link": payload.link.strip() if payload.link else None,   # ✅ SALVATO
+        "link": _normalize_in_payload(payload.link),
         "pubblicata": bool(payload.pubblicata),
     }
 

@@ -5,7 +5,7 @@ import uuid
 from pathlib import Path
 from typing import List, Optional, Literal, Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
 from auth import admin_required
@@ -158,12 +158,12 @@ class QuestionOut(BaseModel):
 
 
 # ----------------- endpoints -----------------
-@router.get("", dependencies=[admin_required])
+@router.get("", dependencies=[Depends(admin_required)])
 def list_questions() -> list[dict]:
     return _read_all()
 
 
-@router.post("", dependencies=[admin_required])
+@router.post("", dependencies=[Depends(admin_required)])
 def create_question(payload: QuestionIn):
     items = _read_all()
     q = payload.model_dump()
@@ -178,7 +178,7 @@ def create_question(payload: QuestionIn):
     return q
 
 
-@router.put("/{qid}", dependencies=[admin_required])
+@router.put("/{qid}", dependencies=[Depends(admin_required)])
 def update_question(qid: str, payload: QuestionIn):
     items = _read_all()
     idx = next((i for i, x in enumerate(items) if x.get("id") == qid), None)
@@ -195,7 +195,7 @@ def update_question(qid: str, payload: QuestionIn):
     return q
 
 
-@router.delete("/{qid}", dependencies=[admin_required])
+@router.delete("/{qid}", dependencies=[Depends(admin_required)])
 def delete_question(qid: str):
     items = _read_all()
     before = len(items)
