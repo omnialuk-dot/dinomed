@@ -416,7 +416,15 @@ const css = `
 }
 `;
 
-/* non risposte */
+
+    <style>{`
+    /* non risposte */
+
 .rv-naWrap{margin-top:14px;}
+
 .rv-naHead{font-weight:950;color:rgba(2,6,23,0.86);margin:8px 0 2px;}
+
 .rv-naSub{color:rgba(2,6,23,0.62);font-weight:750;margin-bottom:10px;}
+
+
+    `}</style>
