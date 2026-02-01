@@ -914,6 +914,9 @@ export default function SimulazioniRun() {
                 <div className={`sr-status ${answeredThis ? "isOn" : ""}`}>
                   {answeredThis ? "Risposta salvata ✓" : "Non risposta"}
                 </div>
+                  <button className="sr-reportTop" type="button" onClick={openReportModal} title="Segnala questa domanda">
+                    Segnala
+                  </button>
               </div>
             </div>
 
@@ -999,10 +1002,7 @@ export default function SimulazioniRun() {
                   <button className="sr-btn sr-soft" type="button" onClick={clearAnswer}>
                     Cancella
                   </button>
-                  <button className="sr-btn sr-ghostWarn" type="button" onClick={openReportModal}>
-                    Segnala domanda
-                  </button>
-                </div>
+</div>
               )}
 
               <div className="sr-nav">
@@ -1758,4 +1758,9 @@ const css = `
 .sr-mapFinish{
   min-width: 220px;
 }
+
+
+.sr-reportTop{margin-left:10px;padding:8px 10px;border-radius:12px;border:1px solid rgba(239,68,68,0.18);background:rgba(239,68,68,0.10);color:rgba(185,28,28,0.98);font-weight:800;letter-spacing:0.2px;cursor:pointer;}
+.sr-reportTop:hover{background:rgba(239,68,68,0.14);}
+.sr-metaRight{display:flex;align-items:center;gap:10px;}
 `;

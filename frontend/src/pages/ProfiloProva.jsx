@@ -17,6 +17,11 @@ export default function ProfiloProva() {
   const mode = (q.get("mode") || "errors").toLowerCase(); // errors|all
   const [run, setRun] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showReport, setShowReport] = useState(false);
+  const [reportNote, setReportNote] = useState("");
+  const [reportSent, setReportSent] = useState(false);
+  const [reportingItem, setReportingItem] = useState(null);
+  const [reportErr, setReportErr] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -41,7 +46,45 @@ export default function ProfiloProva() {
         if (alive) setLoading(false);
       }
     })();
-    return () => { alive = false; };
+    const openReportModal = (item) => {
+  setReportingItem(item || null);
+  setReportNote("");
+  setReportErr("");
+  setReportSent(false);
+  setShowReport(true);
+};
+
+const sendReport = async () => {
+  try {
+    setReportErr("");
+    const tok = getUserToken();
+    const payload = {
+      run_id: run?.id || id,
+      question_id: reportingItem?.id,
+      question: reportingItem || null,
+      note: reportNote || "",
+    };
+    const res = await fetch(`${API_BASE}/api/report`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...(tok ? { Authorization: `Bearer ${tok}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(t || "Errore invio");
+    }
+    setReportSent(true);
+    setTimeout(() => setShowReport(false), 650);
+  } catch (e) {
+    setReportErr(String(e?.message || e));
+  }
+};
+
+return () => { alive = false; };
   }, [id]);
 
   const det = useMemo(() => (Array.isArray(run?.details) ? run.details : []), [run]);
@@ -132,6 +175,7 @@ export default function ProfiloProva() {
                   {(() => { const st = statusLabel(d); return (<span className={"rv-pill " + st.cls}>{st.text}</span>); })()}
                 </div>
                 <div className="rv-qId">#{idx + 1}</div>
+                <button type="button" className="rv-reportBtn" onClick={() => openReportModal(d)}>Segnala</button>
               </div>
 
               <div className="rv-text">{d.testo}</div>
@@ -194,6 +238,7 @@ export default function ProfiloProva() {
                     <span className="rv-pill na">Non risposto</span>
                   </div>
                   <div className="rv-qId">#{idx + 1}</div>
+                <button type="button" className="rv-reportBtn" onClick={() => openReportModal(d)}>Segnala</button>
                 </div>
                 <div className="rv-text">{d.testo}</div>
 
@@ -248,6 +293,38 @@ export default function ProfiloProva() {
           </div>
         </div>
       ) : null}
+{showReport ? (
+  <div className="rv-modalBack" role="presentation" onClick={() => setShowReport(false)}>
+    <div className="rv-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+      <div className="rv-modalTop">
+        <div className="rv-modalTitle">Segnala domanda</div>
+        <button className="rv-x" type="button" onClick={() => setShowReport(false)} aria-label="Chiudi">✕</button>
+      </div>
+
+      <div className="rv-modalBody">
+        {reportSent ? (
+          <div className="rv-ok">Segnalazione inviata ✓</div>
+        ) : (
+          <>
+            <div className="rv-modalSub">Vuoi segnalare questa domanda? Le note sono facoltative.</div>
+            <textarea
+              className="rv-ta"
+              value={reportNote}
+              onChange={(e) => setReportNote(e.target.value)}
+              placeholder="Note (opzionale)"
+              rows={4}
+            />
+            {reportErr ? <div className="rv-err">{reportErr}</div> : null}
+            <div className="rv-modalBtns">
+              <button type="button" className="rv-btn rv-soft" onClick={() => setShowReport(false)}>Annulla</button>
+              <button type="button" className="rv-btn rv-warn" onClick={sendReport}>Invia segnalazione</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  </div>
+) : null}
     </main>
   );
 }
@@ -427,4 +504,27 @@ const css = `
 .rv-naSub{color:rgba(2,6,23,0.62);font-weight:750;margin-bottom:10px;}
 
 
-    `}</style>
+    
+
+.rv-reportBtn{margin-left:auto;padding:7px 10px;border-radius:12px;border:1px solid rgba(239,68,68,0.18);background:rgba(239,68,68,0.10);color:rgba(185,28,28,0.98);font-weight:850;cursor:pointer;}
+.rv-reportBtn:hover{background:rgba(239,68,68,0.14);}
+.rv-qTop{display:flex;align-items:center;gap:10px;}
+.rv-qId{margin-left:auto;}
+.rv-modalBack{position:fixed;inset:0;background:rgba(2,6,23,0.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:60;}
+.rv-modal{width:min(720px,100%);background:#fff;border-radius:18px;box-shadow:0 18px 60px rgba(2,6,23,0.28);border:1px solid rgba(2,6,23,0.08);overflow:hidden;}
+.rv-modalTop{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(2,6,23,0.08);}
+.rv-modalTitle{font-weight:950;color:rgba(2,6,23,0.86);}
+.rv-x{border:0;background:transparent;font-size:16px;cursor:pointer;color:rgba(2,6,23,0.55);font-weight:900;}
+.rv-modalBody{padding:14px 16px;}
+.rv-modalSub{color:rgba(2,6,23,0.62);font-weight:750;margin-bottom:10px;}
+.rv-ta{width:100%;border-radius:14px;border:1px solid rgba(2,6,23,0.12);padding:12px 12px;outline:none;font-weight:650;background:rgba(2,6,23,0.02);}
+.rv-ta:focus{border-color:rgba(37,99,235,0.35);box-shadow:0 0 0 4px rgba(37,99,235,0.10);}
+.rv-modalBtns{display:flex;gap:10px;justify-content:flex-end;margin-top:12px;}
+.rv-btn{padding:10px 12px;border-radius:14px;border:1px solid rgba(2,6,23,0.10);background:#fff;font-weight:900;cursor:pointer;}
+.rv-soft{background:rgba(2,6,23,0.04);}
+.rv-warn{border-color:rgba(239,68,68,0.20);background:rgba(239,68,68,0.10);color:rgba(185,28,28,0.98);}
+.rv-err{margin-top:10px;color:rgba(185,28,28,0.95);font-weight:800;}
+.rv-ok{padding:10px 12px;border-radius:14px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.20);color:rgba(21,128,61,0.95);font-weight:900;}
+
+`}</style>
+

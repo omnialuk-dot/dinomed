@@ -23,6 +23,59 @@ function sumSubjects(per) {
   return out;
 }
 
+function RoleIcon({ k }) {
+  const common = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg" };
+  switch (k) {
+    case "tirocinante":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+          <path d="M12 7v10M7 12h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      );
+    case "studente_clinico":
+      return (
+        <svg {...common}>
+          <path d="M12 3l2.6 5.7 6.2.6-4.7 4.1 1.4 6.1L12 17.8 6.5 19.5 7.9 13.4 3.2 9.3l6.2-.6L12 3z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+        </svg>
+      );
+    case "specializzando":
+      return (
+        <svg {...common}>
+          <path d="M12 3l2.6 5.7 6.2.6-4.7 4.1 1.4 6.1L12 17.8 6.5 19.5 7.9 13.4 3.2 9.3l6.2-.6L12 3z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M8.2 20.2c1.1.5 2.4.8 3.8.8s2.7-.3 3.8-.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      );
+    case "medico_in_corsia":
+      return (
+        <svg {...common}>
+          <path d="M12 3l8 4v6c0 5-3.2 9.1-8 10-4.8-.9-8-5-8-10V7l8-4z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      );
+    case "medico_esperto":
+      return (
+        <svg {...common}>
+          <path d="M12 4l2.2 4.9 5.3.5-4 3.6 1.2 5.2L12 16.6 7.3 18.2 8.5 13 4.5 9.4l5.3-.5L12 4z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M12 9.2l1.2 2.6 2.8.3-2.1 1.9.6 2.7-2.5-1.4-2.5 1.4.6-2.7-2.1-1.9 2.8-.3L12 9.2z" fill="currentColor" opacity="0.22"/>
+        </svg>
+      );
+    case "primario":
+      return (
+        <svg {...common}>
+          <path d="M12 3l9 9-9 9-9-9 9-9z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      );
+    default:
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+        </svg>
+      );
+  }
+}
+
 export default function Profilo() {
   const nav = useNavigate();
   const user = useMemo(() => getUser(), []);
@@ -83,46 +136,53 @@ export default function Profilo() {
   }, [runs]);
 
   const roles = useMemo(() => {
-    return [
-      {
-        min: 0,
-        key: "osservatore",
-        name: "Osservatore",
-        desc: "Stai preparando il terreno: inizia la prima simulazione e sblocchi il percorso.",
-        tone: "neutral",
-      },
-      {
-        min: 10,
-        key: "tirocinante",
-        name: "Tirocinante",
-        desc: "Hai iniziato a fare sul serio: costanza > tutto.",
-        tone: "blue",
-      },
-      {
-        min: 50,
-        key: "specializzando",
-        name: "Specializzando",
-        desc: "Ottimo ritmo: stai consolidando metodo e velocità.",
-        tone: "green",
-      },
-      {
-        min: 100,
-        key: "medico_in_corsia",
-        name: "Medico in corsia",
-        desc: "Hai una base solida: ora conta la precisione nei dettagli.",
-        tone: "gold",
-      },
-      {
-        min: 500,
-        key: "primario",
-        name: "Primario",
-        desc: "Livello elite: disciplina e visione completa. Rispetto.",
-        tone: "purple",
-      },
-    ];
-  }, []);
+  return [
+    {
+      min: 0,
+      key: "tirocinante",
+      name: "Tirocinante",
+      desc: "Primi passi: fai la prima simulazione e inizia a costruire metodo.",
+      tone: "yellow",
+    },
+    {
+      min: 10,
+      key: "studente_clinico",
+      name: "Studente Clinico",
+      desc: "Costanza vera: stai entrando nel ritmo giusto.",
+      tone: "blue",
+    },
+    {
+      min: 50,
+      key: "specializzando",
+      name: "Specializzando",
+      desc: "Ottimo livello: velocità e controllo iniziano a vedersi.",
+      tone: "green",
+    },
+    {
+      min: 100,
+      key: "medico_in_corsia",
+      name: "Medico in corsia",
+      desc: "Base solida: ora conta la precisione nei dettagli.",
+      tone: "teal",
+    },
+    {
+      min: 200,
+      key: "medico_esperto",
+      name: "Medico Esperto",
+      desc: "Qui si gioca premium: lucidità, costanza e scelte intelligenti.",
+      tone: "gold",
+    },
+    {
+      min: 500,
+      key: "primario",
+      name: "Primario",
+      desc: "Livello elite: disciplina e visione completa. Rispetto.",
+      tone: "purple",
+    },
+  ];
+}, []);
 
-  const currentRole = useMemo(() => {
+const currentRole = useMemo(() => {
     const n = Number(stats.total || 0);
     let out = roles[0];
     for (const r of roles) if (n >= r.min) out = r;
@@ -142,7 +202,7 @@ export default function Profilo() {
         </div>
 
         <h1 className="pr-title">
-          Benvenuto, <span className="pr-grad">{user?.email || "utente"}</span>
+          Benvenuto/a, <span className="pr-grad">{user?.email || "utente"}</span>
         </h1>
 
         <p className="pr-sub">
@@ -158,10 +218,10 @@ export default function Profilo() {
             </div>
 
             <div className="pr-row">
-              <div className="pr-label">Ruolo</div>
+              <div className="pr-label">Professione</div>
               <button type="button" className={`pr-role pr-role-${currentRole.tone}`} onClick={() => setShowRoles(true)}>
                 <span className="pr-roleIco" aria-hidden="true">
-                  {currentRole.tone === "purple" ? "◆" : currentRole.tone === "gold" ? "★" : currentRole.tone === "green" ? "✓" : currentRole.tone === "blue" ? "➜" : "•"}
+                  {<RoleIcon k={currentRole.key} />}
                 </span>
                 <span className="pr-roleName">{currentRole.name}</span>
                 <span className="pr-roleHint">(tocca per vedere i livelli)</span>
@@ -252,13 +312,13 @@ export default function Profilo() {
           <div className="pr-modalBack" role="presentation" onClick={() => setShowRoles(false)}>
             <div className="pr-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
               <div className="pr-modalTop">
-                <div className="pr-modalTitle">Ruoli DinoMed</div>
+                <div className="pr-modalTitle">Professioni DinoMed</div>
                 <button className="pr-x" type="button" onClick={() => setShowRoles(false)} aria-label="Chiudi">✕</button>
               </div>
 
               <div className="pr-modalBody">
                 <div className="pr-modalSub">
-                  I ruoli si aggiornano automaticamente in base alle prove concluse.
+                  Le professioni si aggiornano automaticamente in base alle prove concluse.
                 </div>
 
                 <div className="pr-roleList">
@@ -268,7 +328,7 @@ export default function Profilo() {
                       <div key={r.key} className={`pr-roleRow ${on ? "isOn" : ""}`}>
                         <div className={`pr-roleBadge pr-role-${r.tone}`}>
                           <span className="pr-roleIco" aria-hidden="true">
-                            {r.tone === "purple" ? "◆" : r.tone === "gold" ? "★" : r.tone === "green" ? "✓" : r.tone === "blue" ? "➜" : "•"}
+                            {<RoleIcon k={r.key} />}
                           </span>
                           <span className="pr-roleName">{r.name}</span>
                         </div>
@@ -402,27 +462,8 @@ const css = `
 .pr-role-purple{ border-color: rgba(168,85,247,0.28); box-shadow: 0 10px 22px rgba(168,85,247,0.12); }
 .pr-role-neutral{ border-color: rgba(15,23,42,0.12); }
 
-.pr-modalBack{
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: rgba(2,6,23,0.55);
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 18px;
-}
-.pr-modal{
-  width: min(760px, 100%);
-  margin-top: 70px;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.92);
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow: 0 26px 90px rgba(2,6,23,0.28);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  overflow: hidden;
-}
+.pr-modalBack{position:fixed;inset:0;background:rgba(2,6,23,0.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;}
+.pr-modal{width:min(720px,100%);background:#fff;border-radius:18px;box-shadow:0 18px 60px rgba(2,6,23,0.28);border:1px solid rgba(2,6,23,0.08);overflow:hidden;transform:translateZ(0);}
 .pr-modalTop{
   padding: 12px 14px;
   display:flex;
@@ -561,4 +602,14 @@ const css = `
 @media (max-width: 520px){
   .pr-statGrid{ grid-template-columns: 1fr; }
 }
+
+
+/* Professioni tones */
+.pr-role-yellow{background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.25);color:rgba(180,83,9,0.95);}
+.pr-role-blue{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.24);color:rgba(29,78,216,0.95);}
+.pr-role-green{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.24);color:rgba(21,128,61,0.95);}
+.pr-role-teal{background:rgba(20,184,166,0.12);border-color:rgba(20,184,166,0.24);color:rgba(15,118,110,0.95);}
+.pr-role-gold{background:rgba(245,158,11,0.14);border-color:rgba(245,158,11,0.28);color:rgba(161,98,7,0.98);}
+.pr-role-purple{background:rgba(168,85,247,0.12);border-color:rgba(168,85,247,0.24);color:rgba(126,34,206,0.95);}
+.pr-roleIco{display:inline-flex;align-items:center;justify-content:center;}
 `;
