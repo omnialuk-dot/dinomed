@@ -123,6 +123,18 @@ export default function SimulazioniRun() {
   const [finishing, setFinishing] = useState(false);
   const [showMap, setShowMap] = useState(false);
 
+  // Segnalazioni (utente)
+  const [showReport, setShowReport] = useState(false);
+  const [reportNote, setReportNote] = useState("");
+  const [reportSending, setReportSending] = useState(false);
+  const [reportToast, setReportToast] = useState("");
+
+  useEffect(() => {
+    if (!reportToast) return;
+    const t = setTimeout(() => setReportToast(""), 2600);
+    return () => clearTimeout(t);
+  }, [reportToast]);
+
   // Timer
   const [timeLeft, setTimeLeft] = useState(null); // seconds or null
   const timerRef = useRef(null);
@@ -720,6 +732,54 @@ export default function SimulazioniRun() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function openReportModal() {
+    setReportNote("");
+    setShowReport(true);
+  }
+
+  function closeReportModal() {
+    if (reportSending) return;
+    setShowReport(false);
+  }
+
+  async function sendReport() {
+    if (reportSending) return;
+    const tok = getUserToken();
+    if (!tok) {
+      setShowReport(false);
+      setReportToast("Devi effettuare il login per segnalare.");
+      return;
+    }
+    try {
+      setReportSending(true);
+      const res = await fetch(`${API_BASE}/api/report`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tok}`,
+        },
+        body: JSON.stringify({
+          session_id: sessionId || null,
+          question_id: qId,
+          note: reportNote || "",
+        }),
+      });
+      const txt = await res.text();
+      if (!res.ok) {
+        const data = safeJsonParse(txt);
+        const msg = (data && (data.detail || data.message)) || `Errore ${res.status}`;
+        throw new Error(msg);
+      }
+      setShowReport(false);
+      setReportToast("Segnalazione inviata ✓");
+    } catch (e) {
+      setReportToast(String(e?.message || "Impossibile inviare la segnalazione"));
+    } finally {
+      setReportSending(false);
+    }
+  }
+
   // Render states
   if (loading) {
     return (
@@ -836,6 +896,8 @@ export default function SimulazioniRun() {
           </div>
         ) : null}
 
+        {reportToast ? <div className="sr-toast" role="status">{reportToast}</div> : null}
+
         {/* Main layout */}
         <section className="sr-grid">
           {/* Question */}
@@ -933,9 +995,14 @@ export default function SimulazioniRun() {
                   ← Torna ai risultati
                 </button>
               ) : (
-                <button className="sr-btn sr-soft" type="button" onClick={clearAnswer}>
-                  Cancella
-                </button>
+                <div className="sr-leftBtns">
+                  <button className="sr-btn sr-soft" type="button" onClick={clearAnswer}>
+                    Cancella
+                  </button>
+                  <button className="sr-btn sr-ghostWarn" type="button" onClick={openReportModal}>
+                    Segnala domanda
+                  </button>
+                </div>
               )}
 
               <div className="sr-nav">
@@ -1020,6 +1087,38 @@ export default function SimulazioniRun() {
         </section>
 
         {/* Gate tra materie */}
+        {!reviewMode && showReport ? (
+          <div className="sr-modalBackdrop" role="presentation" onClick={closeReportModal}>
+            <div className="sr-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+              <div className="sr-modalTop">
+                <div className="sr-modalTitle">Segnala domanda</div>
+                <button className="sr-x" type="button" onClick={closeReportModal} aria-label="Chiudi">
+                  ✕
+                </button>
+              </div>
+              <div className="sr-modalBody">
+                <div className="sr-modalText">Vuoi segnalare questa domanda? Puoi aggiungere una nota (opzionale).</div>
+                <textarea
+                  className="sr-textarea"
+                  rows={4}
+                  placeholder="Scrivi qui cosa è sbagliato (opzionale)…"
+                  value={reportNote}
+                  onChange={(e) => setReportNote(e.target.value)}
+                />
+                <div className="sr-modalRow">
+                  <button className="sr-btn sr-soft" type="button" onClick={closeReportModal} disabled={reportSending}>
+                    Annulla
+                  </button>
+                  <button className="sr-btn sr-primary" type="button" onClick={sendReport} disabled={reportSending}>
+                    {reportSending ? "Invio…" : "Invia segnalazione"}
+                    <span className="sr-shine" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         {!reviewMode && gate && blocks[gate.fromBlock] && blocks[gate.toBlock] ? (
           <div className="sr-gateBackdrop" role="presentation">
             <div className="sr-gate" role="presentation">
@@ -1387,6 +1486,7 @@ const css = `
   gap: 10px;
   flex-wrap: wrap;
 }
+.sr-leftBtns{ display:flex; gap: 10px; flex-wrap: wrap; }
 .sr-nav{ display:flex; gap: 10px; flex-wrap: wrap; }
 
 .sr-btn{
@@ -1416,6 +1516,77 @@ const css = `
 .sr-soft{
   background: rgba(255,255,255,0.72);
 }
+.sr-ghostWarn{
+  background: rgba(255,255,255,0.68);
+  border: 1px solid rgba(244,63,94,0.20);
+  color: rgba(190,18,60,0.96);
+  box-shadow: 0 14px 30px rgba(244,63,94,0.10);
+}
+.sr-ghostWarn:hover{ box-shadow: 0 18px 44px rgba(244,63,94,0.16); }
+
+.sr-toast{
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  padding: 10px 12px;
+  border-radius: 999px;
+  font-weight: 1000;
+  color: rgba(15,23,42,0.92);
+  background: rgba(255,255,255,0.86);
+  border: 1px solid rgba(15,23,42,0.12);
+  box-shadow: 0 18px 52px rgba(2,6,23,0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.sr-modalBackdrop{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15,23,42,0.55);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 18px;
+}
+.sr-modal{
+  width: min(640px, 100%);
+  margin-top: 60px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.92);
+  box-shadow: 0 26px 90px rgba(2,6,23,0.26);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+.sr-modalTop{
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(15,23,42,0.08);
+}
+.sr-modalTitle{ font-weight: 1100; letter-spacing: -0.3px; }
+.sr-modalBody{ padding: 14px; }
+.sr-modalText{ color: rgba(15,23,42,0.72); font-weight: 850; margin-bottom: 10px; }
+.sr-textarea{
+  width: 100%;
+  resize: vertical;
+  min-height: 90px;
+  padding: 12px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.92);
+  font-weight: 950;
+  color: rgba(15,23,42,0.86);
+  box-shadow: 0 14px 30px rgba(2,6,23,0.06);
+}
+.sr-textarea:focus{ outline:none; border-color: rgba(244,63,94,0.35); }
+.sr-modalRow{ display:flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
 .sr-shine{
   position:absolute; inset:0;
   background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.26) 25%, transparent 50%);

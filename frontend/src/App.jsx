@@ -67,6 +67,14 @@ export default function App() {
               </AdminGuard>
             }
           />
+          <Route
+            path="/admin/segnalazioni"
+            element={
+              <AdminGuard>
+                <AdminPanel />
+              </AdminGuard>
+            }
+          />
 
           {/* FALLBACK */}
           <Route path="*" element={<Navigate to="/" replace />} />

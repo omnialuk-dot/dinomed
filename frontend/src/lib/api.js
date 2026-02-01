@@ -163,4 +163,19 @@ export const api = {
   deleteDomanda(id) {
     return request(`/api/admin/domande/${id}`, { method: "DELETE", auth: true });
   },
+
+  // ---------- SEGNALAZIONI (ADMIN) ----------
+  listReports(params = {}) {
+    const sp = new URLSearchParams();
+    if (params.status) sp.set("status", params.status);
+    if (params.materia) sp.set("materia", params.materia);
+    if (params.date_from) sp.set("date_from", params.date_from);
+    if (params.date_to) sp.set("date_to", params.date_to);
+    const q = sp.toString();
+    return request(`/api/admin/reports${q ? `?${q}` : ""}`, { auth: true });
+  },
+
+  updateReport(id, payload) {
+    return request(`/api/admin/reports/${id}`, { method: "PATCH", body: payload, auth: true });
+  },
 };

@@ -30,7 +30,7 @@ export default function Home() {
             </p>
 
             <div className="h4-ctaRow">
-              <Link className="h4-btn h4-primary" to="/simulazioni">
+              <Link className="h4-btn h4-primary" to="/simulazioni/config">
                 Fai una simulazione <span aria-hidden="true">→</span>
                 <span className="h4-shine" aria-hidden="true" />
               </Link>
@@ -84,7 +84,7 @@ export default function Home() {
         </div>
 
         <div className="h4-cards">
-          <Link className="h4-card" to="/simulazioni">
+          <Link className="h4-card" to="/simulazioni/config">
             <div className="h4-cardIcon isSim" aria-hidden="true">
               <IconBoltBig />
             </div>

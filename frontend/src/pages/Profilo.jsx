@@ -28,6 +28,7 @@ export default function Profilo() {
   const user = useMemo(() => getUser(), []);
   const [runs, setRuns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showRoles, setShowRoles] = useState(false);
 
   const logout = () => {
     clearUserSession();
@@ -81,6 +82,53 @@ export default function Profilo() {
     return { total, avgPct, best };
   }, [runs]);
 
+  const roles = useMemo(() => {
+    return [
+      {
+        min: 0,
+        key: "osservatore",
+        name: "Osservatore",
+        desc: "Stai preparando il terreno: inizia la prima simulazione e sblocchi il percorso.",
+        tone: "neutral",
+      },
+      {
+        min: 10,
+        key: "tirocinante",
+        name: "Tirocinante",
+        desc: "Hai iniziato a fare sul serio: costanza > tutto.",
+        tone: "blue",
+      },
+      {
+        min: 50,
+        key: "specializzando",
+        name: "Specializzando",
+        desc: "Ottimo ritmo: stai consolidando metodo e velocità.",
+        tone: "green",
+      },
+      {
+        min: 100,
+        key: "medico_in_corsia",
+        name: "Medico in corsia",
+        desc: "Hai una base solida: ora conta la precisione nei dettagli.",
+        tone: "gold",
+      },
+      {
+        min: 500,
+        key: "primario",
+        name: "Primario",
+        desc: "Livello elite: disciplina e visione completa. Rispetto.",
+        tone: "purple",
+      },
+    ];
+  }, []);
+
+  const currentRole = useMemo(() => {
+    const n = Number(stats.total || 0);
+    let out = roles[0];
+    for (const r of roles) if (n >= r.min) out = r;
+    return out;
+  }, [roles, stats.total]);
+
   return (
     <main className="pr">
       <style>{css}</style>
@@ -107,6 +155,17 @@ export default function Profilo() {
             <div className="pr-row">
               <div className="pr-label">Email</div>
               <div className="pr-value">{user?.email || "—"}</div>
+            </div>
+
+            <div className="pr-row">
+              <div className="pr-label">Ruolo</div>
+              <button type="button" className={`pr-role pr-role-${currentRole.tone}`} onClick={() => setShowRoles(true)}>
+                <span className="pr-roleIco" aria-hidden="true">
+                  {currentRole.tone === "purple" ? "◆" : currentRole.tone === "gold" ? "★" : currentRole.tone === "green" ? "✓" : currentRole.tone === "blue" ? "➜" : "•"}
+                </span>
+                <span className="pr-roleName">{currentRole.name}</span>
+                <span className="pr-roleHint">(tocca per vedere i livelli)</span>
+              </button>
             </div>
 
             <div className="pr-actions">
@@ -144,7 +203,7 @@ export default function Profilo() {
         <div className="pr-block">
           <div className="pr-blockHead">
             <h2 className="pr-h2">Storico prove</h2>
-            <Link to="/simulazioni/config" className="pr-link">Avvia una nuova prova</Link>
+            
           </div>
 
           {loading ? (
@@ -188,6 +247,43 @@ export default function Profilo() {
             </div>
           )}
         </div>
+
+        {showRoles ? (
+          <div className="pr-modalBack" role="presentation" onClick={() => setShowRoles(false)}>
+            <div className="pr-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+              <div className="pr-modalTop">
+                <div className="pr-modalTitle">Ruoli DinoMed</div>
+                <button className="pr-x" type="button" onClick={() => setShowRoles(false)} aria-label="Chiudi">✕</button>
+              </div>
+
+              <div className="pr-modalBody">
+                <div className="pr-modalSub">
+                  I ruoli si aggiornano automaticamente in base alle prove concluse.
+                </div>
+
+                <div className="pr-roleList">
+                  {roles.map((r) => {
+                    const on = Number(stats.total || 0) >= r.min;
+                    return (
+                      <div key={r.key} className={`pr-roleRow ${on ? "isOn" : ""}`}>
+                        <div className={`pr-roleBadge pr-role-${r.tone}`}>
+                          <span className="pr-roleIco" aria-hidden="true">
+                            {r.tone === "purple" ? "◆" : r.tone === "gold" ? "★" : r.tone === "green" ? "✓" : r.tone === "blue" ? "➜" : "•"}
+                          </span>
+                          <span className="pr-roleName">{r.name}</span>
+                        </div>
+                        <div className="pr-roleMeta">
+                          <div className="pr-roleReq">{r.min} simulazioni</div>
+                          <div className="pr-roleDesc">{r.desc}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </section>
     </main>
   );
@@ -277,6 +373,83 @@ const css = `
 .pr-label{ color: rgba(2,6,23,0.55); font-weight: 750; }
 .pr-value{ color: rgba(2,6,23,0.82); font-weight: 850; word-break: break-word; text-align:right; }
 
+.pr-role{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.12);
+  background: rgba(255,255,255,0.78);
+  cursor: pointer;
+  font-weight: 1000;
+  color: rgba(2,6,23,0.86);
+  text-align: left;
+}
+.pr-roleHint{ opacity: 0.55; font-weight: 900; font-size: 12px; }
+.pr-roleIco{
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(2,6,23,0.04);
+}
+.pr-role-blue{ border-color: rgba(14,165,233,0.25); box-shadow: 0 10px 22px rgba(14,165,233,0.12); }
+.pr-role-green{ border-color: rgba(34,197,94,0.25); box-shadow: 0 10px 22px rgba(34,197,94,0.12); }
+.pr-role-gold{ border-color: rgba(234,179,8,0.28); box-shadow: 0 10px 22px rgba(234,179,8,0.12); }
+.pr-role-purple{ border-color: rgba(168,85,247,0.28); box-shadow: 0 10px 22px rgba(168,85,247,0.12); }
+.pr-role-neutral{ border-color: rgba(15,23,42,0.12); }
+
+.pr-modalBack{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(2,6,23,0.55);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 18px;
+}
+.pr-modal{
+  width: min(760px, 100%);
+  margin-top: 70px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 26px 90px rgba(2,6,23,0.28);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+.pr-modalTop{
+  padding: 12px 14px;
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(15,23,42,0.08);
+}
+.pr-modalTitle{ font-weight: 1100; letter-spacing: -0.3px; }
+.pr-x{
+  border: 1px solid rgba(15,23,42,0.12);
+  background: rgba(255,255,255,0.80);
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-weight: 950;
+  cursor: pointer;
+}
+.pr-modalBody{ padding: 14px; }
+.pr-modalSub{ color: rgba(2,6,23,0.62); font-weight: 850; margin-bottom: 10px; }
+.pr-roleList{ display: grid; gap: 10px; }
+.pr-roleRow{ display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 12px; border-radius: 16px; border: 1px solid rgba(15,23,42,0.10); background: rgba(2,6,23,0.02); }
+.pr-roleRow.isOn{ background: rgba(34,197,94,0.05); border-color: rgba(34,197,94,0.16); }
+.pr-roleBadge{ display:inline-flex; align-items:center; gap: 10px; padding: 8px 10px; border-radius: 999px; border: 1px solid rgba(15,23,42,0.12); background: rgba(255,255,255,0.78); font-weight: 1050; }
+.pr-roleMeta{ display: grid; gap: 4px; }
+.pr-roleReq{ font-weight: 1000; color: rgba(2,6,23,0.82); }
+.pr-roleDesc{ font-weight: 850; color: rgba(2,6,23,0.68); }
+
 .pr-actions{
   display:flex;
   flex-wrap: wrap;
@@ -286,7 +459,7 @@ const css = `
 
 .pr-btn{
   border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(255,255,255,0.70);
+  background: rgba(255,255,255,0.82);
   border-radius: 14px;
   padding: 10px 12px;
   font-weight: 850;

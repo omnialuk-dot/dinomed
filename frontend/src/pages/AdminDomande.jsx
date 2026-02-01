@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { api } from "../lib/api";
 
 function Modal({ open, onClose, title, children }) {
@@ -98,6 +99,7 @@ function letter(idx) {
 }
 
 export default function AdminDomande() {
+  const location = useLocation();
   const [items, setItems] = useState([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -124,6 +126,23 @@ export default function AdminDomande() {
   useEffect(() => {
     load();
   }, []);
+
+  // Deep link: /admin/domande?q=<question_id>
+  useEffect(() => {
+    if (!items.length) return;
+    const sp = new URLSearchParams(location?.search || "");
+    const want = (sp.get("q") || "").trim();
+    if (!want) return;
+    const found = items.find((x) => String(x.id) === String(want));
+    if (!found) return;
+    openEdit(found);
+    // pulisci la query per evitare ri-aperture
+    sp.delete("q");
+    const next = sp.toString();
+    const url = `${location.pathname}${next ? `?${next}` : ""}`;
+    window.history.replaceState({}, "", url);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, location?.search]);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();

@@ -135,8 +135,8 @@ export default function SimulazioniRisultato() {
           </div>
 
           <div className="sr2-actions">
-            <button className="sr2-btn sr2-primary" onClick={() => nav("/simulazioni/run", { state: { sessionId: loaded.sessionId } })}>
-              Rifai la stessa prova →
+            <button className="sr2-btn sr2-primary" onClick={() => nav("/simulazioni/config")}>
+              Nuova prova →
             </button>
           </div>
         </header>
@@ -227,55 +227,23 @@ export default function SimulazioniRisultato() {
             <div className="sr2-sideTitle">Cosa fare adesso</div>
             <div className="sr2-sideBlocks">
               <div className="sr2-tip">
-                <div className="sr2-tipT">🎯 Strategia</div>
+                <div className="sr2-tipT">Analisi</div>
                 <div className="sr2-tipB">
-                  Se sei sotto 18, rifai “senza rischiare”: 0 è meglio di −0,1 sulle dubbie.
+                  Concentrati prima sulle domande errate: sono il margine più veloce per alzare il punteggio. Le non risposte indicano lacune o gestione tempo.
                 </div>
               </div>
               <div className="sr2-tip">
-                <div className="sr2-tipT">⚡ Allenamento</div>
+                <div className="sr2-tipT">Piano rapido</div>
                 <div className="sr2-tipB">
-                  Se sei sopra 18, lavora su velocità e precisione (soprattutto crocette).
+                  1) Rivedi gli errori. 2) Segna gli argomenti ricorrenti. 3) Rifai una prova mirata oggi, con timer, e una domani senza timer per consolidare.
                 </div>
               </div>
-            </div>
-
-            <div className="sr2-row" style={{ marginTop: 12, flexWrap: "wrap" }}>
-              <button
-                className="sr2-btn"
-                onClick={() =>
-                  nav("/simulazioni/run", {
-                    state: {
-                      mode: "review",
-                      reviewQuestions: Array.isArray(r.details) ? r.details : [],
-                      reviewMeta: { sessionId: loaded.sessionId, label: "all" },
-                    },
-                  })
-                }
-              >
-                Rivedi domande
-              </button>
-
-              {wrongOnly.length > 0 && (
-                <button
-                  className="sr2-btn"
-                  onClick={() =>
-                    nav("/simulazioni/run", {
-                      state: {
-                        mode: "review",
-                        reviewQuestions: wrongOnly,
-                        reviewMeta: { sessionId: loaded.sessionId, label: "wrong" },
-                      },
-                    })
-                  }
-                >
-                  Rivedi errori
-                </button>
-              )}
-
-              <button className="sr2-btn" onClick={() => nav("/simulazioni/config")}>
-                Nuova prova
-              </button>
+              <div className="sr2-tip">
+                <div className="sr2-tipT">Obiettivo</div>
+                <div className="sr2-tipB">
+                  Punta a ridurre gli errori “evitabili”: lettura frettolosa, unità di misura, distrazioni. Un miglioramento piccolo ma costante vale più di una prova perfetta isolata.
+                </div>
+              </div>
             </div>
           </aside>
         </section>

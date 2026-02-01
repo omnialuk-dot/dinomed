@@ -44,11 +44,44 @@ export default function ProfiloProva() {
     return () => { alive = false; };
   }, [id]);
 
+  const det = useMemo(() => (Array.isArray(run?.details) ? run.details : []), [run]);
+
+  const wrongItems = useMemo(() => det.filter((d) => d.ok === false), [det]);
+  const blankItems = useMemo(() => det.filter((d) => d.ok === null || d.ok === undefined), [det]);
+
   const items = useMemo(() => {
-    const det = run?.details || [];
     if (mode === "all") return det;
-    return det.filter((d) => d.ok === false);
-  }, [run, mode]);
+    return wrongItems;
+  }, [det, wrongItems, mode]);
+
+  function correctIndexOf(d) {
+    if (d?.tipo !== "scelta") return null;
+    const c = d.correct;
+    if (c && typeof c === "object" && c.index !== undefined && c.index !== null) return Number(c.index);
+    if (typeof c === "number") return c;
+    const n = Number(c);
+    return Number.isFinite(n) ? n : null;
+  }
+  function userIndexOf(d) {
+    if (d?.tipo !== "scelta") return null;
+    const ua = d.your_answer;
+    if (typeof ua === "number") return ua;
+    if (typeof ua === "string") {
+      const s = ua.trim().toUpperCase();
+      if (s.length === 1) {
+        const code = s.charCodeAt(0);
+        if (code >= 65 && code <= 90) return code - 65;
+      }
+      const n = Number(s);
+      if (Number.isFinite(n)) return n;
+    }
+    return null;
+  }
+  function statusLabel(d) {
+    if (d.ok === true) return { text: "Corretta", cls: "ok" };
+    if (d.ok === false) return { text: "Errata", cls: "bad" };
+    return { text: "Non risposto", cls: "na" };
+  }
 
   return (
     <main className="rv">
@@ -56,7 +89,7 @@ export default function ProfiloProva() {
 
       <div className="rv-top">
         <div>
-          <div className="rv-kicker">DinoMed • Revisione</div>
+          <div className="rv-kicker"><span className="rv-brand" aria-label="DinoMed"><span className="rv-dino">Dino</span><span className="rv-med">Med</span></span><span className="rv-sep">•</span><span>Revisione</span></div>
           <h1 className="rv-title">{loading ? "Caricamento…" : (run?.title || "Prova")}</h1>
           <div className="rv-sub">
             {run ? (
@@ -68,8 +101,7 @@ export default function ProfiloProva() {
         </div>
 
         <div className="rv-actions">
-          <button className="rv-btn" onClick={() => nav("/profilo")}>Torna al profilo</button>
-          <button className={"rv-btn " + (mode === "errors" ? "isOn" : "")} onClick={() => nav(`/profilo/prove/${id}?mode=errors`)}>
+                    <button className={"rv-btn " + (mode === "errors" ? "isOn" : "")} onClick={() => nav(`/profilo/prove/${id}?mode=errors`)}>
             Solo errori
           </button>
           <button className={"rv-btn " + (mode === "all" ? "isOn" : "")} onClick={() => nav(`/profilo/prove/${id}?mode=all`)}>
@@ -84,7 +116,11 @@ export default function ProfiloProva() {
         <div className="rv-card">Prova non trovata.</div>
       ) : items.length === 0 ? (
         <div className="rv-card">
-          {mode === "errors" ? "Perfetto: nessun errore in questa prova." : "Nessuna domanda salvata."}
+          {mode === "errors"
+            ? (blankItems.length > 0
+                ? `Nessun errore, ma hai ${blankItems.length} domanda${blankItems.length === 1 ? "" : "e"} non risposta.`
+                : "Perfetto: nessun errore in questa prova.")
+            : "Nessuna domanda salvata."}
         </div>
       ) : (
         <div className="rv-list">
@@ -93,9 +129,7 @@ export default function ProfiloProva() {
               <div className="rv-qTop">
                 <div className="rv-badges">
                   <span className="rv-pill">{d.materia || "Materia"}</span>
-                  <span className={"rv-pill " + (d.ok ? "ok" : "bad")}>
-                    {d.ok ? "Corretta" : "Errata"}
-                  </span>
+                  {(() => { const st = statusLabel(d); return (<span className={"rv-pill " + st.cls}>{st.text}</span>); })()}
                 </div>
                 <div className="rv-qId">#{idx + 1}</div>
               </div>
@@ -105,9 +139,10 @@ export default function ProfiloProva() {
               {d.tipo === "scelta" ? (
                 <div className="rv-opts">
                   {(d.opzioni || []).map((op, i) => {
-                    const isCorrect = Number(d.correct) === i;
-                    const userIndex = typeof d.your_answer === "number" ? d.your_answer : null;
-                    const isUser = userIndex === i;
+                    const ci = correctIndexOf(d);
+                    const ui = userIndexOf(d);
+                    const isCorrect = ci !== null && ci === i;
+                    const isUser = ui !== null && ui === i;
                     return (
                       <div
                         key={i}
@@ -144,25 +179,71 @@ export default function ProfiloProva() {
               ) : null}
             </article>
           ))}
+        
+      {/* Non risposte: visibili anche in modalità errori (se presenti) */}
+      {!loading && run && mode === "errors" && blankItems.length > 0 ? (
+        <div className="rv-naWrap">
+          <div className="rv-naHead">Domande non risposte</div>
+          <div className="rv-naSub">Queste domande non sono conteggiate né come corrette né come errate.</div>
+          <div className="rv-list">
+            {blankItems.map((d, idx) => (
+              <article className="rv-q" key={(d.id || "na") + "_" + idx}>
+                <div className="rv-qTop">
+                  <div className="rv-badges">
+                    <span className="rv-pill">{d.materia || "Materia"}</span>
+                    <span className="rv-pill na">Non risposto</span>
+                  </div>
+                  <div className="rv-qId">#{idx + 1}</div>
+                </div>
+                <div className="rv-text">{d.testo}</div>
+
+                {d.tipo === "scelta" ? (
+                  <div className="rv-opts">
+                    {(d.opzioni || []).map((op, i) => {
+                      const ci = correctIndexOf(d);
+                      const isCorrect = ci !== null && ci === i;
+                      return (
+                        <div key={i} className={"rv-opt" + (isCorrect ? " isCorrect" : "")}>
+                          <div className="rv-optKey">{letter(i)}</div>
+                          <div className="rv-optText">{op}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rv-comp">
+                    <div className="rv-compRow">
+                      <div className="rv-compK">Risposta corretta</div>
+                      <div className="rv-compV">{String(d.correct || "—")}</div>
+                    </div>
+                  </div>
+                )}
+
+                {d.spiegazione ? (
+                  <div className="rv-exp">
+                    <div className="rv-expK">Spiegazione</div>
+                    <div className="rv-expV">{d.spiegazione}</div>
+                  </div>
+                ) : null}
+              </article>
+            ))}
+          </div>
         </div>
+      ) : null}
+
+</div>
       )}
 
       {run ? (
         <div className="rv-bottom">
           <div className="rv-bottomLeft">
             <button className="rv-btn" onClick={() => nav("/simulazioni/config")}>Nuova prova</button>
-            <button className="rv-btn" onClick={() => nav("/profilo")}>Torna al profilo</button>
-          </div>
+                      </div>
           <div className="rv-bottomRight">
             {mode === "errors" ? (
-              <button className="rv-btn isOn" onClick={() => nav(`/profilo/prove/${id}?mode=errors`)}>Solo errori</button>
+              <button className="rv-btn" onClick={() => nav(`/profilo/prove/${id}?mode=all`)}>Rivedi tutta la prova</button>
             ) : (
               <button className="rv-btn" onClick={() => nav(`/profilo/prove/${id}?mode=errors`)}>Rivedi solo gli errori</button>
-            )}
-            {mode === "all" ? (
-              <button className="rv-btn isOn" onClick={() => nav(`/profilo/prove/${id}?mode=all`)}>Tutte</button>
-            ) : (
-              <button className="rv-btn" onClick={() => nav(`/profilo/prove/${id}?mode=all`)}>Rivedi tutta la prova</button>
             )}
           </div>
         </div>
@@ -187,7 +268,12 @@ const css = `
 .rv-kicker{
   font-weight: 900;
   color: rgba(2,6,23,0.70);
+  display:flex;align-items:center;gap:8px;
 }
+.rv-brand{letter-spacing:-0.3px;}
+.rv-dino{color: rgb(34,197,94);}
+.rv-med{color: rgb(56,189,248);}
+.rv-sep{opacity:0.65;}
 .rv-title{
   margin: 8px 0 4px;
   font-size: 30px;
@@ -213,6 +299,7 @@ const css = `
   color: rgba(2,6,23,0.78);
   cursor: pointer;
 }
+.rv-btn:hover{background: rgba(255,255,255,0.92);}
 .rv-btn.isOn{
   background: rgba(14,165,233,0.12);
   border-color: rgba(14,165,233,0.22);
@@ -267,6 +354,7 @@ const css = `
   color: rgba(2,6,23,0.70);
 }
 .rv-pill.ok{ background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.22); }
+.rv-pill.na{background: rgba(148,163,184,0.16); border-color: rgba(148,163,184,0.25); color: rgba(2,6,23,0.72);} 
 .rv-pill.bad{ background: rgba(220,38,38,0.10); border-color: rgba(220,38,38,0.20); color: rgba(185,28,28,0.95); }
 .rv-qId{ color: rgba(2,6,23,0.55); font-weight: 900; }
 .rv-text{ font-weight: 850; color: rgba(2,6,23,0.86); line-height: 1.35; }
@@ -327,3 +415,8 @@ const css = `
   .rv-actions{ justify-content:flex-start; }
 }
 `;
+
+/* non risposte */
+.rv-naWrap{margin-top:14px;}
+.rv-naHead{font-weight:950;color:rgba(2,6,23,0.86);margin:8px 0 2px;}
+.rv-naSub{color:rgba(2,6,23,0.62);font-weight:750;margin-bottom:10px;}
