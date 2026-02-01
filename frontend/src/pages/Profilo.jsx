@@ -218,7 +218,7 @@ const currentRole = useMemo(() => {
             </div>
 
             <div className="pr-row">
-              <div className="pr-label">Professione</div>
+              <div className="pr-label">Grado</div>
               <button type="button" className={`pr-role pr-role-${currentRole.tone}`} onClick={() => setShowRoles(true)}>
                 <span className="pr-roleIco" aria-hidden="true">
                   {<RoleIcon k={currentRole.key} />}
@@ -463,7 +463,7 @@ const css = `
 .pr-role-neutral{ border-color: rgba(15,23,42,0.12); }
 
 .pr-modalBack{position:fixed;inset:0;background:rgba(2,6,23,0.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;}
-.pr-modal{width:min(720px,100%);background:#fff;border-radius:18px;box-shadow:0 18px 60px rgba(2,6,23,0.28);border:1px solid rgba(2,6,23,0.08);overflow:hidden;transform:translateZ(0);}
+.pr-modal{width:min(560px,100%);max-height:calc(100vh - 140px);background:#fff;border-radius:18px;box-shadow:0 18px 60px rgba(2,6,23,0.28);border:1px solid rgba(2,6,23,0.08);overflow:hidden;transform:translateZ(0);}
 .pr-modalTop{
   padding: 12px 14px;
   display:flex;
@@ -481,7 +481,7 @@ const css = `
   font-weight: 950;
   cursor: pointer;
 }
-.pr-modalBody{ padding: 14px; }
+.pr-modalBody{ padding: 14px; max-height:60vh; overflow:auto; }
 .pr-modalSub{ color: rgba(2,6,23,0.62); font-weight: 850; margin-bottom: 10px; }
 .pr-roleList{ display: grid; gap: 10px; }
 .pr-roleRow{ display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 12px; border-radius: 16px; border: 1px solid rgba(15,23,42,0.10); background: rgba(2,6,23,0.02); }
@@ -519,9 +519,9 @@ const css = `
   border-color: rgba(0,0,0,0);
 }
 .pr-danger{
-  background: rgba(220,38,38,0.12);
-  border-color: rgba(220,38,38,0.24);
-  color: rgba(185,28,28,0.95);
+  background: rgba(239,68,68,0.16);
+  border-color: rgba(239,68,68,0.34);
+  color: rgba(153,27,27,0.98);
 }
 .pr-secondary{
   background: rgba(14,165,233,0.12);

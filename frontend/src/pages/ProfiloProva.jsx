@@ -60,7 +60,7 @@ const sendReport = async () => {
     const tok = getUserToken();
     const payload = {
       run_id: run?.id || id,
-      question_id: reportingItem?.id,
+      question_id: (reportingItem?.id ?? reportingItem?.question_id ?? reportingItem?.qid ?? reportingItem?.domanda_id),
       question: reportingItem || null,
       note: reportNote || "",
     };

@@ -253,7 +253,7 @@ export default function SimulazioniConfig() {
     setErr((e) => (e.startsWith("Completa gli argomenti") ? "" : e));
   }
 
-  async function startExam() {
+  async async function startExam() {
     if (starting) return;
     setErr("");
 
