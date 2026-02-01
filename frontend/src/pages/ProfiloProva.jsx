@@ -47,7 +47,7 @@ export default function ProfiloProva() {
   const items = useMemo(() => {
     const det = run?.details || [];
     if (mode === "all") return det;
-    return det.filter((d) => d.ok === False || d.ok === false);
+    return det.filter((d) => d.ok === false);
   }, [run, mode]);
 
   return (
@@ -146,6 +146,27 @@ export default function ProfiloProva() {
           ))}
         </div>
       )}
+
+      {run ? (
+        <div className="rv-bottom">
+          <div className="rv-bottomLeft">
+            <button className="rv-btn" onClick={() => nav("/simulazioni/config")}>Nuova prova</button>
+            <button className="rv-btn" onClick={() => nav("/profilo")}>Torna al profilo</button>
+          </div>
+          <div className="rv-bottomRight">
+            {mode === "errors" ? (
+              <button className="rv-btn isOn" onClick={() => nav(`/profilo/prove/${id}?mode=errors`)}>Solo errori</button>
+            ) : (
+              <button className="rv-btn" onClick={() => nav(`/profilo/prove/${id}?mode=errors`)}>Rivedi solo gli errori</button>
+            )}
+            {mode === "all" ? (
+              <button className="rv-btn isOn" onClick={() => nav(`/profilo/prove/${id}?mode=all`)}>Tutte</button>
+            ) : (
+              <button className="rv-btn" onClick={() => nav(`/profilo/prove/${id}?mode=all`)}>Rivedi tutta la prova</button>
+            )}
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
@@ -196,6 +217,16 @@ const css = `
   background: rgba(14,165,233,0.12);
   border-color: rgba(14,165,233,0.22);
 }
+.rv-bottom{
+  margin-top: 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.rv-bottomLeft, .rv-bottomRight{ display:flex; gap: 8px; flex-wrap: wrap; }
+
 .rv-card{
   background: rgba(255,255,255,0.72);
   border: 1px solid rgba(15,23,42,0.10);
