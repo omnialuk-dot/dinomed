@@ -176,6 +176,13 @@ export default function SimulazioniRun() {
 
   const storageKey = useMemo(() => (sessionId ? `dinomed_sim_${sessionId}` : ""), [sessionId]);
 
+  // IMPORTANT: qMateria viene usata in alcuni useEffect (timer).
+  // Se la definisci dopo gli useEffect, durante il render ottieni una ReferenceError (TDZ)
+  // e la pagina resta bianca. Quindi la calcoliamo qui, in modo sicuro.
+  const qsNow = session?.questions || [];
+  const qNow = qsNow[idx] || null;
+  const qMateria = qNow ? getSubject(qNow) : "";
+
   // In review mode: prepara una "session" locale e disabilita timer/fetch
   useEffect(() => {
     if (!reviewMode) return;
@@ -457,8 +464,8 @@ useEffect(() => {
     return 0;
   }, [blocks, idx]);
 
-  const q = questions[idx] || null;
-  const qMateria = useMemo(() => (q ? getSubject(q) : ""), [q]);
+  // q e qMateria sono già calcolate sopra (qNow/qMateria) per evitare ReferenceError.
+  const q = qNow;
 
 
   const qId = useMemo(() => {
