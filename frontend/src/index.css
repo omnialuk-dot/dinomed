@@ -2185,6 +2185,7 @@ flex-direction: column;
 }
 .sr-reportTop:hover{
   background:rgba(71, 123, 209, .16);
+  border-color:rgba(71, 123, 209, .55);
   box-shadow:0 6px 18px rgba(17, 24, 39, .08);
 }
 .sr-reportTop:active{ transform:scale(.98); }
