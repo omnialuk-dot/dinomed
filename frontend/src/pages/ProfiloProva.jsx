@@ -59,18 +59,19 @@ const openReportModal = (item) => {
   setReportingItem(item || null);
   setReportNote("");
   setReportErr("");
-    setReportSending(true);
+  setReportSending(false);
   setReportSent(false);
   setShowReport(true);
 };
 
   function closeReportModal(){ setShowReport(false); setReportNote(""); setReportErr("");
-    setReportSending(true); setReportSent(false); setReportingItem(null); }
+    setReportSending(false); setReportSent(false); setReportingItem(null); }
 
 const sendReport = async () => {
+  setReportErr("");
+  setReportSent(false);
+  setReportSending(true);
   try {
-    setReportErr("");
-    setReportSending(true);
     const tok = getUserToken();
     if (!tok) {
       setReportErr("Devi effettuare il login per segnalare.");
@@ -81,6 +82,7 @@ const sendReport = async () => {
       setReportErr("Impossibile identificare la domanda da segnalare.");
       return;
     }
+
     const payload = {
       run_id: run?.id || id,
       session_id: run?.session_id || run?.sessionId || null,
@@ -99,17 +101,17 @@ const sendReport = async () => {
     });
 
     const txt = await res.text();
-    if (!res.ok) {
-      throw new Error(txt || "Errore invio");
-    }
+    if (!res.ok) throw new Error(txt || "Errore invio");
+
     setReportSent(true);
-      closeReportModal();
-    setTimeout(() => setShowReport(false), 650);
+    closeReportModal();
   } catch (e) {
-    
     setReportErr(String(e?.message || e));
+  } finally {
+    setReportSending(false);
   }
 };
+
 
 useEffect(() => {
     let alive = true;
@@ -209,11 +211,7 @@ useEffect(() => {
         <div className="rv-card">Prova non trovata.</div>
       ) : items.length === 0 ? (
         <div className="rv-card">
-          {mode === "errors"
-            ? (blankItems.length > 0
-                ? `Nessun errore, ma hai ${blankItems.length} domanda${blankItems.length === 1 ? "" : "e"} senza risposta.`
-                : "Perfetto: nessun errore in questa prova.")
-            : "Nessuna domanda salvata."}
+          {mode === "errors" ? "Perfetto: nessun errore in questa prova." : "Nessuna domanda salvata."}
         </div>
       ) : (
         <div className="rv-list">
@@ -274,8 +272,8 @@ useEffect(() => {
             </article>
           ))}
         
-      {/* Non risposte: visibili anche in modalità errori (se presenti) */}
-      {!loading && run && mode === "errors" && blankItems.length > 0 ? (
+      {/* Domande non risposte: mostrate solo in modalità "tutte" */}
+      {!loading && run && mode === "all" && blankItems.length > 0 ? (
         <div className="rv-naWrap">
           <div className="rv-naHead">Domande non risposte</div>
           <div className="rv-naSub">Queste domande non sono conteggiate né come corrette né come errate.</div>
