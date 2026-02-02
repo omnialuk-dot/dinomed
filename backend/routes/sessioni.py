@@ -205,6 +205,9 @@ def start(req: StartRequest):
         picked_full.extend(picked_this)
 
     session_id = str(uuid4())
+    # Importante: non usare `session.get(...)` dentro la definizione del dict,
+    # perché `session` non esiste ancora (causa NameError/500) e le chiavi duplicate
+    # vengono sovrascritte silenziosamente.
     session = {
         "id": session_id,
         "created_at": datetime.utcnow().isoformat(),
@@ -212,8 +215,6 @@ def start(req: StartRequest):
         "timer_mode": str(req.timer_mode or "single"),
         "durations_by_subject": (durations_by_subject or None),
         "order": order,
-        "timer_mode": session.get("timer_mode","single"),
-        "durations_by_subject": session.get("durations_by_subject"),
         "questions_full": picked_full,  # con soluzioni (per correzione)
         "questions": [_public_question(q) for q in picked_full],  # senza soluzioni
         "answers": {},
@@ -226,7 +227,7 @@ def start(req: StartRequest):
         "duration_min": session["duration_min"],
         "questions": session["questions"],
         "order": order,
-        "timer_mode": session.get("timer_mode","single"),
+        "timer_mode": session.get("timer_mode", "single"),
         "durations_by_subject": session.get("durations_by_subject"),
     }
 
@@ -241,6 +242,8 @@ def get_session(session_id: str):
         "duration_min": s.get("duration_min", 0),
         "questions": s.get("questions", []),
         "order": s.get("order", []),
+        "timer_mode": s.get("timer_mode", "single"),
+        "durations_by_subject": s.get("durations_by_subject"),
     }
 
 
