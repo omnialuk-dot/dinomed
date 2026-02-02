@@ -5,7 +5,7 @@ import "./index.css";
 // --- QS shim (compat) ---
 // Alcune pagine legacy usano QS.parse/stringify senza import.
 // Qui definiamo una versione minima basata su URLSearchParams per evitare crash ("QS is not defined").
-[...]
+
     parse: (input = "") => {
       const s = String(input || "");
       const raw = s.startsWith("?") ? s.slice(1) : s;
