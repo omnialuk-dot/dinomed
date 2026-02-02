@@ -459,6 +459,8 @@ const css = `
   display:flex;
   justify-content:space-between;
   align-items:center;
+  flex-wrap:wrap;
+  row-gap:8px;
   gap: 10px;
   margin-bottom: 10px;
 }

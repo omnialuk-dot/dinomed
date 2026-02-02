@@ -1,7 +1,10 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-})
+  // Fix reale per "QS is not defined": sostituisce l'identificatore QS con globalThis.QS.
+  define: {
+    QS: "globalThis.QS",
+  },
+});

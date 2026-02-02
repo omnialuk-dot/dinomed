@@ -5,8 +5,7 @@ import "./index.css";
 // --- QS shim (compat) ---
 // Alcune pagine legacy usano QS.parse/stringify senza import.
 // Qui definiamo una versione minima basata su URLSearchParams per evitare crash ("QS is not defined").
-if (typeof window !== "undefined" && !window.QS) {
-  window.QS = {
+[...]
     parse: (input = "") => {
       const s = String(input || "");
       const raw = s.startsWith("?") ? s.slice(1) : s;
@@ -30,6 +29,11 @@ if (typeof window !== "undefined" && !window.QS) {
       return sp.toString();
     },
   };
+}
+
+// Rende disponibile QS anche come globalThis.QS (necessario per moduli ESM)
+if (typeof globalThis !== "undefined" && typeof window !== "undefined" && window.QS) {
+  globalThis.QS = window.QS;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(
