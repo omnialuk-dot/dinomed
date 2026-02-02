@@ -225,26 +225,35 @@ export default function SimulazioniRisultato() {
 
           <aside className="sr2-card sr2-side">
             <div className="sr2-sideTitle">Cosa fare adesso</div>
+            
             <div className="sr2-sideBlocks">
               <div className="sr2-tip">
-                <div className="sr2-tipT">Analisi</div>
+                <div className="sr2-tipT">Ripartenza intelligente</div>
                 <div className="sr2-tipB">
-                  Concentrati prima sulle domande errate: sono il margine più veloce per alzare il punteggio. Le non risposte indicano lacune o gestione tempo.
+                  <p>Oggi hai fatto la cosa più utile: hai creato dati su cui lavorare. Ora non serve rifare tutto a caso — serve un piano breve e ripetibile.</p>
+                  <ul>
+                    <li><b>Rivedi gli errori</b> e scrivi in 1 riga perché hai sbagliato (distrazione, lacuna, trabocchetto).</li>
+                    <li><b>Mini-sessione mirata</b> (10–15 domande) sulle 2 materie peggiori.</li>
+                    <li><b>Nuova prova</b> entro 24 ore: prima precisione, poi velocità.</li>
+                  </ul>
                 </div>
               </div>
+
               <div className="sr2-tip">
-                <div className="sr2-tipT">Piano rapido</div>
+                <div className="sr2-tipT">Gestione tempo</div>
                 <div className="sr2-tipB">
-                  1) Rivedi gli errori. 2) Segna gli argomenti ricorrenti. 3) Rifai una prova mirata oggi, con timer, e una domani senza timer per consolidare.
+                  <p>Se una domanda non “gira” in 45–60 secondi: <b>segna e passa</b>. Torni dopo con la testa fresca.</p>
                 </div>
               </div>
+
               <div className="sr2-tip">
                 <div className="sr2-tipT">Obiettivo</div>
                 <div className="sr2-tipB">
-                  Punta a ridurre gli errori “evitabili”: lettura frettolosa, unità di misura, distrazioni. Un miglioramento piccolo ma costante vale più di una prova perfetta isolata.
+                  <p>Punta a ridurre gli errori evitabili: parole chiave, “NON”, unità di misura, fretta. Piccoli miglioramenti costanti valgono più di una prova perfetta isolata.</p>
                 </div>
               </div>
             </div>
+
           </aside>
         </section>
       </div>
@@ -380,4 +389,12 @@ const css = `
 .sr2-row{ display:flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
 .sr2-title{ font-weight: 1100; color: rgba(15,23,42,0.92); font-size: 20px; }
 .sr2-sub{ margin-top: 8px; font-weight: 900; color: rgba(15,23,42,0.72); line-height: 1.45; }
+
+.sr2-sideBlocks{ display:flex; flex-direction:column; gap:12px; margin-top:12px; }
+.sr2-tip{ background: rgba(255,255,255,0.72); border: 1px solid rgba(15,23,42,0.10); border-radius: 16px; padding: 12px; box-shadow: 0 10px 30px rgba(2,6,23,0.08); }
+.sr2-tipT{ font-weight: 1000; color: rgba(15,23,42,0.92); margin-bottom: 6px; letter-spacing: 0.2px; }
+.sr2-tipB{ color: rgba(2,6,23,0.76); font-weight: 800; line-height: 1.55; }
+.sr2-tipB p{ margin: 0 0 8px 0; }
+.sr2-tipB ul{ margin: 0; padding-left: 18px; display:flex; flex-direction:column; gap:6px; }
+.sr2-tipB li{ margin: 0; }
 `;

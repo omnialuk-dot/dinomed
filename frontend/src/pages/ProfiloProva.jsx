@@ -32,6 +32,7 @@ export default function ProfiloProva() {
   const [showReport, setShowReport] = useState(false);
   const [reportNote, setReportNote] = useState("");
   const [reportSent, setReportSent] = useState(false);
+  const [reportSending, setReportSending] = useState(false);
   const [reportingItem, setReportingItem] = useState(null);
   const [reportErr, setReportErr] = useState("");
 
@@ -58,13 +59,18 @@ const openReportModal = (item) => {
   setReportingItem(item || null);
   setReportNote("");
   setReportErr("");
+    setReportSending(true);
   setReportSent(false);
   setShowReport(true);
 };
 
+  function closeReportModal(){ setShowReport(false); setReportNote(""); setReportErr("");
+    setReportSending(true); setReportSent(false); setReportingItem(null); }
+
 const sendReport = async () => {
   try {
     setReportErr("");
+    setReportSending(true);
     const tok = getUserToken();
     if (!tok) {
       setReportErr("Devi effettuare il login per segnalare.");
@@ -97,8 +103,10 @@ const sendReport = async () => {
       throw new Error(txt || "Errore invio");
     }
     setReportSent(true);
+      closeReportModal();
     setTimeout(() => setShowReport(false), 650);
   } catch (e) {
+    
     setReportErr(String(e?.message || e));
   }
 };
@@ -217,7 +225,7 @@ useEffect(() => {
                   {(() => { const st = statusLabel(d); return (<span className={"rv-pill " + st.cls}>{st.text}</span>); })()}
                 </div>
                 <div className="rv-qId">#{idx + 1}</div>
-                <button type="button" className="rv-reportBtn" onClick={() => openReportModal(d)}>Segnala</button>
+                <button type="button" className="sr-reportTop" onClick={(e) => { e.preventDefault(); e.stopPropagation(); openReportModal(d); }} title="Segnala questa domanda">Segnala</button>
               </div>
 
               <div className="rv-text">{d.testo}</div>
@@ -280,7 +288,7 @@ useEffect(() => {
                     <span className="rv-pill na">Non risposto</span>
                   </div>
                   <div className="rv-qId">#{idx + 1}</div>
-                <button type="button" className="rv-reportBtn" onClick={() => openReportModal(d)}>Segnala</button>
+                <button type="button" className="sr-reportTop" onClick={(e) => { e.preventDefault(); e.stopPropagation(); openReportModal(d); }} title="Segnala questa domanda">Segnala</button>
                 </div>
                 <div className="rv-text">{d.testo}</div>
 
@@ -336,33 +344,32 @@ useEffect(() => {
         </div>
       ) : null}
 {showReport ? (
-  <div className="rv-modalBack" role="presentation" onClick={() => setShowReport(false)}>
-    <div className="rv-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-      <div className="rv-modalTop">
-        <div className="rv-modalTitle">Segnala domanda</div>
-        <button className="rv-x" type="button" onClick={() => setShowReport(false)} aria-label="Chiudi">✕</button>
+  <div className="sr-modalBackdrop" role="presentation" onClick={closeReportModal}>
+    <div className="sr-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+      <div className="sr-modalTop">
+        <div className="sr-modalTitle">Segnala domanda</div>
+        <button className="sr-x" type="button" onClick={closeReportModal} aria-label="Chiudi">✕</button>
       </div>
 
-      <div className="rv-modalBody">
-        {reportSent ? (
-          <div className="rv-ok">Segnalazione inviata ✓</div>
-        ) : (
-          <>
-            <div className="rv-modalSub">Vuoi segnalare questa domanda? Le note sono facoltative.</div>
-            <textarea
-              className="rv-ta"
-              value={reportNote}
-              onChange={(e) => setReportNote(e.target.value)}
-              placeholder="Note (opzionale)"
-              rows={4}
-            />
-            {reportErr ? <div className="rv-err">{reportErr}</div> : null}
-            <div className="rv-modalBtns">
-              <button type="button" className="rv-btn rv-soft" onClick={() => setShowReport(false)}>Annulla</button>
-              <button type="button" className="rv-btn rv-warn" onClick={sendReport}>Invia segnalazione</button>
-            </div>
-          </>
-        )}
+      <div className="sr-modalBody">
+        <div className="sr-modalText">Vuoi segnalare questa domanda? Puoi aggiungere una nota (opzionale).</div>
+        <textarea
+          className="sr-textarea"
+          value={reportNote}
+          onChange={(e) => setReportNote(e.target.value)}
+          placeholder="Scrivi qui cosa è sbagliato (opzionale)…"
+          rows={4}
+        />
+        {reportErr ? <div className="rv-err">{reportErr}</div> : null}
+        <div className="sr-modalRow">
+          <button className="sr-btn sr-soft" type="button" onClick={closeReportModal} disabled={reportSending}>
+            Annulla
+          </button>
+          <button className="sr-btn sr-primary" type="button" onClick={sendReport} disabled={reportSending}>
+            {reportSending ? "Invio…" : "Invia segnalazione"}
+            <span className="sr-shine" aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -570,5 +577,27 @@ const css = `
 .rv-err{margin-top:10px;color:rgba(185,28,28,0.95);font-weight:800;}
 .rv-ok{padding:10px 12px;border-radius:14px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.20);color:rgba(21,128,61,0.95);font-weight:900;}
 
+
+.sr-reportTop{margin-left:auto;padding:8px 10px;border-radius:12px;border:1px solid rgba(239,68,68,0.18);background:rgba(239,68,68,0.10);color:rgba(185,28,28,0.98);font-weight:850;letter-spacing:0.2px;cursor:pointer;}
+.sr-reportTop:hover{background:rgba(239,68,68,0.14);}
+.sr-modalBackdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:50;}
+.sr-modal{width:min(560px,94vw);background:rgba(255,255,255,0.92);border:1px solid rgba(15,23,42,0.12);border-radius:18px;box-shadow:0 18px 60px rgba(2,6,23,0.25);backdrop-filter: blur(16px);}
+.sr-modalTop{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 10px;}
+.sr-modalTitle{font-weight:1000;color:rgba(15,23,42,0.92);}
+.sr-x{border:1px solid rgba(15,23,42,0.12);background:rgba(255,255,255,0.8);border-radius:12px;padding:6px 10px;cursor:pointer;font-weight:900;color:rgba(2,6,23,0.65);}
+.sr-x:hover{background:rgba(255,255,255,0.95);}
+.sr-modalBody{padding:0 14px 14px;}
+.sr-modalText{color:rgba(2,6,23,0.75);font-weight:800;line-height:1.45;margin:6px 0 10px;}
+.sr-textarea{width:100%;border:1px solid rgba(15,23,42,0.14);border-radius:14px;padding:10px 12px;font-weight:800;line-height:1.35;background:rgba(255,255,255,0.85);resize:vertical;outline:none;}
+.sr-textarea:focus{border-color:rgba(56,189,248,0.55);box-shadow:0 0 0 4px rgba(56,189,248,0.18);}
+.sr-modalRow{display:flex;justify-content:flex-end;gap:10px;margin-top:12px;}
+.sr-btn{position:relative;border-radius:14px;border:1px solid rgba(15,23,42,0.12);padding:10px 12px;font-weight:950;cursor:pointer;}
+.sr-soft{background:rgba(2,6,23,0.04);color:rgba(2,6,23,0.75);}
+.sr-soft:hover{background:rgba(2,6,23,0.06);}
+.sr-primary{background:linear-gradient(90deg, rgba(34,197,94,0.95), rgba(56,189,248,0.95));color:white;border:0;}
+.sr-primary:disabled{opacity:0.65;cursor:not-allowed;}
+.sr-shine{position:absolute;inset:0;border-radius:14px;background:linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);transform:translateX(-100%);}
+.sr-primary:hover .sr-shine{animation: srShine 1.1s ease;}
+@keyframes srShine{to{transform:translateX(100%);}}
 `}</style>
 
