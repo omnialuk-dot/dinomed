@@ -1,15 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { API_BASE, absUrl } from "../lib/api";
 import heroImg from "../assets/photos/bookheart.jpg";
 
 export default function Dispense() {
-  const API_BASE = ((import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL) || "http://127.0.0.1:8000").replace(/\/$/, "");
-
-  function buildUrl(u) {
-    if (!u) return "";
-    if (u.startsWith("http://") || u.startsWith("https://")) return u;
-    const p = u.startsWith("/") ? u : `/${u}`;
-    return `${API_BASE}${p}`;
-  }
 
   const [dispense, setDispense] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +17,7 @@ export default function Dispense() {
   const [infoOpen, setInfoOpen] = useState(false);
 
   useEffect(() => {
+    if (!API_BASE) { setError("Backend non configurato. Imposta VITE_API_BASE su Vercel."); setLoading(false); return; }
     fetch(`${API_BASE}/api/dispense`)
       .then((res) => {
         if (!res.ok) throw new Error();
@@ -300,7 +294,7 @@ export default function Dispense() {
                   {d.file_url || d.link ? (
                     <a
                       className="dp2-btn dp2-primary"
-                      href={buildUrl(d.file_url || d.link)}
+                      href={absUrl(d.file_url || d.link)}
                       target="_blank"
                       rel="noreferrer"
                     >

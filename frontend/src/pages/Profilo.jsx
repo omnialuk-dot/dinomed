@@ -1,8 +1,21 @@
-import { Link, useNavigate } from "react-router-dom";
+import {
+  if (!API_BASE) {
+    return (
+      <main style={{ padding: 24 }}>
+        <div style={{ maxWidth: 680, margin: "0 auto", padding: 16, borderRadius: 16, background: "rgba(255,255,255,0.9)", border: "1px solid rgba(15,23,42,0.10)" }}>
+          <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>Backend non configurato</div>
+          <div style={{ color: "rgba(2,6,23,0.70)", fontWeight: 650, lineHeight: 1.35 }}>
+            Imposta <b>VITE_API_BASE</b> su Vercel con l’URL del backend Render e ridisponi.
+          </div>
+        </div>
+      </main>
+    );
+  }
+ Link, useNavigate } from "react-router-dom";
 import { clearUserSession, getUser, getUserToken } from "../lib/userSession";
 import { useEffect, useMemo, useState } from "react";
+import { API_BASE, apiFetch } from "../lib/api";
 
-const API_BASE = ((import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL) || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 function fmtDate(iso) {
   try {
@@ -141,6 +154,7 @@ export default function Profilo() {
   const nav = useNavigate();
   const user = useMemo(() => getUser(), []);
   const [runs, setRuns] = useState([]);
+  const canRank = (runs?.length || 0) >= 3;
   const [loading, setLoading] = useState(true);
   const [showRoles, setShowRoles] = useState(false);
 
@@ -155,7 +169,7 @@ export default function Profilo() {
       setLoading(true);
       try {
         const tok = getUserToken();
-        const res = await fetch(`${API_BASE}/api/user/runs`, {
+        const res = await apiFetch(`/api/user/runs`, {
           headers: {
             Accept: "application/json",
             ...(tok ? { Authorization: `Bearer ${tok}` } : {}),
@@ -251,7 +265,7 @@ const stats = useMemo(() => {
   // Graduatoria: soglia fissa 54/90 (60%). Se max non è 90 (prove singole), scala a rapporto.
   const thresholdRatio = 54 / 90; // 0.6
   const overallRatio = sumTotalMax > 0 ? sumTotalScore / sumTotalMax : 0;
-  const inGraduatoria = canRank && sumTotalMax > 0 ? overallRatio >= thresholdRatio : null;
+  const inGraduatoria = canRank ? (canRank && sumTotalMax > 0 ? overallRatio >= thresholdRatio : null) : null;
 
   // Percentile: se non esistono dati globali, lo calcoliamo sui tuoi tentativi (trasparente).
   // Più è alto, meglio è.

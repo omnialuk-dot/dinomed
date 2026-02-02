@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { API_BASE } from "../lib/api";
 
-const API_BASE = ((import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL) || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 /* =========================
    TOPICS (filtri argomenti)
@@ -92,6 +92,19 @@ function niceErr(e) {
   return msg || "Errore sconosciuto";
 }
 export default function SimulazioniConfig() {
+  if (!API_BASE) {
+    return (
+      <main style={{ padding: 24 }}>
+        <div style={{ maxWidth: 680, margin: "0 auto", padding: 16, borderRadius: 16, background: "rgba(255,255,255,0.9)", border: "1px solid rgba(15,23,42,0.10)" }}>
+          <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>Backend non configurato</div>
+          <div style={{ color: "rgba(2,6,23,0.70)", fontWeight: 650, lineHeight: 1.35 }}>
+            Imposta <b>VITE_API_BASE</b> su Vercel con l’URL del backend Render e ridisponi.
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   const nav = useNavigate();
   const location = useLocation();
   const preset = location?.state?.preset || null;
