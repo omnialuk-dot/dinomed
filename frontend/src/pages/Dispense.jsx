@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import heroImg from "../assets/photos/bookheart.jpg";
 
 export default function Dispense() {
-  const API_BASE = ((import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE) || "http://127.0.0.1:8000").replace(/\/$/, "");
+  const API_BASE = ((import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL) || "http://127.0.0.1:8000").replace(/\/$/, "");
+
+  function buildUrl(u) {
+    if (!u) return "";
+    if (u.startsWith("http://") || u.startsWith("https://")) return u;
+    const p = u.startsWith("/") ? u : `/${u}`;
+    return `${API_BASE}${p}`;
+  }
 
   const [dispense, setDispense] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -293,13 +300,7 @@ export default function Dispense() {
                   {d.file_url || d.link ? (
                     <a
                       className="dp2-btn dp2-primary"
-                      href={
-                        d.file_url
-                          ? d.file_url.startsWith("http")
-                            ? d.file_url
-                            : `${API_BASE}${d.file_url}`
-                          : d.link
-                      }
+                      href={buildUrl(d.file_url || d.link)}
                       target="_blank"
                       rel="noreferrer"
                     >

@@ -1,181 +1,36 @@
 // ===============================
-// DinoMed API helper (pulito)
+// DinoMed API helper (pulito e robusto)
 // ===============================
 
-// Base URL (dev usa localhost; prod richiede VITE_API_URL)
-const RAW_BASE = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_URL || import.meta.env.VITE_API_URL_URL)?.trim();
-export const API_BASE = (RAW_BASE ? RAW_BASE : (import.meta.env.DEV ? "http://127.0.0.1:8000" : ""))
+const env = import.meta.env;
+
+// Priorità: VITE_API_BASE (tuo standard) → VITE_API_URL → VITE_API_BASE_URL
+const RAW_BASE = (env.VITE_API_BASE || env.VITE_API_URL || env.VITE_API_BASE_URL || "").trim();
+
+export const API_BASE = (RAW_BASE ? RAW_BASE : (env.DEV ? "http://127.0.0.1:8000" : ""))
   .replace(/\/$/, "");
 
 // Helper per link assoluti (es. /uploads/...)
 export function absUrl(path) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  if (!API_BASE) return path; // fallback (evita crash in build); meglio settare VITE_API_URL in prod
+  if (!API_BASE) return path;
   return path.startsWith("/") ? `${API_BASE}${path}` : `${API_BASE}/${path}`;
 }
 
-// ===============================
-// Token helpers
-// ===============================
-const TOKEN_KEY = "dm_admin_token";
-
-export function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-export function setToken(token) {
-  localStorage.setItem(TOKEN_KEY, token);
-}
-
-export function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
-}
-
-// ===============================
-// Core request
-// ===============================
-async function request(path, options = {}) {
-  const { method = "GET", body = null, auth = false } = options;
-
-  const headers = { Accept: "application/json" };
-
-  if (body !== null) headers["Content-Type"] = "application/json";
-
-  if (auth) {
-    const token = getToken();
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  let response;
-  try {
-    if (!API_BASE) throw new Error('API_BASE non configurato: imposta VITE_API_URL su Vercel');
-    response = await fetch(`${API_BASE}${path}`, {
-      method,
-      headers,
-      body: body !== null ? JSON.stringify(body) : undefined,
-    });
-  } catch {
-    throw new Error("Backend non raggiungibile (failed to fetch)");
-  }
-
-  const text = await response.text();
+// fetch JSON con errori consistenti
+export async function apiFetch(path, opts = {}) {
+  const url = path.startsWith("http") ? path : `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
+  const res = await fetch(url, opts);
+  const txt = await res.text().catch(() => "");
   let data = null;
-
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = text;
-    }
+  try { data = txt ? JSON.parse(txt) : null; } catch { data = null; }
+  if (!res.ok) {
+    const msg = data?.detail || data?.error || txt || `HTTP ${res.status}`;
+    const err = new Error(msg);
+    err.status = res.status;
+    err.data = data;
+    throw err;
   }
-
-  if (!response.ok) {
-    let msg =
-      (data && data.detail) ||
-      (data && data.message) ||
-      `Errore ${response.status}`;
-
-    if (typeof msg !== "string") {
-      try {
-        msg = JSON.stringify(msg);
-      } catch {
-        msg = String(msg);
-      }
-    }
-    throw new Error(msg);
-  }
-
   return data;
 }
-
-// ===============================
-// API pubblica
-// ===============================
-export const api = {
-  // ---------- ADMIN AUTH ----------
-  login(email, password) {
-    return request("/api/admin/login", {
-      method: "POST",
-      body: { email, password },
-    });
-  },
-
-  me() {
-    return request("/api/admin/me", { auth: true });
-  },
-
-  // ---------- DISPENSE (ADMIN) ----------
-  listDispenseAll() {
-    return request("/api/dispense?include_unpublished=true", { auth: true });
-  },
-
-  createDispensa(payload) {
-    return request("/api/dispense", { method: "POST", body: payload, auth: true });
-  },
-
-  updateDispensa(id, payload) {
-    return request(`/api/dispense/${id}`, { method: "PUT", body: payload, auth: true });
-  },
-
-  toggleDispensa(id) {
-    return request(`/api/dispense/${id}/toggle`, { method: "PATCH", auth: true });
-  },
-
-  deleteDispensa(id) {
-    return request(`/api/dispense/${id}`, { method: "DELETE", auth: true });
-  },
-
-  // ---------- SIMULAZIONI (ADMIN) ----------
-  listSimulazioniAll() {
-    return request("/api/simulazioni?include_unpublished=true", { auth: true });
-  },
-
-  createSimulazione(payload) {
-    return request("/api/simulazioni", { method: "POST", body: payload, auth: true });
-  },
-
-  updateSimulazione(id, payload) {
-    return request(`/api/simulazioni/${id}`, { method: "PUT", body: payload, auth: true });
-  },
-
-  toggleSimulazione(id) {
-    return request(`/api/simulazioni/${id}/toggle`, { method: "PATCH", auth: true });
-  },
-
-  deleteSimulazione(id) {
-    return request(`/api/simulazioni/${id}`, { method: "DELETE", auth: true });
-  },
-
-  // ---------- DOMANDE (ADMIN) ----------
-  listDomandeAll() {
-    return request("/api/admin/domande", { auth: true });
-  },
-
-  createDomanda(payload) {
-    return request("/api/admin/domande", { method: "POST", body: payload, auth: true });
-  },
-
-  updateDomanda(id, payload) {
-    return request(`/api/admin/domande/${id}`, { method: "PUT", body: payload, auth: true });
-  },
-
-  deleteDomanda(id) {
-    return request(`/api/admin/domande/${id}`, { method: "DELETE", auth: true });
-  },
-
-  // ---------- SEGNALAZIONI (ADMIN) ----------
-  listReports(params = {}) {
-    const sp = new URLSearchParams();
-    if (params.status) sp.set("status", params.status);
-    if (params.materia) sp.set("materia", params.materia);
-    if (params.date_from) sp.set("date_from", params.date_from);
-    if (params.date_to) sp.set("date_to", params.date_to);
-    const q = sp.toString();
-    return request(`/api/admin/reports${q ? `?${q}` : ""}`, { auth: true });
-  },
-
-  updateReport(id, payload) {
-    return request(`/api/admin/reports/${id}`, { method: "PATCH", body: payload, auth: true });
-  },
-};

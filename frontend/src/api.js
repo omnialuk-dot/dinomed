@@ -1,7 +1,7 @@
 // FILE: src/api.js
 export const API_BASE_URL =
-(import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL))?.replace(/\/$/, "") ||
-"https://dinomed-api.onrender.com";
+  (import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL)?.replace(/\/$/, "") ||
+  (import.meta.env.DEV ? "http://127.0.0.1:8000" : "");
 
 export async function apiHealth() {
 const url = `${API_BASE_URL}/api/health`;

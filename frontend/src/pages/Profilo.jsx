@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { clearUserSession, getUser, getUserToken } from "../lib/userSession";
 import { useEffect, useMemo, useState } from "react";
 
-const API_BASE = ((import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE) || "http://127.0.0.1:8000").replace(/\/$/, "");
+const API_BASE = ((import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL) || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 function fmtDate(iso) {
   try {
