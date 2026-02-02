@@ -171,17 +171,17 @@ export default function Profilo() {
       setLoading(true);
       try {
         const tok = getUserToken();
-        const res = await apiFetch(`/api/user/runs`, {
+        // apiFetch ritorna già il JSON (non un Response)
+        const data = await apiFetch(`/api/user/runs`, {
           headers: {
             Accept: "application/json",
             ...(tok ? { Authorization: `Bearer ${tok}` } : {}),
           },
         });
-        if (!res.ok) throw new Error("runs_failed");
-        const data = await res.json();
+
         if (!alive) return;
         setRuns(Array.isArray(data?.items) ? data.items : []);
-      } catch {
+      } catch (e) {
         if (!alive) return;
         setRuns([]);
       } finally {
@@ -192,8 +192,6 @@ export default function Profilo() {
       alive = false;
     };
   }, []);
-
-  
 const stats = useMemo(() => {
   const totalRuns = Array.isArray(runs) ? runs.length : 0;
 
