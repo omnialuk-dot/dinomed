@@ -107,7 +107,12 @@ class Section(BaseModel):
     difficolta: Optional[str] = "Base"
 
 class StartRequest(BaseModel):
-    duration_min: int = Field(ge=0, le=240, default=45)  # 0 => timer off
+    # se timer_mode == "single" usa duration_min (0 => off)
+    duration_min: int = Field(ge=0, le=250, default=45)
+    # se timer_mode == "per_subject" usa durations_by_subject (minuti per materia)
+    timer_mode: Literal["single", "per_subject"] = "single"
+    durations_by_subject: Optional[Dict[str, int]] = None
+
     sections: List[Section]
     order: Optional[List[Literal["Chimica", "Fisica", "Biologia"]]] = None
 
@@ -131,6 +136,27 @@ def start(req: StartRequest):
 
     # ordine: se non fornito, usa l'ordine delle sections
     order = req.order or [s.materia for s in req.sections]
+    # =========================
+    # Timer mode validation
+    # =========================
+    timer_mode = str(req.timer_mode or "single")
+    durations_by_subject = req.durations_by_subject or {}
+
+    if timer_mode == "per_subject":
+        # normalizza/valida: ogni materia nell'ordine deve avere un tempo valido (1-250)
+        norm: Dict[str, int] = {}
+        for m in order:
+            try:
+                v = int(durations_by_subject.get(m, 45))
+            except Exception:
+                v = 45
+            v = max(1, min(250, v))
+            norm[m] = v
+        durations_by_subject = norm
+        # duration_min totale informativo
+        req.duration_min = int(sum(durations_by_subject.values()))
+    else:
+        durations_by_subject = {}
 
     # REQUISITO: ordine per materia fisso (req.order), domande casuali all'interno della materia.
     picked_full: List[Dict[str, Any]] = []
@@ -183,7 +209,11 @@ def start(req: StartRequest):
         "id": session_id,
         "created_at": datetime.utcnow().isoformat(),
         "duration_min": int(req.duration_min or 0),
+        "timer_mode": str(req.timer_mode or "single"),
+        "durations_by_subject": (durations_by_subject or None),
         "order": order,
+        "timer_mode": session.get("timer_mode","single"),
+        "durations_by_subject": session.get("durations_by_subject"),
         "questions_full": picked_full,  # con soluzioni (per correzione)
         "questions": [_public_question(q) for q in picked_full],  # senza soluzioni
         "answers": {},
@@ -196,6 +226,8 @@ def start(req: StartRequest):
         "duration_min": session["duration_min"],
         "questions": session["questions"],
         "order": order,
+        "timer_mode": session.get("timer_mode","single"),
+        "durations_by_subject": session.get("durations_by_subject"),
     }
 
 @router.get("/{session_id}")

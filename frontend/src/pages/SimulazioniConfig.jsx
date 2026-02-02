@@ -118,10 +118,19 @@ export default function SimulazioniConfig() {
   // Ordine materie (modificabile se >1)
   const [order, setOrder] = useState(() => normalizeOrder(subjects, ["Chimica", "Fisica", "Biologia"]));
 
-  // Timer (universale)
+  // Timer
   const [timedMode, setTimedMode] = useState(true);
-  // range richiesto: 1–250
+  // range richiesto: 1–250 (solo timer unico)
   const [durationMin, setDurationMin] = useState(45);
+
+  // Timer: unico oppure per materia
+  const [timerMode, setTimerMode] = useState("single"); // "single" | "per_subject"
+  const [durationsBySubject, setDurationsBySubject] = useState(() => ({
+    Chimica: 45,
+    Fisica: 45,
+    Biologia: 45,
+  }));
+
 
   // Conteggio domande PER MATERIA
   const [countsBySubject, setCountsBySubject] = useState(() => ({
@@ -165,6 +174,10 @@ export default function SimulazioniConfig() {
     // Toggle vero: se è attivo → lo disattivi e torni libero
     if (murActive) {
       setMurActive(false);
+      // torna in modalità libera
+      setTimerMode("single");
+      setTimedMode(true);
+      setDurationMin(45);
       setErr("");
       return;
     }
@@ -182,9 +195,11 @@ export default function SimulazioniConfig() {
       Biologia: { scelta: 15, completamento: 16 },
     });
 
-    // Timer resta modificabile (imposto default MUR)
+    // ✅ MUR: timer fisso per materia (non modificabile)
     setTimedMode(true);
-    // ✅ MUR: 135 minuti (2h15)
+    setTimerMode("per_subject");
+    setDurationsBySubject({ Chimica: 45, Fisica: 45, Biologia: 45 });
+    // totale informativo (2h15)
     setDurationMin(135);
 
     setErr("");
@@ -308,7 +323,13 @@ export default function SimulazioniConfig() {
       difficolta: "Base",
     }));
 
-    const body = { duration_min, sections, order: activeOrder };
+    const body = {
+      duration_min,
+      sections,
+      order: activeOrder,
+      timer_mode: timerMode,
+      durations_by_subject: timerMode === "per_subject" ? durationsBySubject : null,
+    };
 
     const candidates = ["/api/sim/start", "/api/sim/start/", "/api/simulazioni/start", "/api/simulazioni/start/"];
     let lastInfo = "";
@@ -561,20 +582,78 @@ export default function SimulazioniConfig() {
               </div>
             </div>
 
-            <div className="scx-field">
-              <div className="scx-label">Minuti</div>
-              <input
-                className="scx-input"
-                type="number"
-                min="1"
-                max="250"
-                value={timedMode ? durationMin : ""}
-                placeholder={timedMode ? "" : "— —"}
-                onChange={(e) => setDurationMin(clampInt(e.target.value, 1, 250, 45))}
-                disabled={!timedMode}
-              />
-              <div className="scx-hint">{timedMode ? "1–250" : "timer spento"}</div>
-            </div>
+            
+<div className="scx-field">
+  <div className="scx-label">Applicazione timer</div>
+  <div className="scx-toggleRow">
+    <button
+      type="button"
+      className={`scx-miniBtn ${timedMode && timerMode === "single" ? "isOn" : ""}`}
+      onClick={() => setTimerMode("single")}
+      disabled={!timedMode || murActive}
+    >
+      Unico
+    </button>
+    <button
+      type="button"
+      className={`scx-miniBtn ${timedMode && timerMode === "per_subject" ? "isOn" : ""}`}
+      onClick={() => setTimerMode("per_subject")}
+      disabled={!timedMode || murActive}
+    >
+      Per materia
+    </button>
+  </div>
+  <div className="scx-hint">
+    {murActive
+      ? "Modalità MUR: 45 min per materia"
+      : timedMode
+      ? "Scegli come applicare il timer"
+      : "—"}
+  </div>
+</div>
+
+{timerMode === "single" ? (
+  <div className="scx-field">
+    <div className="scx-label">Minuti</div>
+    <input
+      className="scx-input"
+      type="number"
+      min="1"
+      max="250"
+      value={timedMode ? durationMin : ""}
+      placeholder={timedMode ? "" : "— —"}
+      onChange={(e) => setDurationMin(clampInt(e.target.value, 1, 250, 45))}
+      disabled={!timedMode || murActive}
+    />
+    <div className="scx-hint">
+      {murActive ? "Fisso: 135 (2h15)" : timedMode ? "1–250" : "timer spento"}
+    </div>
+  </div>
+) : (
+  <div className="scx-field">
+    <div className="scx-label">Minuti per materia</div>
+    <div className="scx-perSub">
+      {activeOrder.map((m) => (
+        <div key={m} className="scx-perSubRow">
+          <div className="scx-perSubName">{m}</div>
+          <input
+            className="scx-input scx-perSubInput"
+            type="number"
+            min="1"
+            max="250"
+            value={timedMode ? (durationsBySubject[m] ?? 45) : ""}
+            placeholder={timedMode ? "" : "— —"}
+            onChange={(e) =>
+              setDurationsBySubject((prev) => ({ ...prev, [m]: clampInt(e.target.value, 1, 250, 45) }))
+            }
+            disabled={!timedMode || murActive}
+          />
+        </div>
+      ))}
+    </div>
+    <div className="scx-hint">{murActive ? "Fisso: 45 min per materia" : timedMode ? "1–250 per materia" : "timer spento"}</div>
+  </div>
+)}
           </div>
 
           {/* Riassunto mini per materia */}
@@ -995,6 +1074,11 @@ const css = `
 .scx-hint{ font-weight: 850; color: rgba(15,23,42,0.62); }
 
 .scx-toggleRow{ display:flex; gap: 8px; }
+
+.scx-perSub{ display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+.scx-perSubRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.scx-perSubName{ font-weight: 950; color: rgba(15,23,42,0.78); }
+.scx-perSubInput{ width: 120px; }
 .scx-miniBtn{
   padding: 10px 12px;
   border-radius: 999px;

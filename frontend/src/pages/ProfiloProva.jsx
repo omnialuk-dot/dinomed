@@ -23,7 +23,75 @@ export default function ProfiloProva() {
   const [reportingItem, setReportingItem] = useState(null);
   const [reportErr, setReportErr] = useState("");
 
-  useEffect(() => {
+  
+// =========================
+// Segnalazioni (Report domanda)
+// =========================
+const getReportingQuestionId = (item) => {
+  if (!item) return "";
+  return String(
+    item.id ??
+    item.qid ??
+    item.question_id ??
+    item.domanda_id ??
+    item.question?.id ??
+    item.question?.qid ??
+    item.question?.question_id ??
+    item.question?.domanda_id ??
+    ""
+  );
+};
+
+const openReportModal = (item) => {
+  setReportingItem(item || null);
+  setReportNote("");
+  setReportErr("");
+  setReportSent(false);
+  setShowReport(true);
+};
+
+const sendReport = async () => {
+  try {
+    setReportErr("");
+    const tok = getUserToken();
+    if (!tok) {
+      setReportErr("Devi effettuare il login per segnalare.");
+      return;
+    }
+    const qid = getReportingQuestionId(reportingItem);
+    if (!qid) {
+      setReportErr("Impossibile identificare la domanda da segnalare.");
+      return;
+    }
+    const payload = {
+      run_id: run?.id || id,
+      session_id: run?.session_id || run?.sessionId || null,
+      question_id: qid,
+      note: reportNote || "",
+    };
+
+    const res = await fetch(`${API_BASE}/api/report`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${tok}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const txt = await res.text();
+    if (!res.ok) {
+      throw new Error(txt || "Errore invio");
+    }
+    setReportSent(true);
+    setTimeout(() => setShowReport(false), 650);
+  } catch (e) {
+    setReportErr(String(e?.message || e));
+  }
+};
+
+useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
@@ -46,45 +114,7 @@ export default function ProfiloProva() {
         if (alive) setLoading(false);
       }
     })();
-    const openReportModal = (item) => {
-  setReportingItem(item || null);
-  setReportNote("");
-  setReportErr("");
-  setReportSent(false);
-  setShowReport(true);
-};
-
-const sendReport = async () => {
-  try {
-    setReportErr("");
-    const tok = getUserToken();
-    const payload = {
-      run_id: run?.id || id,
-      question_id: (reportingItem?.id ?? reportingItem?.question_id ?? reportingItem?.qid ?? reportingItem?.domanda_id),
-      question: reportingItem || null,
-      note: reportNote || "",
-    };
-    const res = await fetch(`${API_BASE}/api/report`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        ...(tok ? { Authorization: `Bearer ${tok}` } : {}),
-      },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const t = await res.text();
-      throw new Error(t || "Errore invio");
-    }
-    setReportSent(true);
-    setTimeout(() => setShowReport(false), 650);
-  } catch (e) {
-    setReportErr(String(e?.message || e));
-  }
-};
-
-return () => { alive = false; };
+    return () => { alive = false; };
   }, [id]);
 
   const det = useMemo(() => (Array.isArray(run?.details) ? run.details : []), [run]);

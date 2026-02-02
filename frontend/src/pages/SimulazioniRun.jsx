@@ -137,6 +137,8 @@ export default function SimulazioniRun() {
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(null); // seconds or null
+  const [perSubLeft, setPerSubLeft] = useState(null); // {Materia: seconds} or null
+
   const timerRef = useRef(null);
 
   // Banner error per argomenti ecc. (dal backend)
@@ -175,6 +177,7 @@ export default function SimulazioniRun() {
     setIdx(0);
     setAnswers(amap);
     setTimeLeft(null);
+    setPerSubLeft(null);
     setBanner("");
     setFatal("");
     setLoading(false);
@@ -280,16 +283,31 @@ export default function SimulazioniRun() {
           setLoading(false);
 
           // Timer init
-          if (durationMin && durationMin > 0) {
-            // se già c'è un remaining dal backend, usalo
-            const remaining =
-              Number.isFinite(data?.remaining_sec) ? data.remaining_sec : Number.isFinite(data?.remaining) ? data.remaining : null;
+          const timerMode = (data?.timer_mode || data?.timerMode || "single");
+const durBy = data?.durations_by_subject || data?.durationsBySubject || null;
 
-            const initSec = remaining ?? Math.max(0, Math.floor(durationMin * 60));
-            setTimeLeft(initSec);
-          } else {
-            setTimeLeft(null);
-          }
+if (timerMode === "per_subject" && durBy && typeof durBy === "object") {
+  const initMap = {};
+  const baseOrder = Array.isArray(order) && order.length ? order : ["Chimica", "Fisica", "Biologia"];
+  baseOrder.forEach((m) => {
+    const v = Number.isFinite(durBy?.[m]) ? durBy[m] : 45;
+    initMap[m] = Math.max(0, Math.floor(v * 60));
+  });
+  setPerSubLeft(initMap);
+  const firstMateria = getSubject((qs && qs[0]) || {});
+  setTimeLeft(Number.isFinite(initMap?.[firstMateria]) ? initMap[firstMateria] : null);
+} else if (durationMin && durationMin > 0) {
+  setPerSubLeft(null);
+  // se già c'è un remaining dal backend, usalo
+  const remaining =
+    Number.isFinite(data?.remaining_sec) ? data.remaining_sec : Number.isFinite(data?.remaining) ? data.remaining : null;
+
+  const initSec = remaining ?? Math.max(0, Math.floor(durationMin * 60));
+  setTimeLeft(initSec);
+} else {
+  setPerSubLeft(null);
+  setTimeLeft(null);
+}
           return;
         } catch (e) {
           if (String(e?.message || "").includes("[404]")) continue;
@@ -310,36 +328,72 @@ export default function SimulazioniRun() {
   }, [sessionId, reviewMode]);
 
   // Timer tick
-  useEffect(() => {
-    if (timeLeft === null) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = null;
-      return;
-    }
+  // Timer tick (supporta timer unico o per materia)
+useEffect(() => {
+  const mode = session?.timer_mode || session?.timerMode || "single";
+  const enabled = mode === "per_subject" ? perSubLeft !== null : timeLeft !== null;
 
+  if (!enabled) {
     if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
+    timerRef.current = null;
+    return;
+  }
+
+  if (timerRef.current) clearInterval(timerRef.current);
+  timerRef.current = setInterval(() => {
+    if (mode === "per_subject") {
+      setPerSubLeft((prev) => {
+        if (!prev) return prev;
+        const cur = qMateria || "Materia";
+        const curVal = Number.isFinite(prev[cur]) ? prev[cur] : null;
+        if (curVal === null) return prev;
+        const nextVal = curVal <= 1 ? 0 : curVal - 1;
+        if (nextVal === curVal) return prev;
+        return { ...prev, [cur]: nextVal };
+      });
+    } else {
       setTimeLeft((t) => {
         if (t === null) return null;
         if (t <= 1) return 0;
         return t - 1;
       });
-    }, 1000);
+    }
+  }, 1000);
 
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = null;
-    };
-  }, [timeLeft]);
+  return () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = null;
+  };
+}, [session, qMateria, perSubLeft, timeLeft]);
+
+// Sync display timeLeft when per-subject
+useEffect(() => {
+  const mode = session?.timer_mode || session?.timerMode || "single";
+  if (mode !== "per_subject") return;
+  if (!perSubLeft) {
+    setTimeLeft(null);
+    return;
+  }
+  const v = perSubLeft[qMateria];
+  setTimeLeft(Number.isFinite(v) ? v : null);
+}, [session, perSubLeft, qMateria]);
+
+
 
   // Auto-finish when time reaches 0
-  useEffect(() => {
-    if (timeLeft === 0 && session && !finishing) {
-      // termina automaticamente
-      finishExam(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft, session]);
+  // Auto-finish when time reaches 0 (solo timer unico). Per-materia: avviso.
+useEffect(() => {
+  if (timeLeft !== 0 || !session || finishing) return;
+  const mode = session?.timer_mode || session?.timerMode || "single";
+  if (mode === "per_subject") {
+    setBanner(`Tempo scaduto per ${qMateria || "questa materia"}.`);
+    return;
+  }
+  // termina automaticamente
+  finishExam(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [timeLeft, session, qMateria]);
+
 
   const questions = useMemo(() => session?.questions || [], [session]);
 
@@ -390,6 +444,8 @@ export default function SimulazioniRun() {
   }, [blocks, idx]);
 
   const q = questions[idx] || null;
+  const qMateria = useMemo(() => (q ? getSubject(q) : ""), [q]);
+
 
   const qId = useMemo(() => {
     // usa id se c'è, altrimenti indice

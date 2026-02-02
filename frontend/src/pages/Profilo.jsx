@@ -76,6 +76,67 @@ function RoleIcon({ k }) {
   }
 }
 
+
+function TriangleRadar({ values }) {
+  // values: {Biologia:0-100, Chimica:0-100, Fisica:0-100}
+  const w = 260;
+  const h = 210;
+  const cx = 130;
+  const cy = 110;
+  const R = 78;
+
+  const clamp = (n) => Math.max(0, Math.min(100, Number(n) || 0));
+  const vB = clamp(values?.Biologia);
+  const vC = clamp(values?.Chimica);
+  const vF = clamp(values?.Fisica);
+
+  // 3 assi: top (Biologia), right (Chimica), left (Fisica)
+  const pts = [
+    // Biologia (top)
+    [cx, cy - R * (vB / 100)],
+    // Chimica (right-bottom)
+    [cx + (R * Math.cos(Math.PI / 6)) * (vC / 100), cy + (R * Math.sin(Math.PI / 6)) * (vC / 100)],
+    // Fisica (left-bottom)
+    [cx - (R * Math.cos(Math.PI / 6)) * (vF / 100), cy + (R * Math.sin(Math.PI / 6)) * (vF / 100)],
+  ];
+
+  const base = [
+    [cx, cy - R],
+    [cx + R * Math.cos(Math.PI / 6), cy + R * Math.sin(Math.PI / 6)],
+    [cx - R * Math.cos(Math.PI / 6), cy + R * Math.sin(Math.PI / 6)],
+  ];
+
+  const pStr = pts.map((p) => p.map((x) => Math.round(x * 10) / 10).join(",")).join(" ");
+  const bStr = base.map((p) => p.map((x) => Math.round(x * 10) / 10).join(",")).join(" ");
+
+  return (
+    <div className="pr-radar">
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-label="Grafico performance per materia">
+        <polygon points={bStr} fill="none" stroke="rgba(2,6,23,0.14)" strokeWidth="2" />
+        <line x1={cx} y1={cy} x2={base[0][0]} y2={base[0][1]} stroke="rgba(2,6,23,0.10)" strokeWidth="2" />
+        <line x1={cx} y1={cy} x2={base[1][0]} y2={base[1][1]} stroke="rgba(2,6,23,0.10)" strokeWidth="2" />
+        <line x1={cx} y1={cy} x2={base[2][0]} y2={base[2][1]} stroke="rgba(2,6,23,0.10)" strokeWidth="2" />
+
+        <polygon points={pStr} fill="rgba(16,185,129,0.16)" stroke="rgba(16,185,129,0.8)" strokeWidth="2" />
+
+        {pts.map((p, i) => (
+          <circle key={i} cx={p[0]} cy={p[1]} r="4" fill="rgba(16,185,129,0.9)" />
+        ))}
+
+        <text x={cx} y={22} textAnchor="middle" fontSize="12" fill="rgba(2,6,23,0.72)">Biologia</text>
+        <text x={w - 16} y={h - 32} textAnchor="end" fontSize="12" fill="rgba(2,6,23,0.72)">Chimica</text>
+        <text x={16} y={h - 32} textAnchor="start" fontSize="12" fill="rgba(2,6,23,0.72)">Fisica</text>
+      </svg>
+
+      <div className="pr-radarLegend">
+        <div className="pr-radarRow"><span>Biologia</span><b>{vB}%</b></div>
+        <div className="pr-radarRow"><span>Chimica</span><b>{vC}%</b></div>
+        <div className="pr-radarRow"><span>Fisica</span><b>{vF}%</b></div>
+      </div>
+    </div>
+  );
+}
+
 export default function Profilo() {
   const nav = useNavigate();
   const user = useMemo(() => getUser(), []);
@@ -116,24 +177,121 @@ export default function Profilo() {
     };
   }, []);
 
-  const stats = useMemo(() => {
-    const total = runs.length;
-    let sum = 0;
-    let max = 0;
-    let best = null;
+  
+const stats = useMemo(() => {
+  const totalRuns = Array.isArray(runs) ? runs.length : 0;
 
-    for (const r of runs) {
-      const t = Number(r?.score_total ?? 0);
-      const m = Number(r?.score_max ?? 0);
-      if (m > 0) sum += t / m;
-      if (!best || (t / (m || 1)) > (Number(best.score_total) / (Number(best.score_max) || 1))) best = r;
-      max = Math.max(max, t);
+  // Aggregati per materia (robusti: usa per_subject se presente, altrimenti ricostruisce da details)
+  const subjects = ["Biologia", "Chimica", "Fisica"];
+  const agg = {
+    Biologia: { correct: 0, wrong: 0, blank: 0, total: 0 },
+    Chimica: { correct: 0, wrong: 0, blank: 0, total: 0 },
+    Fisica: { correct: 0, wrong: 0, blank: 0, total: 0 },
+  };
+
+  let sumRatio = 0; // media delle percentuali su voto massimo
+  let best = null;
+
+  // per graduatoria: media ponderata su max
+  let sumTotalScore = 0;
+  let sumTotalMax = 0;
+
+  for (const r of runs || []) {
+    const t = Number(r?.score_total ?? 0);
+    const m = Number(r?.score_max ?? 0);
+
+    if (m > 0) {
+      sumRatio += t / m;
+      sumTotalScore += t;
+      sumTotalMax += m;
     }
 
-    const avgPct = total ? Math.round((sum / total) * 1000) / 10 : 0;
+    const ratio = t / (m || 1);
+    if (!best || ratio > (Number(best.score_total) / (Number(best.score_max) || 1))) best = r;
 
-    return { total, avgPct, best };
-  }, [runs]);
+    const per = r?.per_subject && typeof r.per_subject === "object" ? r.per_subject : null;
+
+    if (per) {
+      for (const s of subjects) {
+        const st = per?.[s] || per?.[s.toLowerCase()] || null;
+        if (!st) continue;
+        const c = Number(st.correct ?? st.corretti ?? 0);
+        const w = Number(st.wrong ?? st.errati ?? 0);
+        const b = Number(st.blank ?? st.omesse ?? 0);
+        const tot = Number(st.total ?? (c + w + b) ?? 0);
+        agg[s].correct += c;
+        agg[s].wrong += w;
+        agg[s].blank += b;
+        agg[s].total += tot || (c + w + b);
+      }
+    } else if (Array.isArray(r?.details)) {
+      // fallback: details con {materia, ok, blank} (se presenti)
+      for (const d of r.details) {
+        const subj = d?.materia || d?.subject || null;
+        if (!subjects.includes(subj)) continue;
+        const isBlank = d?.blank === true || d?.omessa === true || d?.skipped === true;
+        const ok = d?.ok === true;
+        if (isBlank) agg[subj].blank += 1;
+        else if (ok) agg[subj].correct += 1;
+        else agg[subj].wrong += 1;
+        agg[subj].total += 1;
+      }
+    }
+  }
+
+  const avgPct = totalRuns ? Math.round((sumRatio / totalRuns) * 1000) / 10 : 0;
+
+  // Success % per materia (0-100) su domande totali (incluse omesse)
+  const successPct = {};
+  for (const s of subjects) {
+    const tot = agg[s].total || 0;
+    successPct[s] = tot > 0 ? Math.round((agg[s].correct / tot) * 1000) / 10 : 0;
+  }
+
+  // Graduatoria: soglia fissa 54/90 (60%). Se max non è 90 (prove singole), scala a rapporto.
+  const thresholdRatio = 54 / 90; // 0.6
+  const overallRatio = sumTotalMax > 0 ? sumTotalScore / sumTotalMax : 0;
+  const inGraduatoria = sumTotalMax > 0 ? overallRatio >= thresholdRatio : false;
+
+  // Percentile: se non esistono dati globali, lo calcoliamo sui tuoi tentativi (trasparente).
+  // Più è alto, meglio è.
+  let percentile = null;
+  if (totalRuns >= 2) {
+    const latest = runs?.[0];
+    const lt = Number(latest?.score_total ?? 0);
+    const lm = Number(latest?.score_max ?? 0);
+    const lratio = lm > 0 ? lt / lm : 0;
+
+    const ratios = (runs || [])
+      .map((x) => {
+        const xt = Number(x?.score_total ?? 0);
+        const xm = Number(x?.score_max ?? 0);
+        return xm > 0 ? xt / xm : 0;
+      })
+      .filter((x) => Number.isFinite(x));
+
+    // rank desc
+    ratios.sort((a, b) => b - a);
+    const rank = Math.max(1, ratios.findIndex((x) => x <= lratio) + 1); // 1..N
+    percentile = Math.round(((rank / ratios.length) * 100) * 10) / 10;
+  }
+
+  // Diagnosi: materia col valore più basso (se c'è almeno un dato)
+  const minEntry = subjects
+    .map((s) => ({ s, v: successPct[s] }))
+    .sort((a, b) => a.v - b.v)[0];
+
+  return {
+    total: totalRuns,
+    avgPct,
+    best,
+    successPct, // {Biologia, Chimica, Fisica}
+    inGraduatoria,
+    overallPct: Math.round(overallRatio * 1000) / 10,
+    percentile, // sui tuoi tentativi
+    minSubject: minEntry?.s || null,
+  };
+}, [runs]);
 
   const roles = useMemo(() => {
   return [
@@ -257,6 +415,35 @@ const currentRole = useMemo(() => {
             <div className="pr-miniNote">
               La media è calcolata sulle prove salvate (percentuale su voto massimo).
             </div>
+
+<div className={`pr-rank ${stats.inGraduatoria ? "pr-rank-in" : "pr-rank-out"}`}>
+  <div className="pr-rankTitle">{stats.inGraduatoria ? "IN GRADUATORIA" : "FUORI GRADUATORIA"}</div>
+  <div className="pr-rankSub">
+    Soglia idoneità: 54/90 (60%). Media attuale: <b>{stats.overallPct}%</b>
+  </div>
+  {stats.percentile !== null ? (
+    <div className="pr-rankMeta">Percentile (sui tuoi tentativi): {stats.percentile}%</div>
+  ) : (
+    <div className="pr-rankMeta">Percentile: —</div>
+  )}
+</div>
+
+<div className="pr-radarWrap">
+  <TriangleRadar values={stats.successPct} />
+</div>
+
+<div className="pr-diagnosi">
+  {stats.minSubject ? (
+    <div className="pr-diagnosiText">
+      <b>{stats.minSubject}</b> è la tua criticità principale.{" "}
+      {stats.inGraduatoria
+        ? "È l’area più debole: alzandola consolidi la tua posizione."
+        : "Attualmente ti sta escludendo dalla graduatoria."}
+    </div>
+  ) : (
+    <div className="pr-diagnosiText">Completa almeno una simulazione per vedere diagnosi e grafico.</div>
+  )}
+</div>
           </div>
         </div>
 
@@ -612,4 +799,66 @@ const css = `
 .pr-role-gold{background:rgba(245,158,11,0.14);border-color:rgba(245,158,11,0.28);color:rgba(161,98,7,0.98);}
 .pr-role-purple{background:rgba(168,85,247,0.12);border-color:rgba(168,85,247,0.24);color:rgba(126,34,206,0.95);}
 .pr-roleIco{display:inline-flex;align-items:center;justify-content:center;}
+
+/* ====== Performance / Graduatoria ====== */
+.pr-rank{
+  margin-top:14px;
+  border-radius:16px;
+  border:1px solid rgba(15,23,42,0.10);
+  padding:12px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.pr-rankTitle{
+  font-weight:950;
+  letter-spacing:0.4px;
+}
+.pr-rankSub{
+  color: rgba(2,6,23,0.72);
+  font-weight:750;
+}
+.pr-rankMeta{
+  color: rgba(2,6,23,0.58);
+  font-weight:750;
+  font-size:13px;
+}
+.pr-rank-in{
+  background: rgba(34,197,94,0.10);
+  border-color: rgba(34,197,94,0.22);
+  color: rgba(21,128,61,0.96);
+}
+.pr-rank-out{
+  background: rgba(239,68,68,0.10);
+  border-color: rgba(239,68,68,0.22);
+  color: rgba(153,27,27,0.96);
+}
+
+.pr-radarWrap{ margin-top: 12px; }
+.pr-radar{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+  padding: 10px 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.62);
+}
+.pr-radarLegend{ display:flex; flex-direction:column; gap:8px; min-width: 120px;}
+.pr-radarRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; color: rgba(2,6,23,0.72); font-weight:850;}
+.pr-radarRow b{ color: rgba(2,6,23,0.92); }
+
+.pr-diagnosi{
+  margin-top: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(2,6,23,0.03);
+  padding: 12px 12px;
+}
+.pr-diagnosiText{
+  font-weight:850;
+  color: rgba(2,6,23,0.78);
+  line-height: 1.35;
+}
 `;

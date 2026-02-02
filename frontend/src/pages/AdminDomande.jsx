@@ -149,6 +149,7 @@ export default function AdminDomande() {
     if (!s) return items;
     return items.filter((x) =>
       [
+        x.id,
         x.materia,
         x.tipo,
         x.testo,
