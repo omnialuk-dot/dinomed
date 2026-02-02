@@ -2,7 +2,7 @@ import { getUserToken } from "../lib/userSession";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const API_BASE = ((import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL) || "http://127.0.0.1:8000").replace(/\/$/, "");
+import { API_BASE } from "../lib/api";
 
 /* =========================
    Helpers
@@ -113,6 +113,20 @@ export default function SimulazioniRun() {
   const reviewMode = Boolean(location?.state?.mode === "review" && Array.isArray(location?.state?.reviewQuestions));
   const reviewQuestions = reviewMode ? location.state.reviewQuestions : null;
   const reviewMeta = reviewMode ? (location.state.reviewMeta || null) : null;
+
+  // Se siamo in produzione e manca VITE_API_BASE, evitiamo il classico "Failed to fetch" verso localhost.
+  if (!reviewMode && !API_BASE) {
+    return (
+      <main style={{ padding: 24 }}>
+        <div style={{ maxWidth: 760, margin: "0 auto", padding: 16, borderRadius: 16, background: "rgba(255,255,255,0.9)", border: "1px solid rgba(15,23,42,0.10)" }}>
+          <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>Backend non configurato</div>
+          <div style={{ color: "rgba(2,6,23,0.70)", fontWeight: 650, lineHeight: 1.35 }}>
+            Imposta <b>VITE_API_BASE</b> (URL del backend, es. Render) nelle variabili ambiente del frontend e ridisponi.
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const [loading, setLoading] = useState(true);
   const [fatal, setFatal] = useState("");

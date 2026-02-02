@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getUserToken } from "../lib/userSession";
-
-const API_BASE = ((import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE) || "http://127.0.0.1:8000").replace(/\/$/, "");
+import { API_BASE } from "../lib/api";
 
 function useQuery() {
   const { search } = useLocation();
@@ -15,6 +14,19 @@ export default function ProfiloProva() {
   const { id } = useParams();
   const q = useQuery();
   const mode = (q.get("mode") || "errors").toLowerCase(); // errors|all
+
+  if (!API_BASE) {
+    return (
+      <main style={{ padding: 24 }}>
+        <div style={{ maxWidth: 760, margin: "0 auto", padding: 16, borderRadius: 16, background: "rgba(255,255,255,0.9)", border: "1px solid rgba(15,23,42,0.10)" }}>
+          <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>Backend non configurato</div>
+          <div style={{ color: "rgba(2,6,23,0.70)", fontWeight: 650, lineHeight: 1.35 }}>
+            Imposta <b>VITE_API_BASE</b> (URL del backend) nelle variabili ambiente del frontend e ridisponi.
+          </div>
+        </div>
+      </main>
+    );
+  }
   const [run, setRun] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showReport, setShowReport] = useState(false);

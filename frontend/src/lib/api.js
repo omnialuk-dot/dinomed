@@ -8,8 +8,20 @@ const env = import.meta.env;
 // Priorità: VITE_API_BASE (tuo standard) → VITE_API_URL → VITE_API_BASE_URL
 const RAW_BASE = (env.VITE_API_BASE || env.VITE_API_URL || env.VITE_API_BASE_URL || "").trim();
 
-export const API_BASE = (RAW_BASE ? RAW_BASE : (env.DEV ? "http://127.0.0.1:8000" : ""))
+// In DEV (vite dev server) fallback su localhost.
+let base = (RAW_BASE ? RAW_BASE : (env.DEV ? "http://127.0.0.1:8000" : ""))
   .replace(/\/$/, "");
+
+// 🔒 Fix "Failed to fetch" più comune su Vercel:
+// se il sito gira in HTTPS e l'API è configurata con http://, il browser blocca (mixed-content).
+// In quel caso facciamo upgrade automatico a https://.
+try {
+  if (typeof window !== "undefined" && window.location?.protocol === "https:" && base.startsWith("http://")) {
+    base = `https://${base.slice("http://".length)}`;
+  }
+} catch {}
+
+export const API_BASE = base;
 
 // ---------------- Token (ADMIN) ----------------
 const ADMIN_TOKEN_KEY = "dinomed_admin_token";
