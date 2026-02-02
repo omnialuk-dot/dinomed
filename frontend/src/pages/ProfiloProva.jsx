@@ -211,7 +211,7 @@ useEffect(() => {
         <div className="rv-card">
           {mode === "errors"
             ? (blankItems.length > 0
-                ? `Nessun errore, ma hai ${blankItems.length} domanda${blankItems.length === 1 ? "" : "e"} non risposta.`
+                ? `Nessun errore, ma hai ${blankItems.length} domanda${blankItems.length === 1 ? "" : "e"} senza risposta.`
                 : "Perfetto: nessun errore in questa prova.")
             : "Nessuna domanda salvata."}
         </div>
