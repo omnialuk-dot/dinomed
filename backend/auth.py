@@ -66,23 +66,3 @@ def user_required(request: Request):
     if not p:
         raise HTTPException(status_code=401, detail="Missing/invalid user token")
     return p
-
-
-def bot_required(request: Request):
-    """FastAPI dependency: richiede header Authorization: Bearer <BOT_API_KEY>.
-
-    Usato dal bot Telegram per leggere dati (dispense, domande, profilo).
-    """
-    expected = os.getenv("BOT_API_KEY", "").strip()
-    if not expected:
-        # se non configurato, blocca (evita API aperta per errore)
-        raise HTTPException(status_code=500, detail="BOT_API_KEY not configured")
-
-    auth = request.headers.get("authorization", "")
-    if not auth.lower().startswith("bearer "):
-        raise HTTPException(status_code=401, detail="Missing token")
-
-    token = auth.split(" ", 1)[1].strip()
-    if token != expected:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    return {"role": "bot"}

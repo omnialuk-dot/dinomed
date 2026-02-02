@@ -1,279 +1,338 @@
+from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Request, Depends, Query
-from pydantic import BaseModel, Field
-from typing import List, Optional, Literal, Dict, Any
-from pathlib import Path
+import os
 import json
 import random
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from auth import bot_required
-
-# Reuse bank+picker from sessioni.py (source of truth for questions)
-from routes import sessioni as sim_sessions
-
-router = APIRouter(prefix="/api/bot", tags=["bot"], dependencies=[Depends(bot_required)])
+from fastapi import APIRouter, HTTPException, Request, Depends
+from pydantic import BaseModel, Field
 
 
-# -------------------------
-# Materials (dispense)
-# -------------------------
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+router = APIRouter(prefix="/api/bot", tags=["bot-api"])
+
+BASE_DIR = Path(__file__).resolve().parents[1]  # backend/
+DATA_DIR = BASE_DIR / "data"
 DISPENSE_FILE = DATA_DIR / "dispense.json"
+DOMANDE_FILE = DATA_DIR / "domande.json"
+RUNS_FILE = DATA_DIR / "user_runs.json"
 
-def _read_dispense() -> List[dict]:
+
+# -----------------------------
+# Auth (shared key between bot and backend)
+# -----------------------------
+def _get_expected_key() -> str:
+    return str(os.getenv("BOT_API_KEY") or "").strip()
+
+def bot_key_required(request: Request):
+    expected = _get_expected_key()
+    if not expected:
+        raise HTTPException(status_code=500, detail="BOT_API_KEY not configured on server")
+    auth = request.headers.get("authorization") or request.headers.get("Authorization") or ""
+    key = ""
+    if auth.lower().startswith("bearer "):
+        key = auth.split(" ", 1)[1].strip()
+    if not key:
+        key = request.headers.get("x-api-key") or request.headers.get("X-API-Key") or ""
+        key = str(key).strip()
+    if key != expected:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return True
+
+
+def _read_json_list(path: Path) -> List[Dict[str, Any]]:
     try:
-        raw = DISPENSE_FILE.read_text(encoding="utf-8")
-        data = json.loads(raw or "[]")
+        if not path.exists():
+            return []
+        data = json.loads(path.read_text(encoding="utf-8") or "[]")
         return data if isinstance(data, list) else []
-    except FileNotFoundError:
-        return []
     except Exception:
         return []
 
-def _normalize_dispensa(x: dict) -> dict:
-    # compat: file_url -> link
-    if not x.get("link") and x.get("file_url"):
-        x["link"] = x.get("file_url")
-    # normalize uploads relative path
-    link = x.get("link")
-    if isinstance(link, str) and link.strip():
-        s = link.strip()
-        i = s.find("/uploads/")
-        if i >= 0:
-            x["link"] = s[i:]
-    return x
 
-class MaterialsResponse(BaseModel):
-    items: List[dict]
-    page: int
-    limit: int
-    has_next: bool
+def _abs_url(request: Request, maybe_path: Optional[str]) -> Optional[str]:
+    if not maybe_path:
+        return None
+    s = str(maybe_path).strip()
+    if not s:
+        return None
+    if s.startswith("http://") or s.startswith("https://"):
+        return s
+    # ensure leading slash
+    if not s.startswith("/"):
+        s = "/" + s
+    base = str(request.base_url).rstrip("/")
+    return base + s
 
-@router.get("/materials", response_model=MaterialsResponse)
+
+# -----------------------------
+# Dispense (aka Materials)
+# -----------------------------
+@router.get("/materials")
 def bot_list_materials(
     request: Request,
-    page: int = Query(1, ge=1),
-    limit: int = Query(10, ge=1, le=20),
+    page: int = 1,
+    limit: int = 10,
+    _=Depends(bot_key_required),
 ):
-    """
-    Ritorna dispense pubblicate in formato "bot-friendly" con link assoluto.
-    """
-    base = str(request.base_url).rstrip("/")
-    all_items = [_normalize_dispensa(x) for x in _read_dispense()]
-    pub = [x for x in all_items if x.get("pubblicata") is True]
+    items = _read_json_list(DISPENSE_FILE)
+    # only published
+    published = [x for x in items if x.get("pubblicata") is True]
+    # newest first if created_at exists
+    published.sort(key=lambda x: str(x.get("created_at") or ""), reverse=True)
 
-    # sort: newest first if possible
-    def k(x):
-        return str(x.get("created_at") or x.get("data") or "")
-    pub.sort(key=k, reverse=True)
-
+    page = max(1, int(page or 1))
+    limit = max(1, min(50, int(limit or 10)))
     start = (page - 1) * limit
     end = start + limit
-    items = pub[start:end]
-    has_next = end < len(pub)
-
+    slice_ = published[start:end]
     out = []
-    for x in items:
-        link = x.get("link")
-        pdf_url = None
-        if isinstance(link, str) and link.strip():
-            if link.startswith("http://") or link.startswith("https://"):
-                pdf_url = link
-            elif link.startswith("/"):
-                pdf_url = base + link
-            else:
-                pdf_url = base + "/" + link
+    for x in slice_:
         out.append({
-            "id": x.get("id") or x.get("_id") or "",
+            "id": x.get("id"),
             "title": x.get("titolo") or x.get("title") or "Dispensa",
-            "description": x.get("descrizione") or x.get("description") or "",
-            "materia": x.get("materia") or "",
-            "pdf_url": pdf_url,
-            "created_at": x.get("created_at") or x.get("data") or "",
+            "description": x.get("descrizione") or "",
+            "pdf_url": _abs_url(request, x.get("link") or x.get("file_url") or x.get("pdf_url")),
         })
-
-    return {"items": out, "page": page, "limit": limit, "has_next": has_next}
+    return {
+        "page": page,
+        "limit": limit,
+        "has_next": end < len(published),
+        "items": out,
+    }
 
 
 @router.get("/materials/{material_id}")
-def bot_get_material(material_id: str, request: Request):
-    base = str(request.base_url).rstrip("/")
-    all_items = [_normalize_dispensa(x) for x in _read_dispense()]
-    pub = [x for x in all_items if x.get("pubblicata") is True]
-    for x in pub:
-        xid = str(x.get("id") or x.get("_id") or "")
-        if xid == str(material_id):
-            link = x.get("link")
-            pdf_url = None
-            if isinstance(link, str) and link.strip():
-                if link.startswith("http://") or link.startswith("https://"):
-                    pdf_url = link
-                elif link.startswith("/"):
-                    pdf_url = base + link
-                else:
-                    pdf_url = base + "/" + link
+def bot_get_material(
+    request: Request,
+    material_id: str,
+    _=Depends(bot_key_required),
+):
+    items = _read_json_list(DISPENSE_FILE)
+    for x in items:
+        if str(x.get("id")) == str(material_id) and x.get("pubblicata") is True:
             return {
-                "id": xid,
+                "id": x.get("id"),
                 "title": x.get("titolo") or x.get("title") or "Dispensa",
-                "description": x.get("descrizione") or x.get("description") or "",
-                "materia": x.get("materia") or "",
-                "pdf_url": pdf_url,
-                "created_at": x.get("created_at") or x.get("data") or "",
+                "description": x.get("descrizione") or "",
+                "pdf_url": _abs_url(request, x.get("link") or x.get("file_url") or x.get("pdf_url")),
+                "meta": {
+                    "materia": x.get("materia") or "",
+                    "pagine": x.get("pagine"),
+                    "tag": x.get("tag") or [],
+                }
             }
     raise HTTPException(status_code=404, detail="Material not found")
 
 
-# -------------------------
-# Questions picker (full solutions) - single source of truth
-# -------------------------
-Materia = Literal["Chimica", "Fisica", "Biologia"]
-TipoQ = Literal["scelta", "completamento"]
-
+# -----------------------------
+# Questions picker for bot simulations
+# -----------------------------
 class Section(BaseModel):
-    materia: Materia
+    materia: str = Field(..., min_length=1)
     scelta: int = Field(0, ge=0, le=200)
     completamento: int = Field(0, ge=0, le=200)
-    tag: List[str] = []
-    difficolta: str = "Base"
+    tag: List[str] = Field(default_factory=list)
 
-class PickRequest(BaseModel):
-    sections: List[Section]
-    order: Optional[List[Materia]] = None
-    seed: Optional[int] = None  # for reproducibility (optional)
+class PickBody(BaseModel):
+    sections: List[Section] = Field(default_factory=list)
+    order: Optional[List[str]] = None
+    seed: Optional[int] = None
+
+def _norm_subject(s: str) -> str:
+    s = (s or "").strip()
+    if not s:
+        return s
+    # normalize common
+    cap = s[0].upper() + s[1:].lower()
+    # keep known subjects capitalization
+    for ok in ("Chimica", "Fisica", "Biologia"):
+        if cap.lower() == ok.lower():
+            return ok
+    return cap
+
+def _norm_type(q: dict) -> str:
+    t = q.get("tipo") or q.get("type") or q.get("question_type") or ""
+    t = str(t).lower().strip()
+    if "comp" in t or "fill" in t:
+        return "completamento"
+    return "scelta"
+
+def _matches_tags(q: dict, tags: List[str]) -> bool:
+    if not tags:
+        return True
+    qt = [str(x).strip().lower() for x in (q.get("tag") or []) if str(x).strip()]
+    want = set([str(x).strip().lower() for x in tags if str(x).strip()])
+    return any(t in want for t in qt)
 
 @router.post("/questions/pick")
-def bot_pick_questions(body: PickRequest):
-    if not body.sections:
-        raise HTTPException(status_code=400, detail="sections vuoto")
+def bot_pick_questions(body: PickBody, _=Depends(bot_key_required)):
+    if body.seed is not None:
+        random.seed(int(body.seed))
 
-    rng = random.Random(body.seed) if body.seed is not None else random
+    bank = _read_json_list(DOMANDE_FILE)
 
-    order = body.order or [s.materia for s in body.sections]
-    picked_full: List[Dict[str, Any]] = []
+    # organize by subject and type
+    out: List[Dict[str, Any]] = []
 
-    # We reuse the picker but we shuffle deterministically if seed provided
-    for materia in order:
-        sec = next((s for s in body.sections if s.materia == materia), None)
-        if not sec:
-            continue
+    order = body.order or [sec.materia for sec in body.sections]
+    order = [_norm_subject(x) for x in order if str(x).strip()]
+    if not order:
+        order = ["Chimica", "Fisica", "Biologia"]
 
-        if sec.scelta > 0:
-            pool = sim_sessions.pick_questions_from_bank(materia, "scelta", 10_000, sec.tag or [])
-            if len(pool) < sec.scelta:
-                raise HTTPException(status_code=400, detail=f"Domande insufficienti: {materia} scelta")
-            rng.shuffle(pool)
-            picked_full.extend(pool[:sec.scelta])
+    for subj in order:
+        for sec in body.sections:
+            if _norm_subject(sec.materia) != subj:
+                continue
 
-        if sec.completamento > 0:
-            pool = sim_sessions.pick_questions_from_bank(materia, "completamento", 10_000, sec.tag or [])
-            if len(pool) < sec.completamento:
-                raise HTTPException(status_code=400, detail=f"Domande insufficienti: {materia} completamento")
-            rng.shuffle(pool)
-            picked_full.extend(pool[:sec.completamento])
+            # pick scelta
+            if sec.scelta:
+                pool = [q for q in bank if _norm_subject(q.get("materia") or "") == subj and _norm_type(q) == "scelta" and _matches_tags(q, sec.tag)]
+                random.shuffle(pool)
+                out.extend(pool[: int(sec.scelta)])
 
-    if not picked_full:
-        raise HTTPException(status_code=404, detail="Nessuna domanda trovata")
+            # pick completamento
+            if sec.completamento:
+                pool = [q for q in bank if _norm_subject(q.get("materia") or "") == subj and _norm_type(q) == "completamento" and _matches_tags(q, sec.tag)]
+                random.shuffle(pool)
+                out.extend(pool[: int(sec.completamento)])
 
-    # Normalize output fields for bot
-    out = []
-    for q in picked_full:
-        qid = str(q.get("id") or "")
-        tipo = q.get("tipo")
-        item = {
-            "id": qid,
-            "materia": q.get("materia"),
-            "tipo": tipo,
-            "tag": q.get("tag") or q.get("tags") or [],
-            "testo": q.get("testo") or "",
-            "spiegazione": q.get("spiegazione") or "",
-        }
+    # sanitize for bot: ensure fields exist
+    normalized: List[Dict[str, Any]] = []
+    for q in out:
+        qid = q.get("id")
+        materia = _norm_subject(q.get("materia") or "")
+        tipo = _norm_type(q)
+        testo = q.get("testo") or q.get("text") or ""
+        spiegazione = q.get("spiegazione") or q.get("explanation") or ""
         if tipo == "scelta":
-            item["opzioni"] = q.get("opzioni") or []
-            # support old field names
-            item["correct_answer"] = q.get("correct_answer")
-            if item["correct_answer"] is None:
-                item["correct_answer"] = q.get("corretta_index")
-            if item["correct_answer"] is None:
-                item["correct_answer"] = q.get("answer_index")
+            opzioni = q.get("opzioni") or q.get("options") or []
+            # ensure list of 5
+            if isinstance(opzioni, dict):
+                # dict A-E
+                keys = sorted(opzioni.keys())
+                opzioni = [opzioni[k] for k in keys]
+            if not isinstance(opzioni, list):
+                opzioni = []
+            opzioni = [str(x) for x in opzioni][:5]
+            while len(opzioni) < 5:
+                opzioni.append("")
+            corretta_index = q.get("corretta_index")
+            if corretta_index is None:
+                corr = q.get("corretta")
+                if isinstance(corr, str) and corr.strip().upper() in ["A","B","C","D","E"]:
+                    corretta_index = ["A","B","C","D","E"].index(corr.strip().upper())
+            try:
+                corretta_index = int(corretta_index)
+            except Exception:
+                corretta_index = -1
+            normalized.append({
+                "id": qid,
+                "materia": materia,
+                "tipo": "scelta",
+                "testo": testo,
+                "opzioni": opzioni,
+                "corretta_index": corretta_index,
+                "spiegazione": spiegazione,
+            })
         else:
-            item["correct_answer"] = q.get("correct_answer")
-        out.append(item)
+            risposte = q.get("risposte") or q.get("risposta") or []
+            if isinstance(risposte, str):
+                risposte = [risposte]
+            if not isinstance(risposte, list):
+                risposte = []
+            normalized.append({
+                "id": qid,
+                "materia": materia,
+                "tipo": "completamento",
+                "testo": testo,
+                "risposte": [str(x) for x in risposte if str(x).strip()],
+                "spiegazione": spiegazione,
+            })
 
-    return {"items": out}
+    # shuffle final for mix, but keep order already by subject sections. Bot can shuffle itself if needed.
+    return {"items": normalized, "count": len(normalized)}
 
 
-# -------------------------
-# User profile (by email) for bot
-# -------------------------
-RUNS_FILE = DATA_DIR / "user_runs.json"
+# -----------------------------
+# Profile by email (stats + role)
+# -----------------------------
+_ROLES = [
+    {"min": 0, "key": "tirocinante", "name": "Tirocinante", "desc": "Primi passi: fai la prima simulazione e inizia a costruire metodo."},
+    {"min": 10, "key": "studente_clinico", "name": "Studente Clinico", "desc": "Costanza vera: stai entrando nel ritmo giusto."},
+    {"min": 50, "key": "specializzando", "name": "Specializzando", "desc": "Ottimo livello: velocità e controllo iniziano a vedersi."},
+    {"min": 100, "key": "medico_in_corsia", "name": "Medico in corsia", "desc": "Base solida: ora conta la precisione nei dettagli."},
+    {"min": 200, "key": "medico_esperto", "name": "Medico Esperto", "desc": "Qui si gioca premium: lucidità, costanza e scelte intelligenti."},
+    {"min": 500, "key": "primario", "name": "Primario", "desc": "Livello elite: disciplina e visione completa. Rispetto."},
+]
 
-def _read_runs() -> List[Dict[str, Any]]:
-    try:
-        raw = RUNS_FILE.read_text(encoding="utf-8")
-        data = json.loads(raw or "[]")
-        return data if isinstance(data, list) else []
-    except FileNotFoundError:
-        return []
-    except Exception:
-        return []
-
-def _role_for(n: int) -> Dict[str, Any]:
-    roles = [
-        {"min": 0, "key": "tirocinante", "name": "Tirocinante", "desc": "Primi passi: costruisci il metodo."},
-        {"min": 10, "key": "studente_clinico", "name": "Studente Clinico", "desc": "Costanza vera: stai entrando nel ritmo giusto."},
-        {"min": 50, "key": "specializzando", "name": "Specializzando", "desc": "Ottimo livello: velocità e controllo iniziano a vedersi."},
-        {"min": 100, "key": "medico_in_corsia", "name": "Medico in corsia", "desc": "Base solida: ora conta la precisione."},
-        {"min": 200, "key": "medico_esperto", "name": "Medico Esperto", "desc": "Premium: lucidità, costanza e scelte intelligenti."},
-        {"min": 500, "key": "primario", "name": "Primario", "desc": "Livello elite: disciplina e visione completa."},
-    ]
-    out = roles[0]
-    for r in roles:
-        if n >= r["min"]:
-            out = r
-    # next milestone
-    next_min = None
-    for r in roles:
-        if r["min"] > out["min"]:
-            next_min = r["min"]
+def _role_for(total_runs: int) -> Dict[str, Any]:
+    total_runs = int(total_runs or 0)
+    cur = _ROLES[0]
+    nxt = None
+    for r in _ROLES:
+        if total_runs >= r["min"]:
+            cur = r
+        elif nxt is None:
+            nxt = r
+    # find next after current
+    for r in _ROLES:
+        if r["min"] > cur["min"]:
+            nxt = r
             break
-    out2 = dict(out)
-    out2["next_min"] = next_min
-    out2["to_next"] = (next_min - n) if next_min is not None else 0
-    return out2
+    to_next = 0
+    next_min = None
+    if nxt:
+        next_min = int(nxt["min"])
+        to_next = max(0, next_min - total_runs)
+    return {
+        "key": cur["key"],
+        "name": cur["name"],
+        "desc": cur["desc"],
+        "to_next": to_next,
+        "next_min": next_min,
+    }
+
+def _compute_accuracy(runs: List[Dict[str, Any]]) -> float:
+    # try to use overallPct if present; else compute from correct/total if present
+    vals = []
+    for r in runs:
+        if r.get("overallPct") is not None:
+            try:
+                vals.append(float(r["overallPct"]))
+            except Exception:
+                pass
+        elif r.get("accuracy_pct") is not None:
+            try:
+                vals.append(float(r["accuracy_pct"]))
+            except Exception:
+                pass
+        elif r.get("correct") is not None and r.get("total") is not None:
+            try:
+                c = float(r["correct"]); t = float(r["total"])
+                if t > 0:
+                    vals.append((c/t)*100.0)
+            except Exception:
+                pass
+    if not vals:
+        return 0.0
+    return round(sum(vals)/len(vals), 1)
 
 @router.get("/user/profile")
-def bot_user_profile(email: str = Query(..., min_length=3)):
-    email = str(email).strip().lower()
-    runs = [r for r in _read_runs() if str(r.get("email") or "").strip().lower() == email]
-    runs.sort(key=lambda x: str(x.get("created_at") or ""), reverse=True)
-
-    total_runs = len(runs)
-    total_correct = 0
-    total_q = 0
-    best_score = None
-
-    for r in runs:
-        c = int(r.get("correct") or 0)
-        w = int(r.get("wrong") or 0)
-        b = int(r.get("blank") or 0)
-        total_correct += c
-        total_q += (c + w + b)
-        st = r.get("score_total")
-        try:
-            st = float(st)
-        except Exception:
-            st = None
-        if st is not None:
-            best_score = st if best_score is None else max(best_score, st)
-
-    accuracy = round((total_correct / total_q) * 100, 1) if total_q > 0 else 0.0
-    role = _role_for(total_runs)
-
+def bot_user_profile(email: str, _=Depends(bot_key_required)):
+    e = (email or "").strip().lower()
+    if not e:
+        raise HTTPException(status_code=422, detail="email required")
+    runs = _read_json_list(RUNS_FILE)
+    mine = [x for x in runs if str(x.get("email") or "").strip().lower() == e]
+    mine.sort(key=lambda x: str(x.get("created_at") or ""), reverse=True)
+    total = len(mine)
+    acc = _compute_accuracy(mine)
+    role = _role_for(total)
     return {
-        "email": email,
-        "total_runs": total_runs,
-        "accuracy_pct": accuracy,
-        "best_score_total": best_score,
-        "last_run": runs[0] if runs else None,
+        "email": e,
+        "total_runs": total,
+        "accuracy_pct": acc,
         "role": role,
     }
