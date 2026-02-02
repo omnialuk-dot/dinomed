@@ -2163,3 +2163,32 @@ flex-direction: column;
   gap: 10px;
   flex-wrap: wrap;
 }
+
+/* ================================
+   Segnala button (shared: simulazione + revisione)
+   ================================ */
+.sr-reportTop{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:6px 12px;
+  font-size:13px;
+  font-weight:700;
+  border-radius:999px;
+  border:1px solid rgba(71, 123, 209, .35);
+  background:rgba(71, 123, 209, .10);
+  color:var(--brand-navy);
+  cursor:pointer;
+  user-select:none;
+  transition:transform .08s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.sr-reportTop:hover{
+  background:rgba(71, 123, 209, .16);
+  box-shadow:0 6px 18px rgba(17, 24, 39, .08);
+}
+.sr-reportTop:active{ transform:scale(.98); }
+.sr-reportTop:focus{ outline:none; }
+.sr-reportTop:focus-visible{
+  box-shadow:0 0 0 3px rgba(71, 123, 209, .22), 0 6px 18px rgba(17, 24, 39, .08);
+}
