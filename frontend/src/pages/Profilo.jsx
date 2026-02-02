@@ -1,20 +1,8 @@
-import {
-  if (!API_BASE) {
-    return (
-      <main style={{ padding: 24 }}>
-        <div style={{ maxWidth: 680, margin: "0 auto", padding: 16, borderRadius: 16, background: "rgba(255,255,255,0.9)", border: "1px solid rgba(15,23,42,0.10)" }}>
-          <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>Backend non configurato</div>
-          <div style={{ color: "rgba(2,6,23,0.70)", fontWeight: 650, lineHeight: 1.35 }}>
-            Imposta <b>VITE_API_BASE</b> su Vercel con l’URL del backend Render e ridisponi.
-          </div>
-        </div>
-      </main>
-    );
-  }
- Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { clearUserSession, getUser, getUserToken } from "../lib/userSession";
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE, apiFetch } from "../lib/api";
+
 
 
 function fmtDate(iso) {
@@ -157,6 +145,20 @@ export default function Profilo() {
   const canRank = (runs?.length || 0) >= 3;
   const [loading, setLoading] = useState(true);
   const [showRoles, setShowRoles] = useState(false);
+
+  if (!API_BASE) {
+    return (
+      <main style={{ padding: 24 }}>
+        <div style={{ maxWidth: 680, margin: "0 auto", padding: 16, borderRadius: 16, background: "rgba(255,255,255,0.9)", border: "1px solid rgba(15,23,42,0.10)" }}>
+          <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>Backend non configurato</div>
+          <div style={{ color: "rgba(2,6,23,0.70)", fontWeight: 650, lineHeight: 1.35 }}>
+            Imposta <b>VITE_API_BASE</b> su Vercel con l’URL del backend Render e ridisponi.
+          </div>
+        </div>
+      </main>
+    );
+  }
+
 
   const logout = () => {
     clearUserSession();
