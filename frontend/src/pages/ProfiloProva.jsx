@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getUserToken } from "../lib/userSession";
 
-const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
+const API_BASE = ((import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE) || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 function useQuery() {
   const { search } = useLocation();

@@ -2,8 +2,8 @@
 // DinoMed API helper (pulito)
 // ===============================
 
-// Base URL (dev usa localhost; prod richiede VITE_API_BASE)
-const RAW_BASE = import.meta.env.VITE_API_BASE?.trim();
+// Base URL (dev usa localhost; prod richiede VITE_API_URL)
+const RAW_BASE = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_URL || import.meta.env.VITE_API_URL_URL)?.trim();
 export const API_BASE = (RAW_BASE ? RAW_BASE : (import.meta.env.DEV ? "http://127.0.0.1:8000" : ""))
   .replace(/\/$/, "");
 
@@ -11,7 +11,7 @@ export const API_BASE = (RAW_BASE ? RAW_BASE : (import.meta.env.DEV ? "http://12
 export function absUrl(path) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  if (!API_BASE) return path; // fallback (evita crash in build); meglio settare VITE_API_BASE in prod
+  if (!API_BASE) return path; // fallback (evita crash in build); meglio settare VITE_API_URL in prod
   return path.startsWith("/") ? `${API_BASE}${path}` : `${API_BASE}/${path}`;
 }
 
@@ -49,7 +49,7 @@ async function request(path, options = {}) {
 
   let response;
   try {
-    if (!API_BASE) throw new Error('API_BASE non configurato: imposta VITE_API_BASE su Vercel');
+    if (!API_BASE) throw new Error('API_BASE non configurato: imposta VITE_API_URL su Vercel');
     response = await fetch(`${API_BASE}${path}`, {
       method,
       headers,

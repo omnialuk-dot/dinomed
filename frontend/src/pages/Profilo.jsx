@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { clearUserSession, getUser, getUserToken } from "../lib/userSession";
 import { useEffect, useMemo, useState } from "react";
 
-const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
+const API_BASE = ((import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE) || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 function fmtDate(iso) {
   try {
@@ -251,12 +251,12 @@ const stats = useMemo(() => {
   // Graduatoria: soglia fissa 54/90 (60%). Se max non è 90 (prove singole), scala a rapporto.
   const thresholdRatio = 54 / 90; // 0.6
   const overallRatio = sumTotalMax > 0 ? sumTotalScore / sumTotalMax : 0;
-  const inGraduatoria = sumTotalMax > 0 ? overallRatio >= thresholdRatio : false;
+  const inGraduatoria = canRank && sumTotalMax > 0 ? overallRatio >= thresholdRatio : null;
 
   // Percentile: se non esistono dati globali, lo calcoliamo sui tuoi tentativi (trasparente).
   // Più è alto, meglio è.
   let percentile = null;
-  if (totalRuns >= 2) {
+  if (canRank) {
     const latest = runs?.[0];
     const lt = Number(latest?.score_total ?? 0);
     const lm = Number(latest?.score_max ?? 0);
@@ -287,7 +287,7 @@ const stats = useMemo(() => {
     best,
     successPct, // {Biologia, Chimica, Fisica}
     inGraduatoria,
-    overallPct: Math.round(overallRatio * 1000) / 10,
+    overallPct: canRank ? (Math.round(overallRatio * 1000) / 10) : null,
     percentile, // sui tuoi tentativi
     minSubject: minEntry?.s || null,
   };
@@ -367,7 +367,7 @@ const currentRole = useMemo(() => {
           Storico prove, medie e revisione completa. Admin resta libero (sezione separata).
         </p>
 
-        <div className="pr-grid">
+        <div className={`pr-grid ${stats.total===0 ? "is-empty" : ""}`}>
           <div className="pr-card">
             <div className="pr-cardTitle">Account</div>
             <div className="pr-row">
@@ -416,17 +416,27 @@ const currentRole = useMemo(() => {
               La media è calcolata sulle prove salvate (percentuale su voto massimo).
             </div>
 
-<div className={`pr-rank ${stats.inGraduatoria ? "pr-rank-in" : "pr-rank-out"}`}>
-  <div className="pr-rankTitle">{stats.inGraduatoria ? "IN GRADUATORIA" : "FUORI GRADUATORIA"}</div>
-  <div className="pr-rankSub">
-    Soglia idoneità: 54/90 (60%). Media attuale: <b>{stats.overallPct}%</b>
+{stats.inGraduatoria === null ? (
+  <div className="pr-rank pr-rank-wait">
+    <div className="pr-rankTitle">GRADUATORIA</div>
+    <div className="pr-rankSub">
+      Completa almeno <b>3 simulazioni</b> per calcolare la tua posizione.
+    </div>
+    <div className="pr-rankMeta">Per ora: statistiche in costruzione.</div>
   </div>
-  {stats.percentile !== null ? (
-    <div className="pr-rankMeta">Percentile (sui tuoi tentativi): {stats.percentile}%</div>
-  ) : (
-    <div className="pr-rankMeta">Percentile: —</div>
-  )}
-</div>
+) : (
+  <div className={`pr-rank ${stats.inGraduatoria ? "pr-rank-in" : "pr-rank-out"}`}>
+    <div className="pr-rankTitle">{stats.inGraduatoria ? "IN GRADUATORIA" : "FUORI GRADUATORIA"}</div>
+    <div className="pr-rankSub">
+      Soglia idoneità: 54/90 (60%). Media attuale: <b>{stats.overallPct}%</b>
+    </div>
+    {stats.percentile !== null ? (
+      <div className="pr-rankMeta">Percentile (sui tuoi tentativi): {stats.percentile}%</div>
+    ) : (
+      <div className="pr-rankMeta">Percentile: —</div>
+    )}
+  </div>
+)}
 
 <div className="pr-radarWrap">
   <TriangleRadar values={stats.successPct} />
@@ -590,6 +600,7 @@ const css = `
 }
 
 .pr-grid{
+
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
@@ -782,7 +793,8 @@ const css = `
 .pr-itemBtns{ display:flex; gap: 8px; flex-wrap: wrap; justify-content:flex-end; }
 
 @media (max-width: 920px){
-  .pr-grid{ grid-template-columns: 1fr; }
+  .pr-grid{
+ grid-template-columns: 1fr; }
   .pr-itemTop{ flex-direction: column; align-items: stretch; }
   .pr-itemBtns{ justify-content:flex-start; }
 }
@@ -834,6 +846,12 @@ const css = `
   color: rgba(153,27,27,0.96);
 }
 
+.pr-rank-wait{
+  background: rgba(2,6,23,0.04);
+  border-color: rgba(2,6,23,0.10);
+  color: rgba(2,6,23,0.72);
+}
+
 .pr-radarWrap{ margin-top: 12px; }
 .pr-radar{
   display:flex;
@@ -861,4 +879,6 @@ const css = `
   color: rgba(2,6,23,0.78);
   line-height: 1.35;
 }
+
+.pr-grid.is-empty{grid-template-columns: 1fr;}
 `;

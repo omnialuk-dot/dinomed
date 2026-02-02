@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import heroImg from "../assets/photos/bookheart.jpg";
 
 export default function Dispense() {
-  const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
+  const API_BASE = ((import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE) || "http://127.0.0.1:8000").replace(/\/$/, "");
 
   const [dispense, setDispense] = useState([]);
   const [loading, setLoading] = useState(true);
