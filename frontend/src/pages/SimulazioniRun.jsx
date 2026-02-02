@@ -315,7 +315,7 @@ if (timerMode === "per_subject" && durBy && typeof durBy === "object") {
     initMap[m] = Math.max(0, Math.floor(v * 60));
   });
   setPerSubLeft(initMap);
-  const firstMateria = getSubject((qs && qs[0]) || {});
+  const firstMateria = getSubject((questions && questions[0]) || {});
   setTimeLeft(Number.isFinite(initMap?.[firstMateria]) ? initMap[firstMateria] : null);
 } else if (durationMin && durationMin > 0) {
   setPerSubLeft(null);
