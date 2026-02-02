@@ -36,6 +36,21 @@ def _write_all(items: list[dict]):
     DB_PATH.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+
+@router.get("/", dependencies=[Depends(admin_required)])
+async def list_domande():
+    return _read_all()
+
+@router.post("/", dependencies=[Depends(admin_required)])
+async def create_domanda(payload: dict):
+    items = _read_all()
+    # allow client to pass id; else create
+    qid = payload.get("id") or str(uuid.uuid4())
+    payload["id"] = qid
+    items.append(payload)
+    _write_all(items)
+    return payload
+
 def _norm_text(s: str) -> str:
     return (s or "").strip()
 
