@@ -525,7 +525,7 @@ const currentRole = useMemo(() => {
           <div className="pr-modalBack" role="presentation" onClick={() => setShowRoles(false)}>
             <div className="pr-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
               <div className="pr-modalTop">
-                <div className="pr-modalTitle">Professioni DinoMed</div>
+                <div className="pr-modalTitle">Gradi DinoMed</div>
                 <button className="pr-x" type="button" onClick={() => setShowRoles(false)} aria-label="Chiudi">✕</button>
               </div>
 
@@ -819,7 +819,7 @@ const css = `
 }
 
 
-/* Professioni tones */
+/* Gradi tones */
 .pr-role-yellow{background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.25);color:rgba(180,83,9,0.95);}
 .pr-role-blue{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.24);color:rgba(29,78,216,0.95);}
 .pr-role-green{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.24);color:rgba(21,128,61,0.95);}
