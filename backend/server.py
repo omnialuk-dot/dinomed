@@ -75,6 +75,7 @@ sessioni = _import_router("sessioni")
 auth_google = _import_router("auth_google")
 user = _import_router("user")
 reports = _import_router("reports")
+bot_api = _import_router("bot_api")
 
 # =========================
 # Register routers
@@ -101,6 +102,8 @@ if user is not None:
     app.include_router(user.router)
 if reports is not None:
     app.include_router(reports.router)
+if bot_api is not None:
+    app.include_router(bot_api.router)
 
 # =========================
 # Static files: uploads
