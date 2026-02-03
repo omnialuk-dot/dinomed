@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import uuid
+import os
 from pathlib import Path
 from typing import List, Optional, Literal, Any
 
@@ -33,7 +34,9 @@ def _read_all() -> list[dict]:
 
 def _write_all(items: list[dict]):
     _ensure_db()
-    DB_PATH.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp = DB_PATH.with_suffix('.json.tmp')
+    tmp.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding='utf-8')
+    os.replace(tmp, DB_PATH)
 
 
 

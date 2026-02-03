@@ -159,46 +159,96 @@ async def delete_simulazione(sim_id: str, _=Depends(admin_required)):
 def _norm(s: Optional[str]) -> str:
     return (s or "").strip().lower()
 
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE_DIR / "data"
+DOMANDE_FILE = DATA_DIR / "domande.json"
 
-def _make_mock_question(materia: str, tipo: str, tag: List[str]) -> Dict[str, Any]:
-    qid = str(uuid.uuid4())
-    if tipo == "scelta":
-        opzioni = ["A", "B", "C", "D", "E"]
-        correct = random.randint(0, len(opzioni) - 1)
-        return {
-            "id": qid,
-            "materia": materia,
-            "tipo": "scelta",
-            "tag": tag,
-            "testo": f"[{materia}] Domanda a crocette (mock) #{qid[:4]}",
-            "opzioni": opzioni,
-            # soluzione salvata solo in sessione, non la mandiamo al client
-            "_correct_index": correct,
-            "_spiegazione": f"Spiegazione (mock): la risposta corretta è {opzioni[correct]} perché è un test di prova.",
-        }
+SESSIONS_FILE = DATA_DIR / "sim_sessions.json"  # persisted sessions (JSON)
 
-    # completamento
-    correct_word = random.choice(["equilibrio", "energia", "osmosi", "tampone", "mole"])
-    return {
-        "id": qid,
-        "materia": materia,
-        "tipo": "completamento",
-        "tag": tag,
-        "testo": f"[{materia}] Completa con UNA parola (mock) #{qid[:4]}",
-        "_correct_text": correct_word,
-        "_spiegazione": f"Spiegazione (mock): la parola corretta è '{correct_word}' perché così è impostata la domanda di test.",
-    }
+def _ensure_files():
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if not DOMANDE_FILE.exists():
+        DOMANDE_FILE.write_text("[]", encoding="utf-8")
+    if not SESSIONS_FILE.exists():
+        SESSIONS_FILE.write_text("{}", encoding="utf-8")
 
+def _load_domande() -> List[Dict[str, Any]]:
+    _ensure_files()
+    try:
+        data = json.loads(DOMANDE_FILE.read_text(encoding="utf-8") or "[]")
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+def _load_sessions() -> Dict[str, Any]:
+    _ensure_files()
+    try:
+        data = json.loads(SESSIONS_FILE.read_text(encoding="utf-8") or "{}")
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+def _save_sessions(db: Dict[str, Any]) -> None:
+    _ensure_files()
+    SESSIONS_FILE.write_text(json.dumps(db, ensure_ascii=False, indent=2), encoding="utf-8")
 
 def _public_question(q: Dict[str, Any]) -> Dict[str, Any]:
-    # ritorna al client senza campi privati (soluzioni)
+    # public payload (no solutions)
     out = dict(q)
-    out.pop("_correct_index", None)
-    out.pop("_correct_text", None)
-    out.pop("_spiegazione", None)
+    out.pop("corretta", None)
+    out.pop("corretta_index", None)
+    out.pop("risposte", None)
     return out
 
+def _match_tags(q: Dict[str, Any], tags: List[str]) -> bool:
+    if not tags:
+        return True
+    qtags = q.get("tag") or []
+    if not isinstance(qtags, list):
+        return False
+    qtags_norm = {_norm(x) for x in qtags}
+    return any(_norm(t) in qtags_norm for t in tags)
 
+def _pick_questions(bank: List[Dict[str, Any]], materia: str, tipo: str, tags: List[str], difficolta: str, n: int) -> List[Dict[str, Any]]:
+    # Filter by materia/tipo/tags/difficolta (if present)
+    mat = _norm(materia)
+    dif = _norm(difficolta) if difficolta else ""
+    filtered = []
+    for q in bank:
+        if _norm(q.get("materia")) != mat:
+            continue
+        if _norm(q.get("tipo")) != _norm(tipo):
+            continue
+        if tags and not _match_tags(q, tags):
+            continue
+        if dif and q.get("difficolta") and _norm(q.get("difficolta")) != dif:
+            continue
+        filtered.append(q)
+
+    if n <= 0:
+        return []
+    if len(filtered) <= n:
+        # not enough: return all we have (shuffle)
+        random.shuffle(filtered)
+        return filtered
+    return random.sample(filtered, n)
+
+def _session_store_put(session_id: str, payload: Dict[str, Any]) -> None:
+    db = _load_sessions()
+    db[session_id] = payload
+    # keep DB bounded (optional): drop very old sessions
+    # Here: keep max 500 sessions
+    if len(db) > 500:
+        # remove oldest by started_at timestamp if present
+        items = list(db.items())
+        items.sort(key=lambda kv: kv[1].get("started_at", ""))
+        db = dict(items[-500:])
+    _save_sessions(db)
+
+def _session_store_get(session_id: str) -> Optional[Dict[str, Any]]:
+    db = _load_sessions()
+    v = db.get(session_id)
+    return v if isinstance(v, dict) else None
 # =========================
 # Routes
 # =========================
@@ -207,52 +257,57 @@ def start(payload: StartPayload):
     if not payload.sections:
         raise HTTPException(status_code=422, detail="Nessuna sezione selezionata.")
 
+    bank = _load_domande()
+    if not bank:
+        raise HTTPException(status_code=500, detail="Banca domande vuota. Carica domande in Admin → Domande.")
+
     session_id = str(uuid.uuid4())
     started_at = datetime.utcnow().isoformat()
 
-    # genera domande mock (poi le sostituiremo con banca domande vera)
-    questions: List[Dict[str, Any]] = []
+    # Build questions from the real bank
+    picked: List[Dict[str, Any]] = []
     for sec in payload.sections:
-        for _ in range(max(0, int(sec.scelta))):
-            questions.append(_make_mock_question(sec.materia, "scelta", sec.tag))
-        for _ in range(max(0, int(sec.completamento))):
-            questions.append(_make_mock_question(sec.materia, "completamento", sec.tag))
+        picked += _pick_questions(bank, sec.materia, "scelta", sec.tag, sec.difficolta, int(sec.scelta or 0))
+        picked += _pick_questions(bank, sec.materia, "completamento", sec.tag, sec.difficolta, int(sec.completamento or 0))
 
-    # salva sessione
-    SESSIONS[session_id] = {
+    # shuffle within selected set
+    random.shuffle(picked)
+
+    # Store full questions (with solutions) in persisted sessions, but return public version
+    _session_store_put(session_id, {
         "session_id": session_id,
         "started_at": started_at,
         "duration_min": int(payload.duration_min or 0),
         "order": payload.order or [],
-        "questions": questions,
-    }
+        "questions": picked,
+    })
 
-    # ritorno pubblico
     return {
         "session_id": session_id,
         "duration_min": int(payload.duration_min or 0),
         "order": payload.order or [],
-        "questions": [_public_question(q) for q in questions],
+        "questions": [_public_question(q) for q in picked],
         "created_at": started_at,
     }
 
 
 @router.post("/{session_id}/submit")
 def submit(session_id: str, payload: SubmitPayload):
-    sess = SESSIONS.get(session_id)
+    sess = _session_store_get(session_id)
     if not sess:
-        raise HTTPException(status_code=404, detail="Sessione non trovata (riavvio server?).")
+        raise HTTPException(status_code=404, detail="Sessione non trovata (server riavviato o sessione scaduta).")
 
-    questions = sess["questions"]
-    qmap = {q["id"]: q for q in questions}
+    questions = sess.get("questions") or []
+    if not isinstance(questions, list):
+        questions = []
 
+    qmap = {q.get("id"): q for q in questions if isinstance(q, dict) and q.get("id")}
     correct = 0
     results = []
 
     for a in payload.answers:
         q = qmap.get(a.id)
         if not q:
-            # domanda non trovata: la segniamo come errata
             results.append({
                 "id": a.id,
                 "ok": False,
@@ -265,89 +320,58 @@ def submit(session_id: str, payload: SubmitPayload):
             })
             continue
 
-        if q["tipo"] == "scelta":
-            your = a.answer_index
-            corr = q.get("_correct_index")
-            ok = (your is not None) and (int(your) == int(corr))
+        tipo = q.get("tipo")
+        materia = q.get("materia") or "—"
+        testo = q.get("testo") or ""
+
+        if tipo == "scelta":
+            your_idx = a.answer_index
+            corr_idx = q.get("corretta_index")
+            if corr_idx is None and q.get("corretta") is not None:
+                try:
+                    corr_idx = ord(str(q.get("corretta")).strip().upper()) - 65
+                except Exception:
+                    corr_idx = None
+            ok = (your_idx is not None and corr_idx is not None and int(your_idx) == int(corr_idx))
             if ok:
                 correct += 1
+            opts = q.get("opzioni") or []
+            corr_letter = chr(65 + int(corr_idx)) if corr_idx is not None and 0 <= int(corr_idx) <= 4 else None
             results.append({
-                "id": q["id"],
+                "id": q.get("id"),
                 "ok": ok,
-                "materia": q["materia"],
-                "tipo": q["tipo"],
-                "testo": q["testo"],
-                "your_answer": None if your is None else str(int(your)),
-                "correct_answer": str(int(corr)),
-                "spiegazione": q.get("_spiegazione", "—"),
+                "materia": materia,
+                "tipo": "scelta",
+                "testo": testo,
+                "your_answer": (chr(65 + int(your_idx)) if your_idx is not None else None),
+                "correct_answer": corr_letter,
+                "spiegazione": q.get("spiegazione") or "",
             })
 
         else:
-            your_txt = _norm(a.answer_text)
-            corr_txt = _norm(q.get("_correct_text"))
-            ok = (your_txt != "") and (your_txt == corr_txt)
+            your_text = (a.answer_text or "").strip()
+            corr_list = q.get("risposte") or []
+            if not isinstance(corr_list, list):
+                corr_list = []
+            corr_norm = { _norm(str(x)) for x in corr_list if str(x).strip() }
+            ok = _norm(your_text) in corr_norm if your_text else False
             if ok:
                 correct += 1
             results.append({
-                "id": q["id"],
+                "id": q.get("id"),
                 "ok": ok,
-                "materia": q["materia"],
-                "tipo": q["tipo"],
-                "testo": q["testo"],
-                "your_answer": your_txt if your_txt else "—",
-                "correct_answer": corr_txt if corr_txt else "—",
-                "spiegazione": q.get("_spiegazione", "—"),
+                "materia": materia,
+                "tipo": "completamento",
+                "testo": testo,
+                "your_answer": your_text or None,
+                "correct_answer": (corr_list[0] if corr_list else None),
+                "spiegazione": q.get("spiegazione") or "",
             })
 
-    total = len(questions)
-    percent = round((correct / total) * 100, 1) if total else 0.0
-
-    # tempo impiegato
-    started_at = datetime.fromisoformat(sess["started_at"])
-    spent_sec = int((datetime.utcnow() - started_at).total_seconds())
-
-    return {
-        "score": {"correct": correct, "total": total, "percent": percent},
-        "time_spent_sec": spent_sec,
-        "results": results,
-    }
-
-
-
-
-# =========================
-# Compat: session fetch (per SimulazioniRun)
-# =========================
-try:
-    from routes.sessioni import SESSIONS as BANK_SESSIONS  # type: ignore
-except Exception:
-    BANK_SESSIONS = {}
-
-@router.get("/session/{session_id}")
-@router.get("/session/{session_id}/")
-def get_session_proxy(session_id: str):
-    # prova prima le sessioni "vere" (/api/sim), poi quelle mock
-    s = None
-    try:
-        s = BANK_SESSIONS.get(session_id)
-    except Exception:
-        s = None
-    if not s:
-        s = SESSIONS.get(session_id)
-    if not s:
-        raise HTTPException(status_code=404, detail="Sessione non trovata")
     return {
         "session_id": session_id,
-        "duration_min": int(s.get("duration_min") or 0),
-        "order": s.get("order") or [],
-        "questions": s.get("questions") or [],
+        "total": len(payload.answers),
+        "correct": correct,
+        "score": round((correct / max(1, len(payload.answers))) * 100, 1),
+        "results": results,
     }
-
-@router.get("/{session_id}")
-@router.get("/{session_id}/")
-def get_session_proxy2(session_id: str):
-    return get_session_proxy(session_id)
-
-@router.get("/ping")
-def ping():
-    return {"ok": True, "msg": "simulazioni alive"}
