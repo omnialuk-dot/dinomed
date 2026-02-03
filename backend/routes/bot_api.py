@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import json
 import random
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -17,6 +18,9 @@ DATA_DIR = BASE_DIR / "data"
 DISPENSE_FILE = DATA_DIR / "dispense.json"
 DOMANDE_FILE = DATA_DIR / "domande.json"
 RUNS_FILE = DATA_DIR / "user_runs.json"
+INVITES_FILE = DATA_DIR / "bot_invites.json"  # {token: {email, expires_at, used, used_by}}
+LINKS_FILE = DATA_DIR / "bot_links.json"      # {telegram_id: {email, linked_at}}
+
 
 
 # -----------------------------
@@ -260,6 +264,132 @@ def bot_pick_questions(body: PickBody, _=Depends(bot_key_required)):
 
     # shuffle final for mix, but keep order already by subject sections. Bot can shuffle itself if needed.
     return {"items": normalized, "count": len(normalized)}
+
+
+
+# -----------------------------
+# Premium access: Admin-generated token -> user /access
+# -----------------------------
+class InviteCreateBody(BaseModel):
+    email: str = Field(..., min_length=3)
+    ttl_minutes: int = Field(20, ge=1, le=1440)
+
+class InviteRedeemBody(BaseModel):
+    token: str = Field(..., min_length=4)
+    telegram_id: int = Field(..., ge=1)
+
+def _read_json_obj(path: Path) -> Dict[str, Any]:
+    try:
+        if not path.exists():
+            return {}
+        data = json.loads(path.read_text(encoding="utf-8") or "{}")
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+def _write_json_obj(path: Path, data: Dict[str, Any]) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        tmp.replace(path)
+    except Exception:
+        # if write fails, raise to make issue visible
+        raise
+
+def _clean_email(s: str) -> str:
+    return str(s or "").strip().lower()
+
+def _gen_token() -> str:
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    return "DNM-" + "".join(random.choice(alphabet) for _ in range(6))
+
+def _now_ts() -> int:
+    return int(time.time())
+
+@router.post("/invite/create")
+def bot_invite_create(body: InviteCreateBody, _=Depends(bot_key_required)):
+    email = _clean_email(body.email)
+    if "@" not in email or "." not in email:
+        raise HTTPException(status_code=422, detail="invalid email")
+    ttl = int(body.ttl_minutes or 20)
+    expires_at = _now_ts() + ttl * 60
+
+    invites = _read_json_obj(INVITES_FILE)
+    # generate unique token
+    token = _gen_token()
+    tries = 0
+    while token in invites and tries < 20:
+        token = _gen_token()
+        tries += 1
+
+    invites[token] = {
+        "email": email,
+        "expires_at": expires_at,
+        "created_at": _now_ts(),
+        "used": False,
+        "used_by": None,
+    }
+    _write_json_obj(INVITES_FILE, invites)
+    return {"token": token, "expires_at": expires_at, "email": email}
+
+@router.post("/invite/redeem")
+def bot_invite_redeem(body: InviteRedeemBody, _=Depends(bot_key_required)):
+    token = str(body.token or "").strip()
+    telegram_id = int(body.telegram_id)
+
+    invites = _read_json_obj(INVITES_FILE)
+    inv = invites.get(token)
+    if not inv:
+        raise HTTPException(status_code=404, detail="token not found")
+    if bool(inv.get("used")):
+        raise HTTPException(status_code=409, detail="token already used")
+    if int(inv.get("expires_at") or 0) < _now_ts():
+        raise HTTPException(status_code=410, detail="token expired")
+
+    email = _clean_email(inv.get("email") or "")
+    if not email:
+        raise HTTPException(status_code=500, detail="token email missing")
+
+    # mark used
+    inv["used"] = True
+    inv["used_by"] = telegram_id
+    inv["used_at"] = _now_ts()
+    invites[token] = inv
+    _write_json_obj(INVITES_FILE, invites)
+
+    # link telegram_id -> email
+    links = _read_json_obj(LINKS_FILE)
+    links[str(telegram_id)] = {"email": email, "linked_at": _now_ts()}
+    _write_json_obj(LINKS_FILE, links)
+
+    return {"ok": True, "telegram_id": telegram_id, "email": email}
+
+@router.get("/access/check")
+def bot_access_check(telegram_id: int, _=Depends(bot_key_required)):
+    links = _read_json_obj(LINKS_FILE)
+    info = links.get(str(int(telegram_id))) or {}
+    email = _clean_email(info.get("email") or "")
+    return {"allowed": bool(email), "email": email or None}
+
+@router.post("/access/revoke")
+def bot_access_revoke(telegram_id: int, _=Depends(bot_key_required)):
+    links = _read_json_obj(LINKS_FILE)
+    tid = str(int(telegram_id))
+    existed = tid in links
+    if existed:
+        links.pop(tid, None)
+        _write_json_obj(LINKS_FILE, links)
+    return {"ok": True, "revoked": existed}
+
+@router.get("/user/profile_by_tg")
+def bot_user_profile_by_tg(telegram_id: int, _=Depends(bot_key_required)):
+    links = _read_json_obj(LINKS_FILE)
+    info = links.get(str(int(telegram_id))) or {}
+    email = _clean_email(info.get("email") or "")
+    if not email:
+        raise HTTPException(status_code=404, detail="not linked")
+    return bot_user_profile(email=email, _=True)
 
 
 # -----------------------------
