@@ -23,7 +23,8 @@ RUNS_FILE = DATA_DIR / "user_runs.json"
 # Auth (shared key between bot and backend)
 # -----------------------------
 def _get_expected_key() -> str:
-    return str(os.getenv("BOT_API_KEY") or "").strip()
+    # Support both names to avoid misconfig in deploy dashboards
+    return str(os.getenv("BOT_API_KEY") or os.getenv("NOMAD_API_KEY") or "").strip()
 
 def bot_key_required(request: Request):
     expected = _get_expected_key()
@@ -57,8 +58,14 @@ def _abs_url(request: Request, maybe_path: Optional[str]) -> Optional[str]:
     s = str(maybe_path).strip()
     if not s:
         return None
+    # If the stored link is a full URL (maybe from old localhost), try to
+    # normalize it to the current domain using only the /uploads/ path.
     if s.startswith("http://") or s.startswith("https://"):
-        return s
+        i = s.find("/uploads/")
+        if i >= 0:
+            s = s[i:]  # keep relative /uploads/... and rebuild below
+        else:
+            return s
     # ensure leading slash
     if not s.startswith("/"):
         s = "/" + s
