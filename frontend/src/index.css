@@ -2271,10 +2271,11 @@ flex-direction: column;
 }
 .sr-btn[disabled]{opacity:.6; cursor:not-allowed;}
 .sr-soft{
-  background:rgba(15,23,42,.06);
-  border-color:rgba(15,23,42,.10);
-  color:rgba(15,23,42,.85);
+  background:rgba(15,23,42,.12);
+  border-color:rgba(15,23,42,.22);
+  color:rgba(15,23,42,.92);
 }
+.sr-soft:hover{background:rgba(15,23,42,.16);}
 .sr-primary{
   background:rgba(239,68,68,.92);
   border-color:rgba(239,68,68,.45);

@@ -416,6 +416,18 @@ useEffect(() => {
 }, [timeLeft, session, qMateria]);
 
 
+// Clear per-materia banner when switching subject
+useEffect(() => {
+  const prev = prevMateriaRef.current;
+  if (prev && qMateria && prev !== qMateria) {
+    setBanner("");
+  }
+  prevMateriaRef.current = qMateria;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [qMateria]);
+
+
+
   const questions = useMemo(() => session?.questions || [], [session]);
 
   // Blocchi per materia (in ordine). In review mode: 1 blocco unico.
