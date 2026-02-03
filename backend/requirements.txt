@@ -6,3 +6,4 @@ bcrypt
 PyJWT
 motor
 pymongo
+supabase

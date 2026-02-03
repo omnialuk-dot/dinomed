@@ -4,6 +4,8 @@ from typing import List, Optional, Literal, Dict, Any
 from uuid import uuid4
 from datetime import datetime
 from pathlib import Path
+
+from supabase_db import fetch_question_by_id
 import json
 import random
 

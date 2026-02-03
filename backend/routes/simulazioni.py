@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 
 from auth import admin_required
+from supabase_db import fetch_all_questions
 
 router = APIRouter(prefix="/api/simulazioni", tags=["simulazioni"])
 
@@ -173,10 +174,9 @@ def _ensure_files():
         SESSIONS_FILE.write_text("{}", encoding="utf-8")
 
 def _load_domande() -> List[Dict[str, Any]]:
-    _ensure_files()
+    """Carica la banca domande da Supabase (fonte unica)."""
     try:
-        data = json.loads(DOMANDE_FILE.read_text(encoding="utf-8") or "[]")
-        return data if isinstance(data, list) else []
+        return fetch_all_questions()
     except Exception:
         return []
 

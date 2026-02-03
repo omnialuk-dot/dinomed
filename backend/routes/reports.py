@@ -4,6 +4,8 @@ import json
 import uuid
 from datetime import datetime
 from pathlib import Path
+
+from supabase_db import fetch_question_by_id
 from typing import Any, Dict, List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -133,15 +135,10 @@ def _snapshot_from_mock_session(session_id: str, qid: str) -> Optional[Dict[str,
 
 
 def _snapshot_from_domande_db(qid: str) -> Optional[Dict[str, Any]]:
-    db_path = DATA_DIR / "domande.json"
     try:
-        raw = db_path.read_text(encoding="utf-8")
-        data = json.loads(raw or "[]")
-        if not isinstance(data, list):
+        q = fetch_question_by_id(str(qid))
+        if not q:
             return None
-        for q in data:
-            if str(q.get("id")) != str(qid):
-                continue
             tipo = str(q.get("tipo") or "").strip().lower() or "scelta"
             snap: Dict[str, Any] = {
                 "id": str(q.get("id")),

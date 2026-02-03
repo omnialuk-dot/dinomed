@@ -1,58 +1,15 @@
 from __future__ import annotations
 
-import json
 import uuid
-import os
-from pathlib import Path
-from typing import List, Optional, Literal, Any
+from typing import List, Optional, Literal
 
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
 from auth import admin_required
+from supabase_db import fetch_all_questions, insert_question, update_question, delete_question
 
 router = APIRouter(prefix="/api/admin/domande", tags=["admin-domande"])
-
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
-DB_PATH = DATA_DIR / "domande.json"
-
-
-# ----------------- utils -----------------
-def _ensure_db():
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    if not DB_PATH.exists():
-        DB_PATH.write_text("[]", encoding="utf-8")
-
-
-def _read_all() -> list[dict]:
-    _ensure_db()
-    try:
-        return json.loads(DB_PATH.read_text(encoding="utf-8"))
-    except Exception:
-        return []
-
-
-def _write_all(items: list[dict]):
-    _ensure_db()
-    tmp = DB_PATH.with_suffix('.json.tmp')
-    tmp.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding='utf-8')
-    os.replace(tmp, DB_PATH)
-
-
-
-@router.get("/", dependencies=[Depends(admin_required)])
-async def list_domande():
-    return _read_all()
-
-@router.post("/", dependencies=[Depends(admin_required)])
-async def create_domanda(payload: dict):
-    items = _read_all()
-    # allow client to pass id; else create
-    qid = payload.get("id") or str(uuid.uuid4())
-    payload["id"] = qid
-    items.append(payload)
-    _write_all(items)
-    return payload
 
 def _norm_text(s: str) -> str:
     return (s or "").strip()
@@ -175,15 +132,22 @@ class QuestionOut(BaseModel):
     spiegazione: Optional[str] = None
 
 
-# ----------------- endpoints -----------------
+
+
+# ----------------- endpoints (Supabase) -----------------
 @router.get("", dependencies=[Depends(admin_required)])
 def list_questions() -> list[dict]:
-    return _read_all()
+    # Keep consistent response ordering (newest first if created_at exists)
+    items = fetch_all_questions()
+    # Sort by created_at desc, fallback stable by id
+    def _key(x):
+        return (x.get("created_at") or "", x.get("id") or "")
+    items.sort(key=_key, reverse=True)
+    return items
 
 
 @router.post("", dependencies=[Depends(admin_required)])
 def create_question(payload: QuestionIn):
-    items = _read_all()
     q = payload.model_dump()
     q["id"] = uuid.uuid4().hex
 
@@ -191,34 +155,26 @@ def create_question(payload: QuestionIn):
     q["risposte"] = _coerce_risposte(q)
 
     validate_question(q)
-    items.append(q)
-    _write_all(items)
-    return q
+    created = insert_question(q)
+    return created
 
 
 @router.put("/{qid}", dependencies=[Depends(admin_required)])
-def update_question(qid: str, payload: QuestionIn):
-    items = _read_all()
-    idx = next((i for i, x in enumerate(items) if x.get("id") == qid), None)
-    if idx is None:
-        raise HTTPException(status_code=404, detail="domanda non trovata")
-
+def update_question_endpoint(qid: str, payload: QuestionIn):
     q = payload.model_dump()
     q["id"] = qid
     q["risposte"] = _coerce_risposte(q)
 
     validate_question(q)
-    items[idx] = q
-    _write_all(items)
-    return q
+    updated = update_question(qid, q)
+    if not updated:
+        raise HTTPException(status_code=404, detail="domanda non trovata")
+    return updated
 
 
 @router.delete("/{qid}", dependencies=[Depends(admin_required)])
-def delete_question(qid: str):
-    items = _read_all()
-    before = len(items)
-    items = [x for x in items if x.get("id") != qid]
-    if len(items) == before:
+def delete_question_endpoint(qid: str):
+    ok = delete_question(qid)
+    if not ok:
         raise HTTPException(status_code=404, detail="domanda non trovata")
-    _write_all(items)
     return {"ok": True}

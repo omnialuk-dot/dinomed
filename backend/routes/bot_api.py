@@ -5,6 +5,8 @@ import json
 import random
 import time
 from pathlib import Path
+
+from supabase_db import fetch_all_questions
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Request, Depends
@@ -182,7 +184,8 @@ def bot_pick_questions(body: PickBody, _=Depends(bot_key_required)):
     if body.seed is not None:
         random.seed(int(body.seed))
 
-    bank = _read_json_list(DOMANDE_FILE)
+    # Banca domande da Supabase (fonte unica)
+    bank = fetch_all_questions()
 
     # organize by subject and type
     out: List[Dict[str, Any]] = []
