@@ -13,6 +13,39 @@ from supabase_db import fetch_all_questions
 
 router = APIRouter(prefix="/api/simulazioni", tags=["simulazioni"])
 
+def _norm(s: str) -> str:
+    return str(s or '').strip().lower()
+
+def _clean_tags(tags):
+    if not tags:
+        return []
+    if isinstance(tags, str):
+        tags = [tags]
+    out = []
+    for t in tags:
+        nt = _norm(t)
+        if nt:
+            out.append(nt)
+    return out
+
+def _norm_tipo(s: str) -> str:
+    v = _norm(s)
+    if not v:
+        return ''
+    if 'complet' in v or 'riemp' in v:
+        return 'completamento'
+    if 'scelta' in v or 'croc' in v or 'mcq' in v:
+        return 'scelta'
+    return v
+
+def _infer_tipo(q):
+    # fallback: infer from structure if tipo is missing or weird
+    op = q.get('opzioni')
+    if isinstance(op, list) and len(op) > 0:
+        return 'scelta'
+    return 'completamento'
+
+
 # =========================
 # In-memory sessions (DEV)
 # =========================
@@ -201,37 +234,56 @@ def _public_question(q: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 def _match_tags(q: Dict[str, Any], tags: List[str]) -> bool:
-    if not tags:
+    tags_norm = _clean_tags(tags)
+    if not tags_norm:
         return True
-    qtags = q.get("tag") or []
-    if not isinstance(qtags, list):
+    qtags = q.get("tag")
+    if qtags is None:
         return False
-    qtags_norm = {_norm(x) for x in qtags}
-    return any(_norm(t) in qtags_norm for t in tags)
+    if isinstance(qtags, str):
+        # support "a,b,c"
+        qtags_list = [x.strip() for x in qtags.split(",")]
+    elif isinstance(qtags, list):
+        qtags_list = qtags
+    else:
+        return False
+    qtags_norm = {_norm(x) for x in qtags_list if _norm(x)}
+    return any(t in qtags_norm for t in tags_norm)
 
 def _pick_questions(bank: List[Dict[str, Any]], materia: str, tipo: str, tags: List[str], difficolta: str, n: int) -> List[Dict[str, Any]]:
-    # Filter by materia/tipo/tags/difficolta (if present)
     mat = _norm(materia)
     dif = _norm(difficolta) if difficolta else ""
-    filtered = []
+    req_tipo = _norm_tipo(tipo)
+
+    tags_norm = _clean_tags(tags)
+
+    filtered: List[Dict[str, Any]] = []
     for q in bank:
-        if _norm(q.get("materia")) != mat:
+        qmat = _norm(q.get("materia"))
+        # materia match: exact OR contains (handles "Chimica organica", etc.)
+        if mat:
+            if not (qmat == mat or mat in qmat or qmat in mat):
+                continue
+
+        qtipo = _norm_tipo(q.get("tipo")) or _infer_tipo(q)
+        if req_tipo and qtipo != req_tipo:
             continue
-        if _norm(q.get("tipo")) != _norm(tipo):
+
+        if tags_norm and not _match_tags(q, tags_norm):
             continue
-        if tags and not _match_tags(q, tags):
-            continue
-        if dif and q.get("difficolta") and _norm(q.get("difficolta")) != dif:
-            continue
+
+        if dif and q.get("difficolta"):
+            if _norm(q.get("difficolta")) != dif:
+                continue
+
         filtered.append(q)
 
     if n <= 0:
         return []
-    if len(filtered) <= n:
-        # not enough: return all we have (shuffle)
-        random.shuffle(filtered)
-        return filtered
-    return random.sample(filtered, n)
+
+    # If not enough, return what we have (caller may raise a clear error)
+    random.shuffle(filtered)
+    return filtered[:n]
 
 def _session_store_put(session_id: str, payload: Dict[str, Any]) -> None:
     db = _load_sessions()

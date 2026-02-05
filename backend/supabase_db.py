@@ -68,3 +68,29 @@ def delete_question(qid: str) -> bool:
     data = getattr(resp, "data", None)
     # If no error raised, consider success
     return True
+
+
+def insert_session(payload: Dict[str, Any]) -> None:
+    sb = get_supabase_client()
+    sb.table("sessions").insert(payload).execute()
+
+def list_dispense() -> List[Dict[str, Any]]:
+    sb = get_supabase_client()
+    resp = sb.table("dispense").select("*").order("created_at", desc=True).execute()
+    return getattr(resp, "data", None) or []
+
+def create_dispensa(payload: Dict[str, Any]) -> Dict[str, Any]:
+    sb = get_supabase_client()
+    resp = sb.table("dispense").insert(payload).execute()
+    data = getattr(resp, "data", None) or []
+    return data[0] if data else payload
+
+def update_dispensa(did: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    sb = get_supabase_client()
+    resp = sb.table("dispense").update(payload).eq("id", did).execute()
+    data = getattr(resp, "data", None) or []
+    return data[0] if data else payload
+
+def delete_dispensa(did: str) -> None:
+    sb = get_supabase_client()
+    sb.table("dispense").delete().eq("id", did).execute()

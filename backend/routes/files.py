@@ -2,6 +2,16 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Request
 from pathlib import Path
 import shutil
 import uuid
+
+from supabase_db import get_supabase_client
+
+def _upload_to_supabase_storage(filename: str, content: bytes, content_type: str) -> str:
+    sb = get_supabase_client()
+    bucket = os.getenv("DISPENSE_BUCKET") or "dispense"
+    path = f"{uuid.uuid4()}_{filename}".replace(" ", "_")
+    sb.storage.from_(bucket).upload(path, content, {"content-type": content_type})
+    return sb.storage.from_(bucket).get_public_url(path)
+
 import os
 
 router = APIRouter(prefix="/api/files", tags=["files"])
