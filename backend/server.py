@@ -1,3 +1,4 @@
+from routes.simulazioni import sim_router as sim_compat_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -136,3 +137,5 @@ def __debug_questions():
     out = {"total": len(bank), "sample": bank[0] if bank else None}
     return out
 
+
+app.include_router(sim_compat_router)

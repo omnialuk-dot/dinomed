@@ -397,3 +397,83 @@ def submit(session_id: str, payload: SubmitPayload):
         "score": round((correct / max(1, len(payload.answers))) * 100, 1),
         "results": results,
     }
+
+
+# =========================
+# Compat endpoints per frontend (api/sim/* e finish/end)
+# =========================
+
+def _clean_start_body(body: dict) -> dict:
+    # Keep only StartPayload fields and normalize sections
+    duration_min = int(body.get("duration_min") or 0)
+    order = body.get("order") or []
+    sections_in = body.get("sections") or []
+    sections = []
+    for s in sections_in:
+        if not isinstance(s, dict):
+            continue
+        sections.append({
+            "materia": str(s.get("materia") or "").strip(),
+            "scelta": int(s.get("scelta") or 0),
+            "completamento": int(s.get("completamento") or 0),
+            "tag": s.get("tag") or [],
+            "difficolta": str(s.get("difficolta") or "Base"),
+        })
+    # If order missing, default to materias in sections
+    if not order:
+        order = [sec["materia"] for sec in sections if sec.get("materia")]
+    return {"duration_min": duration_min, "sections": sections, "order": order}
+
+def _parse_finish_answers(body: dict) -> tuple[str, SubmitPayload]:
+    session_id = str(body.get("session_id") or body.get("sessionId") or "").strip()
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id mancante")
+
+    answers_in = body.get("answers") or []
+    out = []
+    for a in answers_in:
+        if not isinstance(a, dict):
+            continue
+        qid = str(a.get("id") or a.get("qid") or a.get("question_id") or "").strip()
+        if not qid:
+            continue
+        atype = str(a.get("type") or a.get("tipo") or "").strip().lower()
+        # Frontend sends answer as string (index or text)
+        aval = a.get("answer")
+        if atype in ("scelta", "crocette", "multiple", "mcq"):
+            try:
+                idx = int(aval) if aval is not None and str(aval).strip() != "" else None
+            except Exception:
+                idx = None
+            out.append({"id": qid, "tipo": "scelta", "answer_index": idx, "answer_text": None})
+        else:
+            out.append({"id": qid, "tipo": "completamento", "answer_index": None, "answer_text": str(aval or "")})
+
+    return session_id, SubmitPayload(answers=[AnswerIn(**x) for x in out])
+
+@router.post("/finish")
+@router.post("/end")
+async def finish_or_end(request: Request):
+    body = await request.json()
+    session_id, payload = _parse_finish_answers(body)
+    return submit(session_id, payload)
+
+# Alias router for /api/sim/*
+sim_router = APIRouter(prefix="/api/sim", tags=["simulazioni_compat"])
+
+@sim_router.post("/start")
+@sim_router.post("/start/")
+async def sim_start_compat(request: Request):
+    body = await request.json()
+    clean = _clean_start_body(body if isinstance(body, dict) else {})
+    payload = StartPayload(**clean)
+    return start(payload, request)
+
+@sim_router.post("/finish")
+@sim_router.post("/finish/")
+@sim_router.post("/end")
+@sim_router.post("/end/")
+async def sim_finish_compat(request: Request):
+    body = await request.json()
+    session_id, payload = _parse_finish_answers(body if isinstance(body, dict) else {})
+    return submit(session_id, payload)
