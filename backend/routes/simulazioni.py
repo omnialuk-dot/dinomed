@@ -279,6 +279,8 @@ def start(payload: StartPayload, request: Request):
 
     bank = fetch_all_questions()
     if not bank:
+        raise HTTPException(status_code=500, detail="Supabase ha restituito 0 domande. Controlla RLS/policies o SUPABASE_KEY su Render.")
+    if not bank:
         raise HTTPException(status_code=500, detail="Nessuna domanda trovata su Supabase (tabella questions vuota o env mancanti).")
 
     session_id = str(uuid.uuid4())

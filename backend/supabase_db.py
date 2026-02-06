@@ -31,7 +31,10 @@ def fetch_all_questions() -> List[Dict[str, Any]]:
     page = 1000
     while True:
         resp = sb.table("questions").select("*").range(offset, offset + page - 1).execute()
+        err = getattr(resp, "error", None)
         data = getattr(resp, "data", None) or []
+        if err and not data:
+            raise RuntimeError(f"Supabase error fetching questions: {err}")
         if not data:
             break
         out.extend(data)

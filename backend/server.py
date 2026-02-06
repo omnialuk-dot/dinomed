@@ -128,3 +128,11 @@ def health():
         "env": os.getenv("ENV", "local"),
         "mongo": False,
     }
+
+@app.get("/__debug_questions")
+def __debug_questions():
+    from supabase_db import fetch_all_questions
+    bank = fetch_all_questions()
+    out = {"total": len(bank), "sample": bank[0] if bank else None}
+    return out
+
