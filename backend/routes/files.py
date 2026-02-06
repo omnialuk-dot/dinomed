@@ -1,8 +1,8 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Request
 from pathlib import Path
-import shutil
 import uuid
 import os
+
 from supabase_db import get_supabase_client
 
 router = APIRouter(prefix="/api/files", tags=["files"])
@@ -50,36 +50,44 @@ async def upload_file(
         raise HTTPException(status_code=400, detail="Formato non supportato")
 
     safe_name = f"{uuid.uuid4().hex}{ext}"
-    dest = UPLOAD_DIR / safe_name
 
-    with dest.open("wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # Read bytes once
+    content = await file.read()
 
-    
-
-# Prova upload su Supabase Storage (bucket 'dispense')
-try:
-    sb = get_supabase_client()
-    bucket = os.getenv("DISPENSE_BUCKET", "dispense")
-    storage_path = f"{safe_name}"
-    dest.seek(0)
-    with dest.open("rb") as fobj:
-        sb.storage.from_(bucket).upload(storage_path, fobj, {"content-type": "application/pdf", "upsert": "true"})
-    public_url = sb.storage.from_(bucket).get_public_url(storage_path)
-    return {
-        "ok": True,
-        "filename": file.filename,
-        "stored_as": safe_name,
-        "file_path": public_url,
-        "storage": "supabase",
-    }
-except Exception as e:
-    print("Supabase storage upload failed:", e)
-
-    return {
-        "ok": True,
-        "filename": file.filename,
-        "stored_as": safe_name,
-        "file_path": f"/uploads/{safe_name}",
-        "storage": "local",
-    }
+    # Try Supabase Storage first
+    try:
+        sb = get_supabase_client()
+        bucket = os.getenv("DISPENSE_BUCKET", "dispense")
+        storage_path = safe_name
+        sb.storage.from_(bucket).upload(
+            storage_path,
+            content,
+            {
+                "content-type": "application/pdf",
+                # upsert supported by storage3; if ignored it's fine
+                "upsert": "true",
+            },
+        )
+        public_url = sb.storage.from_(bucket).get_public_url(storage_path)
+        return {
+            "ok": True,
+            "filename": file.filename,
+            "stored_as": safe_name,
+            "file_path": public_url,
+            "storage": "supabase",
+        }
+    except Exception as e:
+        # Fallback to local uploads directory
+        try:
+            dest = UPLOAD_DIR / safe_name
+            dest.write_bytes(content)
+            return {
+                "ok": True,
+                "filename": file.filename,
+                "stored_as": safe_name,
+                "file_path": f"/uploads/{safe_name}",
+                "storage": "local",
+                "warning": f"Supabase storage upload failed: {e}",
+            }
+        except Exception as e2:
+            raise HTTPException(status_code=500, detail=f"Upload fallito: {e2}")
