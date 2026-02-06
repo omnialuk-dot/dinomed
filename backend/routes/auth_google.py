@@ -5,6 +5,7 @@ import json
 import urllib.request
 import urllib.parse
 import jwt
+from supabase_db import upsert_user
 from datetime import datetime, timedelta
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -35,15 +36,17 @@ def _verify_google_token(id_token: str):
 
     return {
         "email": email,
+        "user_id": user_id,
         "sub": sub,
         "name": data.get("name") or data.get("given_name") or "",
         "picture": data.get("picture") or "",
     }
 
-def _create_user_token(email: str, sub: str) -> str:
+def _create_user_token(email: str, sub: str, user_id: str = "") -> str:
     payload = {
         "sub": sub,
         "email": email,
+        "user_id": user_id,
         "role": "user",
         "exp": datetime.utcnow() + timedelta(minutes=JWT_EXPIRE_MIN),
         "iat": datetime.utcnow(),
@@ -53,5 +56,6 @@ def _create_user_token(email: str, sub: str) -> str:
 @router.post("/google")
 async def google_login(body: GoogleBody):
     user = _verify_google_token(body.id_token)
-    token = _create_user_token(user["email"], user["sub"])
+    db_user = upsert_user(user['email'], user['sub'], user.get('name',''), user.get('picture',''))
+    token = _create_user_token(user['email'], user['sub'], user_id=str(db_user.get('id') or ''))
     return {"token": token, "user": user}

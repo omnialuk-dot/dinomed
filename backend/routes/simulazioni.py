@@ -8,43 +8,10 @@ import os
 import json
 from pathlib import Path
 
-from auth import admin_required
-from supabase_db import fetch_all_questions
+from auth import admin_required, try_get_user
+from supabase_db import fetch_all_questions, insert_session
 
 router = APIRouter(prefix="/api/simulazioni", tags=["simulazioni"])
-
-def _norm(s: str) -> str:
-    return str(s or '').strip().lower()
-
-def _clean_tags(tags):
-    if not tags:
-        return []
-    if isinstance(tags, str):
-        tags = [tags]
-    out = []
-    for t in tags:
-        nt = _norm(t)
-        if nt:
-            out.append(nt)
-    return out
-
-def _norm_tipo(s: str) -> str:
-    v = _norm(s)
-    if not v:
-        return ''
-    if 'complet' in v or 'riemp' in v:
-        return 'completamento'
-    if 'scelta' in v or 'croc' in v or 'mcq' in v:
-        return 'scelta'
-    return v
-
-def _infer_tipo(q):
-    # fallback: infer from structure if tipo is missing or weird
-    op = q.get('opzioni')
-    if isinstance(op, list) and len(op) > 0:
-        return 'scelta'
-    return 'completamento'
-
 
 # =========================
 # In-memory sessions (DEV)
@@ -173,7 +140,17 @@ async def toggle_simulazione(sim_id: str, _=Depends(admin_required)):
         if x.get("id") == sim_id:
             x["pubblicata"] = not bool(x.get("pubblicata", True))
             _write_all(items)
-            return {"success": True, "pubblicata": x["pubblicata"]}
+            # salva sessione su Supabase (se user_id disponibile)
+    try:
+        uid = sess.get('user_id')
+        if uid:
+            # materia: se multi-sezione mettiamo 'Misto'
+            materia = sess.get('materia') or ('Misto' if len(set([q.get('materia') for q in questions])) > 1 else (questions[0].get('materia') if questions else ''))
+            insert_session(uid, materia or 'Misto', correct, len(questions))
+    except Exception as e:
+        print('Session save error:', e)
+
+    return {"success": True, "pubblicata": x["pubblicata"]}
     raise HTTPException(status_code=404, detail="Simulazione non trovata")
 
 
@@ -234,36 +211,23 @@ def _public_question(q: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 def _match_tags(q: Dict[str, Any], tags: List[str]) -> bool:
-    tags_norm = _clean_tags(tags)
-    if not tags_norm:
+    if not tags:
         return True
-    qtags = q.get("tag")
-    if qtags is None:
+    qtags = q.get("tag") or []
+    if not isinstance(qtags, list):
         return False
-    if isinstance(qtags, str):
-        # support "a,b,c"
-        qtags_list = [x.strip() for x in qtags.split(",")]
-    elif isinstance(qtags, list):
-        qtags_list = qtags
-    else:
-        return False
-    qtags_norm = {_norm(x) for x in qtags_list if _norm(x)}
-    return any(t in qtags_norm for t in tags_norm)
+    qtags_norm = {_norm(x) for x in qtags}
+    return any(_norm(t) in qtags_norm for t in tags)
 
-def _pick_questions(bank: List[Dict[str, Any]], materia: str, tipo: str, tags: List[str], difficolta: str, n: int) -> List[Dict[str, Any]]:
-    mat = _norm(materia)
-    dif = _norm(difficolta) if difficolta else ""
+def _pick_questions(bank, materia: str, tipo: str, tags, difficolta, n: int):
     req_tipo = _norm_tipo(tipo)
-
     tags_norm = _clean_tags(tags)
+    dif_norm = _norm(difficolta) if difficolta else ""
 
-    filtered: List[Dict[str, Any]] = []
+    filtered = []
     for q in bank:
-        qmat = _norm(q.get("materia"))
-        # materia match: exact OR contains (handles "Chimica organica", etc.)
-        if mat:
-            if not (qmat == mat or mat in qmat or qmat in mat):
-                continue
+        if not _materia_match(q.get("materia", ""), materia):
+            continue
 
         qtipo = _norm_tipo(q.get("tipo")) or _infer_tipo(q)
         if req_tipo and qtipo != req_tipo:
@@ -272,18 +236,22 @@ def _pick_questions(bank: List[Dict[str, Any]], materia: str, tipo: str, tags: L
         if tags_norm and not _match_tags(q, tags_norm):
             continue
 
-        if dif and q.get("difficolta"):
-            if _norm(q.get("difficolta")) != dif:
+        if dif_norm:
+            qdif = _norm(q.get("difficolta"))
+            if qdif and qdif != dif_norm:
                 continue
 
         filtered.append(q)
 
     if n <= 0:
         return []
-
-    # If not enough, return what we have (caller may raise a clear error)
     random.shuffle(filtered)
     return filtered[:n]
+    if len(filtered) <= n:
+        # not enough: return all we have (shuffle)
+        random.shuffle(filtered)
+        return filtered
+    return random.sample(filtered, n)
 
 def _session_store_put(session_id: str, payload: Dict[str, Any]) -> None:
     db = _load_sessions()
@@ -305,13 +273,13 @@ def _session_store_get(session_id: str) -> Optional[Dict[str, Any]]:
 # Routes
 # =========================
 @router.post("/start")
-def start(payload: StartPayload):
+def start(payload: StartPayload, request: Request):
     if not payload.sections:
         raise HTTPException(status_code=422, detail="Nessuna sezione selezionata.")
 
-    bank = _load_domande()
+    bank = fetch_all_questions()
     if not bank:
-        raise HTTPException(status_code=500, detail="Banca domande vuota. Carica domande in Admin → Domande.")
+        raise HTTPException(status_code=500, detail="Nessuna domanda trovata su Supabase (tabella questions vuota o env mancanti).")
 
     session_id = str(uuid.uuid4())
     started_at = datetime.utcnow().isoformat()

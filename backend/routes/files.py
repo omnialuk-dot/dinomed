@@ -2,17 +2,8 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Request
 from pathlib import Path
 import shutil
 import uuid
-
-from supabase_db import get_supabase_client
-
-def _upload_to_supabase_storage(filename: str, content: bytes, content_type: str) -> str:
-    sb = get_supabase_client()
-    bucket = os.getenv("DISPENSE_BUCKET") or "dispense"
-    path = f"{uuid.uuid4()}_{filename}".replace(" ", "_")
-    sb.storage.from_(bucket).upload(path, content, {"content-type": content_type})
-    return sb.storage.from_(bucket).get_public_url(path)
-
 import os
+from supabase_db import get_supabase_client
 
 router = APIRouter(prefix="/api/files", tags=["files"])
 
@@ -64,9 +55,31 @@ async def upload_file(
     with dest.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    
+
+# Prova upload su Supabase Storage (bucket 'dispense')
+try:
+    sb = get_supabase_client()
+    bucket = os.getenv("DISPENSE_BUCKET", "dispense")
+    storage_path = f"{safe_name}"
+    dest.seek(0)
+    with dest.open("rb") as fobj:
+        sb.storage.from_(bucket).upload(storage_path, fobj, {"content-type": "application/pdf", "upsert": "true"})
+    public_url = sb.storage.from_(bucket).get_public_url(storage_path)
+    return {
+        "ok": True,
+        "filename": file.filename,
+        "stored_as": safe_name,
+        "file_path": public_url,
+        "storage": "supabase",
+    }
+except Exception as e:
+    print("Supabase storage upload failed:", e)
+
     return {
         "ok": True,
         "filename": file.filename,
         "stored_as": safe_name,
         "file_path": f"/uploads/{safe_name}",
+        "storage": "local",
     }

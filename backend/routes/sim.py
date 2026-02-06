@@ -31,33 +31,14 @@ class SubmitAnswer(BaseModel):
 class SubmitBody(BaseModel):
     answers: List[SubmitAnswer]
 
-# ---- banca domande temporanea (poi la colleghi al tuo domande.py) ----
-QUESTION_BANK: List[Dict[str, Any]] = [
-    {
-        "id": "q1",
-        "materia": "Chimica",
-        "tipo": "scelta",
-        "tag": ["Acidi-basi"],
-        "testo": "Qual è l’acido più forte tra questi?",
-        "opzioni": ["HF", "HCl", "H2O", "NH3", "CH3COOH"],
-        "correct_answer": 1,
-        "spiegazione": "HCl è un acido forte (dissociazione quasi completa)."
-    },
-    {
-        "id": "q2",
-        "materia": "Fisica",
-        "tipo": "completamento",
-        "tag": ["Dinamica"],
-        "testo": "La seconda legge di Newton è F = m · ____",
-        "correct_answer": "a",
-        "spiegazione": "La forza risultante è massa per accelerazione."
-    },
-]
+from supabase_db import fetch_all_questions
+
+# banca domande rimossa: usa Supabase
 
 SESSIONS: Dict[str, Dict[str, Any]] = {}
 
 def _pick_questions(materia: str, tipo: str, count: int, tags: List[str]) -> List[Dict[str, Any]]:
-    pool = [q for q in QUESTION_BANK if q.get("materia") == materia and q.get("tipo") == tipo]
+    pool = [q for q in fetch_all_questions() if q.get("materia") == materia and q.get("tipo") == tipo]
     if tags:
         tags_norm = set([t.strip().lower() for t in tags if t.strip()])
         pool = [
