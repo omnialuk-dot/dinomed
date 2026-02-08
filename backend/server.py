@@ -93,7 +93,6 @@ if simulazioni is not None:
 if sim_alias is not None:
     # include both alias routers
     app.include_router(sim_alias.router)
-    app.include_router(sim_alias.router2)
 
 if domande is not None:
     app.include_router(domande.router)
