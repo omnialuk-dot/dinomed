@@ -95,11 +95,10 @@ export default function SimulazioniConfig() {
   if (!API_BASE) {
     return (
       <main style={{ padding: 24 }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: 16, borderRadius: 16, background: "rgba(255,255,255,0.9)", border: "1px solid rgba(15,23,42,0.10)" }}>
+        <div style={{ maxWidth: 680, margin: "0 auto", padding: 16, borderRadius: 16, background: "rgba(255,255,255,0.9)", border: "1px solid rgba(15,23,42,0.10)" }}>
           <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>Backend non configurato</div>
           <div style={{ color: "rgba(2,6,23,0.70)", fontWeight: 650, lineHeight: 1.35 }}>
-            Imposta <b>VITE_API_BASE</b> (es. <b>https://dinomed-api.onrender.com</b>) nelle variabili ambiente del frontend
-            e poi fai un <b>Redeploy</b> (Vite legge le env in build-time).
+            Imposta <b>VITE_API_BASE</b> su Vercel con l’URL del backend Render e ridisponi.
           </div>
         </div>
       </main>
@@ -345,26 +344,18 @@ export default function SimulazioniConfig() {
       durations_by_subject: timerMode === "per_subject" ? durationsBySubject : null,
     };
 
-    // Proviamo più endpoint per compatibilità tra versioni.
     const candidates = ["/api/sim/start", "/api/sim/start/", "/api/simulazioni/start", "/api/simulazioni/start/"];
     let lastInfo = "";
 
     setStarting(true);
     try {
-      // Render/Onrender spesso va in sleep: una ping /health riduce il "Failed to fetch" al primo click.
-      try {
-        await fetchWithTimeout(`${API_BASE}/health`, { method: "GET" }, 25000);
-      } catch {
-        // Ignoro: se il backend è davvero giù, l'errore arriverà sul POST con messaggio chiaro.
-      }
-
       for (const path of candidates) {
         try {
-          const res = await fetchWithTimeout(`${API_BASE}${path}`, {
+          const res = await fetch(`${API_BASE}${path}`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
             body: JSON.stringify(body),
-          }, 25000);
+          });
 
           const txt = await res.text();
           lastInfo = `[${res.status}] ${path}\n${txt || "(empty)"}`;
@@ -387,9 +378,9 @@ export default function SimulazioniConfig() {
           if (!sessionId) throw new Error("Risposta OK ma manca session_id.\n" + lastInfo);
 
           // ✅ FIX IMPORTANTISSIMO: route corretta è /simulazioni/run (non /simulazioni/prova)
-          nav(`/simulazioni/run?s=${encodeURIComponent(sessionId)}`, {
-            state: { sessionId, config: body },
-          });
+        nav(`/simulazioni/run?s=${encodeURIComponent(sessionId)}`, {
+  state: { sessionId, config: body },
+});
 
           return;
         } catch (e) {
@@ -399,8 +390,7 @@ export default function SimulazioniConfig() {
       }
       throw new Error("Nessun endpoint start trovato.\nUltimo tentativo:\n" + lastInfo);
     } catch (e) {
-      // Messaggio più utile per chi non usa DevTools.
-      setErr(`${niceErr(e)}\n\nAPI_BASE: ${API_BASE}`);
+      setErr(String(e?.message || e || "Errore sconosciuto"));
     } finally {
       setStarting(false);
     }
