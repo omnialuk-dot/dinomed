@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://dinomed-api.onrender.com/api/$1"
+    },
+    {
+      "source": "/health",
+      "destination": "https://dinomed-api.onrender.com/health"
+    },
+    {
+      "source": "/docs",
+      "destination": "https://dinomed-api.onrender.com/docs"
+    }
+  ]
+}

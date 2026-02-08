@@ -350,45 +350,66 @@ export default function SimulazioniConfig() {
     setStarting(true);
     try {
       for (const path of candidates) {
-        try {
-          const res = await fetch(`${API_BASE}${path}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify(body),
-          });
+        // Provo prima con API_BASE (cross-origin), poi fallback same-origin (utile con Vercel rewrites)
+        const targets = [
+          `${API_BASE}${path}`,
+          `${path}`,
+        ].filter((u, i, arr) => u && arr.indexOf(u) === i);
 
-          const txt = await res.text();
-          lastInfo = `[${res.status}] ${path}\n${txt || "(empty)"}`;
-
-          if (!res.ok) {
-            if (res.status === 404) continue;
-            throw new Error(txt || `Errore backend (${res.status})`);
-          }
-
-          let data = null;
+        for (const url of targets) {
           try {
-            data = JSON.parse(txt);
-          } catch {
-            data = null;
+            // Warm-up: se Onrender è in sleep, un ping prima riduce i "Failed to fetch"
+            try {
+              await fetch(`${API_BASE}/health`, { method: "GET", headers: { Accept: "application/json" } });
+            } catch {}
+
+            const controller = new AbortController();
+            const t = setTimeout(() => controller.abort(), 30000);
+
+            const res = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify(body),
+              signal: controller.signal,
+            });
+
+            clearTimeout(t);
+
+            const txt = await res.text();
+            lastInfo = `[${res.status}] ${url}\n${txt || "(empty)"}`;
+
+            if (!res.ok) {
+              if (res.status === 404) continue;
+              throw new Error(txt || `Errore backend (${res.status})`);
+            }
+
+            let data = null;
+            try {
+              data = JSON.parse(txt);
+            } catch {
+              data = null;
+            }
+
+            const sessionId = data?.session_id || data?.id || data?.sessionId;
+
+            if (!sessionId) throw new Error("Risposta OK ma manca session_id.\n" + lastInfo);
+
+            nav(`/simulazioni/run?s=${encodeURIComponent(sessionId)}`, {
+              state: { sessionId, config: body },
+            });
+
+            return;
+          } catch (e) {
+            // Se il browser blocca (CORS / rete), fetch lancia TypeError; aggiungo info utile
+            const msg = String(e?.message || e || "");
+            if (msg.includes("AbortError")) {
+              lastInfo = `Timeout 30s su ${url}`;
+            }
+            // continua a provare altri target/endpoint
           }
-
-          const sessionId = data?.session_id || data?.id || data?.sessionId;
-
-          // se backend non ritorna la struttura, evito crash
-          if (!sessionId) throw new Error("Risposta OK ma manca session_id.\n" + lastInfo);
-
-          // ✅ FIX IMPORTANTISSIMO: route corretta è /simulazioni/run (non /simulazioni/prova)
-        nav(`/simulazioni/run?s=${encodeURIComponent(sessionId)}`, {
-  state: { sessionId, config: body },
-});
-
-          return;
-        } catch (e) {
-          if (String(e?.message || "").includes("[404]")) continue;
-          throw e;
         }
       }
-      throw new Error("Nessun endpoint start trovato.\nUltimo tentativo:\n" + lastInfo);
+throw new Error("Nessun endpoint start trovato.\nUltimo tentativo:\n" + lastInfo);
     } catch (e) {
       setErr(String(e?.message || e || "Errore sconosciuto"));
     } finally {

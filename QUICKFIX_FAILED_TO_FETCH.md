@@ -1,39 +1,27 @@
-# DinoMed – Fix "Failed to fetch" (Avvia simulazione)
+# DinoMed – Fix "Failed to fetch" (Vercel + Onrender)
 
-Quando clicchi **Avvia prova** (o **Avvia una simulazione**) e compare **Failed to fetch**, significa che il browser non riesce a raggiungere il backend.
+Se cliccando **Avvia una simulazione** vedi "Failed to fetch", quasi sempre è:
+- backend Onrender **giù/in sleep** (prima richiesta lenta), oppure
+- **CORS** (il browser blocca le chiamate cross-origin), oppure
+- `VITE_API_BASE` non è stata applicata (manca **Redeploy**).
 
-## Checklist (ordine consigliato)
-
-### 1) Variabile ambiente su Vercel (fondamentale)
-Imposta su Vercel (Project → Settings → Environment Variables):
-
-- `VITE_API_BASE = https://dinomed-api.onrender.com`
-
-Poi fai **Redeploy** (Vite legge le env in *build-time*).
-
-> Deve essere **senza** `/api` e **senza** slash finale.
-
-### 2) Il backend risponde?
+## Verifica backend (subito)
 Apri nel browser:
+- https://dinomed-api.onrender.com/docs
+- https://dinomed-api.onrender.com/health
 
-- `https://dinomed-api.onrender.com/health`
-- `https://dinomed-api.onrender.com/docs`
+Se non si aprono → problema backend/deploy su Onrender.
 
-Se non si aprono, il backend è giù/non deployato o in sleep (Onrender può metterci un po' a “svegliarsi”).
+## Fix consigliato (zero CORS): Vercel rewrites
+Questo progetto include `vercel.json` che fa da proxy:
+- `/api/*` → `https://dinomed-api.onrender.com/api/*`
 
-### 3) HTTPS / mixed-content
-Se il frontend è in `https://` e il backend fosse impostato in `http://`, il browser blocca la richiesta.
+Così il frontend può chiamare `/api/...` in same-origin e il CORS non serve.
 
-✅ Usa sempre `https://...`.
+### Cosa fare
+1) Pusha questa repo su GitHub
+2) Su Vercel fai **Redeploy**
+3) (Opzionale) Puoi anche rimuovere `VITE_API_BASE` da Vercel: con i rewrites funzionerà lo stesso.
 
-### 4) CORS (se /docs funziona ma dal sito no)
-Il backend deve permettere richieste dal dominio del frontend.
-
-In questo repo FastAPI ha CORS aperto (`allow_origins=["*"]`), quindi di solito non è questo.
-
----
-
-## Migliorie già incluse in questa zip
-- Guard: se `VITE_API_BASE` manca, la pagina Config mostra un messaggio chiaro.
-- Warm-up: ping a `/health` prima della POST (riduce errori quando Onrender è in sleep).
-- Timeout + errore leggibile: messaggi più utili rispetto a “Failed to fetch”.
+## Se vuoi tenere `VITE_API_BASE`
+Assicurati che sia impostata su Vercel **e** che tu abbia fatto **Redeploy** dopo averla aggiunta/modificata.
