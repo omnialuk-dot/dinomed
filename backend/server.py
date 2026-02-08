@@ -91,7 +91,6 @@ if admin is not None:
 if simulazioni is not None:
     app.include_router(simulazioni.router)
 if sim_alias is not None:
-    # include both alias routers
     app.include_router(sim_alias.router)
 
 if domande is not None:

@@ -33,8 +33,7 @@ class Section(BaseModel):
 class StartPayload(BaseModel):
     duration_min: int = 0
     sections: List[Section]
-    # Frontend can send a string (e.g. "subject_blocks") or a list
-    order: Union[str, List[str]] = "subject_blocks"
+    order: Optional[Union[str, List[str]]] = None
 
 
 class AnswerIn(BaseModel):
@@ -277,6 +276,10 @@ def _session_store_get(session_id: str) -> Optional[Dict[str, Any]]:
 def start(payload: StartPayload, request: Request):
     if not payload.sections:
         raise HTTPException(status_code=422, detail="Nessuna sezione selezionata.")
+
+    order = payload.order
+    if isinstance(order, str):
+        order = [order]
 
     bank = fetch_all_questions()
     if not bank:
