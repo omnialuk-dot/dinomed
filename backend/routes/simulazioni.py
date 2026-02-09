@@ -170,6 +170,60 @@ async def delete_simulazione(sim_id: str, _=Depends(admin_required)):
 def _norm(s: Optional[str]) -> str:
     return (s or "").strip().lower()
 
+def _norm_tipo(tipo: Optional[str]) -> str:
+    """Normalizza il tipo domanda.
+    Valori canonici: 'scelta' | 'completamento'. Ritorna '' se non riconosciuto.
+    """
+    t = _norm(tipo)
+    if not t:
+        return ""
+    # alias comuni
+    if t in {"scelta", "multiple", "multipla", "scelta multipla", "mcq", "quiz"}:
+        return "scelta"
+    if t in {"completamento", "aperta", "open", "testo", "risposta", "libera"}:
+        return "completamento"
+    return t if t in {"scelta", "completamento"} else ""
+
+def _clean_tags(tags) -> List[str]:
+    """Accetta lista o stringa (anche separata da virgole) e restituisce lista pulita."""
+    if not tags:
+        return []
+    if isinstance(tags, str):
+        parts = [p.strip() for p in tags.split(",")]
+        return [p for p in parts if p]
+    if isinstance(tags, list):
+        out = []
+        for x in tags:
+            if x is None:
+                continue
+            s = str(x).strip()
+            if s:
+                out.append(s)
+        return out
+    # fallback: prova a convertirlo a stringa
+    s = str(tags).strip()
+    return [s] if s else []
+
+def _materia_match(q_materia: str, materia: str) -> bool:
+    m = _norm(materia)
+    if not m:
+        return True
+    qm = _norm(q_materia)
+    return qm == m
+
+def _infer_tipo(q: Dict[str, Any]) -> str:
+    """Inferisce il tipo se il campo 'tipo' è mancante."""
+    try:
+        opzioni = q.get("opzioni")
+        if isinstance(opzioni, list) and len(opzioni) > 0:
+            return "scelta"
+    except Exception:
+        pass
+    # completamento se ha risposte
+    if q.get("risposte") or q.get("risposta"):
+        return "completamento"
+    return ""
+
 BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = BASE_DIR / "data"
 DOMANDE_FILE = DATA_DIR / "domande.json"
