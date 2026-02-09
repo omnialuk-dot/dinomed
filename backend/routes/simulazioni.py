@@ -529,10 +529,8 @@ from fastapi import Request
 from backend.routes.sim_alias import start as _real_start  # usa lo start già esistente
 
 @router.post("/start")
-async def start_alias(payload: dict, request: Request):
-    return await _real_start(payload, request)
-
 @router.post("/start/")
+def start(payload: StartPayload, request: Request):
 async def start_alias_slash(payload: dict, request: Request):
     return await _real_start(payload, request)
 
