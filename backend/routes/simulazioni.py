@@ -326,6 +326,60 @@ def _session_store_get(session_id: str) -> Optional[Dict[str, Any]]:
 # =========================
 # Routes
 # =========================
+
+@router.get("/session/{session_id}")
+def get_session(session_id: str):
+    """Return a previously created simulation session (public view).
+
+    The frontend may refresh the page after /start and needs to re-fetch the session.
+    """
+    sess = _session_store_get(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Sessione non trovata.")
+    questions = sess.get("questions") or []
+    if not isinstance(questions, list):
+        questions = []
+    return {
+        "session_id": session_id,
+        "started_at": sess.get("started_at"),
+        "duration_min": int(sess.get("duration_min") or 0),
+        "order": sess.get("order") or [],
+        "questions": [_public_question(q) for q in questions],
+    }
+
+
+@router.get("/{sim_or_session_id}")
+def get_simulazione_or_session(sim_or_session_id: str, request: Request):
+    """Compatibility endpoint.
+
+    - If the id matches an active/persisted session, return the session.
+    - Otherwise, return the simulazione definition by id (public if published, admin if not).
+    """
+    sess = _session_store_get(sim_or_session_id)
+    if sess:
+        questions = sess.get("questions") or []
+        if not isinstance(questions, list):
+            questions = []
+        return {
+            "session_id": sim_or_session_id,
+            "started_at": sess.get("started_at"),
+            "duration_min": int(sess.get("duration_min") or 0),
+            "order": sess.get("order") or [],
+            "questions": [_public_question(q) for q in questions],
+        }
+
+    items = _read_all()
+    item = next((x for x in items if x.get("id") == sim_or_session_id), None)
+    if not item:
+        raise HTTPException(status_code=404, detail="Simulazione non trovata")
+
+    if item.get("pubblicata") is True:
+        return item
+
+    admin_required(request)
+    return item
+
+
 @router.post("/start")
 def start(payload: StartPayload, request: Request):
     if not payload.sections:
