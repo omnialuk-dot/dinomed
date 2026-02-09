@@ -3,6 +3,9 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Literal, Dict, Any
 from uuid import uuid4
 from datetime import datetime
+
+from supabase_db import get_supabase_client
+from auth import try_get_user
 from pathlib import Path
 
 from supabase_db import fetch_question_by_id
@@ -223,6 +226,37 @@ def start(req: StartRequest):
         "finished": False,
     }
     SESSIONS[session_id] = session
+
+# =========================
+# Persistenza su DB (Supabase) - tabella "sessions"
+# =========================
+try:
+    p = try_get_user(request)
+    user_id = (p or {}).get("user_id")
+    if user_id:
+        sb = get_supabase_client()
+        record = {
+            "session_id": session_id,
+            "user_id": user_id,
+            "finished": True,
+            "finished_at": datetime.utcnow().isoformat(),
+            "total": total,
+            "correct": correct,
+            "wrong": wrong,
+            "blank": blank,
+            "score": round(score, 3),
+            "percent": percent,
+            "per_subject": per_subject_out,
+            "answers": amap,
+        }
+        # upsert su session_id (se la tabella non ha vincolo, sarà un insert)
+        try:
+            sb.table("sessions").upsert(record, on_conflict="session_id").execute()
+        except Exception:
+            sb.table("sessions").insert(record).execute()
+except Exception:
+    # Non bloccare la consegna se il DB fallisce
+    pass
 
     return {
         "session_id": session_id,

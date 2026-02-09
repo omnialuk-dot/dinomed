@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request, Depends
 from pydantic import BaseModel, Field
+from .sessioni import FinishRequest, finish as finish_session
 from typing import List, Optional, Literal, Dict, Any, Union
 from datetime import datetime
 import uuid
@@ -509,3 +510,14 @@ def submit(session_id: str, payload: SubmitPayload):
         "score": round((correct / max(1, len(payload.answers))) * 100, 1),
         "results": results,
     }
+
+@router.post("/finish")
+@router.post("/finish/")
+@router.post("/end")
+@router.post("/end/")
+def finish(req: FinishRequest, request: Request):
+    """Alias per compatibilità col frontend: POST /api/simulazioni/finish.
+
+    Reindirizza alla logica in routes/sessioni.py che calcola e salva il risultato.
+    """
+    return finish_session(req, request)
