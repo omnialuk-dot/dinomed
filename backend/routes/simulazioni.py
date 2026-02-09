@@ -521,3 +521,18 @@ def finish(req: FinishRequest, request: Request):
     Reindirizza alla logica in routes/sessioni.py che calcola e salva il risultato.
     """
     return finish_session(req, request)
+
+# ====== ALIAS START (fix 405 /api/simulazioni/start) ======
+# Questo alias inoltra la richiesta allo start reale: /api/sim/start
+
+from fastapi import Request
+from backend.routes.sim_alias import start as _real_start  # usa lo start già esistente
+
+@router.post("/start")
+async def start_alias(payload: dict, request: Request):
+    return await _real_start(payload, request)
+
+@router.post("/start/")
+async def start_alias_slash(payload: dict, request: Request):
+    return await _real_start(payload, request)
+
